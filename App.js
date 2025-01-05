@@ -1,20 +1,24 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
+import HabitCategoryScreen from "./habit screen/HabitCategoryScreen";
+import HabitDetailScreen from "./habit screen/HabitDetailScreen";
+import MainScreen from "./main screen/MainScreen";
+import HabitCheckScreen from "./habit screen/HabitCheckScreen"
+
+const Stack = createStackNavigator();
 
 export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+    return (
+        <NavigationContainer>
+            <Stack.Navigator
+                initialRouteName="Main"
+                screenOptions={{ headerShown: false, gestureEnabled: true }}>
+                <Stack.Screen name="Main" component={MainScreen} options={{ tabBarStyle: { display: 'none' } }} />
+                <Stack.Screen name="HabitCategory" component={HabitCategoryScreen} options={{ tabBarStyle: { display: 'none' } }} />
+                <Stack.Screen name="HabitDetail" component={HabitDetailScreen} options={{ tabBarStyle: { display: 'none' } }} />
+                <Stack.Screen name="HabitCheck" component={HabitCheckScreen} options={{ tabBarStyle: { display: 'none' } }} />
+            </Stack.Navigator>
+        </NavigationContainer>
+    );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
