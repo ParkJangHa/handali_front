@@ -12,6 +12,10 @@ const HandalStart = ({ navigation }) => {
   const [progress, setProgress] = useState(100); // 진행률 (0~100)
   const [nicknameInput, setNicknameInput] = useState("");
 
+  const MainScreen = () => {
+      navigation.navigate("MainScreen");
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.dateText}>{formattedDate}</Text>
@@ -42,7 +46,7 @@ const HandalStart = ({ navigation }) => {
               onChangeText={setNicknameInput}
             />
         </View>
-      <TouchableOpacity style={styles.startButton}>
+      <TouchableOpacity style={styles.startButton} onPress={MainScreen}>
                         <Text style={styles.startButtonText}>시작할래요</Text>
       </TouchableOpacity>
     </View>

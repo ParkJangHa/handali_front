@@ -10,7 +10,7 @@ export default function App() {
       <View style={styles.topBar}>
         <View style={styles.coinContainer}>
           <Image
-            source={require("./assets/coin.png")} // 코인 아이콘 이미지 경로
+            source={require("../assets/coin.png")} // 코인 아이콘 이미지 경로
             style={styles.coinIcon}
           />
           <Text style={styles.coinText}>120</Text>
@@ -18,13 +18,13 @@ export default function App() {
         <View style={styles.topIcons}>
           <TouchableOpacity>
             <Image
-              source={require("./assets/store.png")} // 상점 아이콘 이미지 경로
+              source={require("../assets/store.png")} // 상점 아이콘 이미지 경로
               style={styles.icon}
             />
           </TouchableOpacity>
           <TouchableOpacity>
             <Image
-              source={require("./assets/storage.png")} // 아파트 아이콘 이미지 경로
+              source={require("../assets/storage.png")} // 아파트 아이콘 이미지 경로
               style={styles.icon}
             />
           </TouchableOpacity>
@@ -35,17 +35,17 @@ export default function App() {
       <View style={styles.content}>
         <Text style={styles.dayText}>n일차, 별명</Text>
         <Image
-          source={require("./assets/window.png")} // 창문 이미지 경로
+          source={require("../assets/window.png")} // 창문 이미지 경로
           style={styles.window}
         />
         <View style={styles.characterContainer}>
           <Image
-            source={require("./assets/character.png")} // 캐릭터 이미지 경로
+            source={require("../assets/character.png")} // 캐릭터 이미지 경로
             style={styles.character}
           />
         </View>
         <Image
-          source={require("./assets/sofa.png")} // 소파 이미지 경로
+          source={require("../assets/sofa.png")} // 소파 이미지 경로
           style={styles.sofa}
         />
       </View>
@@ -56,20 +56,20 @@ export default function App() {
         <View style={styles.bottomNav}>
           <TouchableOpacity style={styles.navButton}>
             <Image
-              source={require("./assets/main.png")} // 홈 아이콘 이미지 경로
+              source={require("../assets/main.png")} // 홈 아이콘 이미지 경로
               style={styles.navIcon}
             />
             <Text style={styles.navText}>메인</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.recordButton}>
             <Image
-              source={require("./assets/record.png")} // 아파트 네비게이션 아이콘 경로
+              source={require("../assets/record.png")} // 아파트 네비게이션 아이콘 경로
               style={styles.recordIcon}
             />
           </TouchableOpacity>
           <TouchableOpacity style={styles.navButton}>
             <Image
-              source={require("./assets/apartment_nav.png")} // 아파트 네비게이션 아이콘 경로
+              source={require("../assets/apartment_nav.png")} // 아파트 네비게이션 아이콘 경로
               style={styles.navIcon}
             />
             <Text style={styles.navText}>아파트</Text>
@@ -90,6 +90,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     padding: SCREEN_WIDTH * 0.05,
+    marginTop: SCREEN_HEIGHT * 0.05
   },
   coinContainer: {
     width: SCREEN_WIDTH * 0.24,

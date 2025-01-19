@@ -10,6 +10,7 @@ import DetailSelect from "./screens/DetailSelect";
 import HabitAppendScreen from "./screens/HabitAppendScreen";
 import UserHabitAppendScreen from "./screens/UserHabitAppendScreen";
 import HandalStart from "./screens/HandalStart";
+import MainScreen from "./screens/MainScreen";
 
 const Stack = createStackNavigator();
 
@@ -80,6 +81,10 @@ const App = () => {
             backgroundColor: "#FFFFFF", // 헤더 배경색
             
           },
+        }}
+        />
+        <Stack.Screen name="MainScreen" component={MainScreen} 
+        options={{
         }}
         />
       </Stack.Navigator>
