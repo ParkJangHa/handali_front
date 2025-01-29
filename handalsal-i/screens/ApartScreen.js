@@ -34,19 +34,44 @@ const ApartScreen = () => {
     setData(floors);
   }, []);
 
-  // **FlatList가 렌더링되면 즉시 1층이 보이도록 함**
-  const scrollToBottom = () => {
-    if (flatListRef.current) {
-      flatListRef.current.scrollToEnd({ animated: true });
-    }
-  };
+// 현재 월을 기반으로 해당 층(인덱스) 찾기
+const currentMonthFloor = new Date().getMonth() + 1;
 
-  // **아파트 화면이 열릴 때 즉시 1층으로 이동**
-  useFocusEffect(
-    React.useCallback(() => {
-      scrollToBottom();
-    }, [data])
-  );
+// 현재 달(층)로 부드럽게 스크롤하는 함수
+const scrollToCurrentMonth = () => {
+  if (flatListRef.current && data.length > 0) {
+    const index = data.findIndex(item => item.floor === currentMonthFloor);
+    if (index !== -1) {
+      setTimeout(() => {
+        flatListRef.current.scrollToIndex({ index, animated: true });
+      }, 300);
+    }
+  }
+};
+
+// FlatList가 각 항목의 높이를 미리 알도록 설정
+const getItemLayout = (_, index) => ({
+  length: SCREEN_HEIGHT * 0.3, // ✅ 각 아이템의 높이
+  offset: SCREEN_HEIGHT * 0.3 * index, // ✅ 각 아이템의 위치
+  index,
+});
+
+// 스크롤 실패 시 자동 재시도 (버그 방지)
+const onScrollToIndexFailed = (info) => {
+  setTimeout(() => {
+    flatListRef.current?.scrollToIndex({ index: info.index, animated: true });
+  }, 500);
+};
+
+//아파트 화면이 열릴 때 해당 달(층)로 부드럽게 이동
+useFocusEffect(
+  React.useCallback(() => {
+    scrollToCurrentMonth();
+  }, [data])
+);
+
+
+
 
   // 층 클릭 처리
   const handlePress = (item) => {
@@ -64,11 +89,11 @@ const ApartScreen = () => {
     {/* 잠금 및 한달이 층 */}
       <FlatList
        ref={flatListRef}
-       onContentSizeChange={() => {
-        scrollToBottom(); 
-      }}
         data={data}
         keyExtractor={(item) => item.floor.toString()}
+        getItemLayout={getItemLayout} // ✅ 각 항목 높이 설정
+        onScrollToIndexFailed={onScrollToIndexFailed} // ✅ 스크롤 실패 시 자동 재시도
+        onContentSizeChange={scrollToCurrentMonth} // ✅ 처음 렌더링될 때 자동 스크롤
         ListHeaderComponent={ //아파트 꼭대기
             <View style={styles.topBuilding}>
               <Image
