@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions } from "rea
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
-export default function App() {
+export default function App({navigation}) {
   return (
     <View style={styles.container}>
       {/* 상단 바 */}
@@ -67,7 +67,8 @@ export default function App() {
               style={styles.recordIcon}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.navButton}>
+          <TouchableOpacity style={styles.navButton}
+          onPress={()=>navigation.navigate('ApartScreen')}>
             <Image
               source={require("../assets/apartment_nav.png")} // 아파트 네비게이션 아이콘 경로
               style={styles.navIcon}

@@ -11,6 +11,7 @@ import HabitAppendScreen from "./screens/HabitAppendScreen";
 import UserHabitAppendScreen from "./screens/UserHabitAppendScreen";
 import HandalStart from "./screens/HandalStart";
 import MainScreen from "./screens/MainScreen";
+import ApartScreen from "./screens/ApartScreen";
 
 const Stack = createStackNavigator();
 
@@ -18,7 +19,7 @@ const App = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="Home"
+        initialRouteName="MainScreen" //원래 Home, 아파트 화면 수정하느라 변경
         screenOptions={{
           headerStyle: {
             backgroundColor: "#FFD563", // 헤더 배경색
@@ -89,6 +90,9 @@ const App = () => {
           
         }}
         />
+        <Stack.Screen name="ApartScreen" component={ApartScreen}
+        options={{ headerShown: false }} 
+          />
       </Stack.Navigator>
     </NavigationContainer>
   );
