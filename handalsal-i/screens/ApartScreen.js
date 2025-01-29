@@ -10,7 +10,7 @@ const ApartScreen = () => {
   const [data, setData] = useState([]); // 아파트 데이터
   const flatListRef = useRef(null); // FlatList 참조
 
-  // 🟢 **항상 12층 유지하는 기본 데이터 생성**
+  // **항상 12층 유지하는 기본 데이터 생성**
   const generateDefaultFloors = () => {
     return Array.from({ length: 12 }, (_, index) => {
       const floorNumber = 12 - index; // 아래에서부터 층 번호 설정
@@ -28,24 +28,23 @@ const ApartScreen = () => {
     });
   };
 
-  // 초기 데이터 설정 (API 없이 로컬 데이터 사용)
-//   useEffect(() => {
-//     setData(generateDefaultFloors());
-//   }, []);
-   // 초기 데이터 설정 (API 없이 로컬 데이터 사용)
-   useEffect(() => {
+  // **초기 데이터 설정**
+  useEffect(() => {
     const floors = generateDefaultFloors();
     setData(floors);
   }, []);
 
- // ✅ **아파트 화면이 열릴 때 자동으로 1층으로 스크롤 이동**
- useFocusEffect(
+  // **FlatList가 렌더링되면 즉시 1층이 보이도록 함**
+  const scrollToBottom = () => {
+    if (flatListRef.current) {
+      flatListRef.current.scrollToEnd({ animated: true });
+    }
+  };
+
+  // **아파트 화면이 열릴 때 즉시 1층으로 이동**
+  useFocusEffect(
     React.useCallback(() => {
-      if (flatListRef.current && data.length > 0) {
-        requestAnimationFrame(() => {
-          flatListRef.current.scrollToEnd({ animated: false });
-        });
-      }
+      scrollToBottom();
     }, [data])
   );
 
@@ -61,16 +60,23 @@ const ApartScreen = () => {
 
   return (
     <View style={styles.container}>
-        {/* 잠금 및 한달이 층 */}
+
+    {/* 잠금 및 한달이 층 */}
       <FlatList
-       ref={flatListRef} // ✅ FlatList 참조 추가
+       ref={flatListRef}
        onContentSizeChange={() => {
-        if (flatListRef.current) {
-          flatListRef.current.scrollToEnd({ animated: false });
-        }
-      }} // ✅ 처음 렌더링될 때 자동으로 1층으로 이동
+        scrollToBottom(); 
+      }}
         data={data}
         keyExtractor={(item) => item.floor.toString()}
+        ListHeaderComponent={ //아파트 꼭대기
+            <View style={styles.topBuilding}>
+              <Image
+                source={require("../assets/apartRoofTop.png")}
+                style={styles.rooftopImage}
+              />
+            </View>
+          }
         renderItem={({ item }) => (
           <TouchableOpacity //잠금인지 아닌지 판별
             style={item.locked ? styles.lockedContainer : styles.itemContainer}
@@ -133,13 +139,21 @@ const styles = StyleSheet.create({
     marginTop: SCREEN_HEIGHT * 0.06,
     backgroundColor:'#F9D9B5'
   },
+  topBuilding:{
+    backgroundColor:'#878282',
+    opacity:0.6
+  },
+  rooftopImage:{
+    width: "100%",
+  },
+
   itemContainer: {
     height:SCREEN_HEIGHT*0.3,
     backgroundColor: '#F9D9B5',
     padding:SCREEN_HEIGHT*0.02
   },
   lockedContainer: {
-    // marginBottom: 10,
+    // marginTop:0
   },
   lockIcon:{
     width:"100%",
