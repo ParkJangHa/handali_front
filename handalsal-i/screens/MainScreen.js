@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions } from "rea
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
-export default function App() {
+export default function App({navigation}) {
   return (
     <View style={styles.container}>
       {/* 상단 바 */}
@@ -24,7 +24,7 @@ export default function App() {
           </TouchableOpacity>
           <TouchableOpacity>
             <Image
-              source={require("../assets/storage.png")} // 아파트 아이콘 이미지 경로
+              source={require("../assets/storage.png")} // 창고 아이콘 이미지 경로
               style={styles.icon}
             />
           </TouchableOpacity>
@@ -61,13 +61,14 @@ export default function App() {
             />
             <Text style={styles.navText}>메인</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.recordButton}>
+          <TouchableOpacity style={styles.recordButton} onPress={()=>navigation.navigate('Record')}>
             <Image
-              source={require("../assets/record.png")} // 아파트 네비게이션 아이콘 경로
+              source={require("../assets/record.png")} // 습관 기록록 아이콘 경로
               style={styles.recordIcon}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.navButton}>
+          <TouchableOpacity style={styles.navButton}
+          onPress={()=>navigation.navigate('ApartScreen')}>
             <Image
               source={require("../assets/apartment_nav.png")} // 아파트 네비게이션 아이콘 경로
               style={styles.navIcon}
@@ -79,7 +80,6 @@ export default function App() {
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

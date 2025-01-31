@@ -11,6 +11,11 @@ import HabitAppendScreen from "./screens/HabitAppendScreen";
 import UserHabitAppendScreen from "./screens/UserHabitAppendScreen";
 import HandalStart from "./screens/HandalStart";
 import MainScreen from "./screens/MainScreen";
+import HabitCategoryScreen from "./screens/HabitCategoryScreen";
+import HabitDetailScreen from "./screens/HabitDetailScreen";
+import HabitCheckScreen from "./screens/HabitCheckScreen";
+import ApartScreen from "./screens/ApartScreen";
+import JobScreen from "./screens/JobScreen";
 
 const Stack = createStackNavigator();
 
@@ -84,6 +89,26 @@ const App = () => {
         }}
         />
         <Stack.Screen name="MainScreen" component={MainScreen} 
+        options={{ headerShown: false
+        }}
+        />
+        <Stack.Screen name="Record" component={HabitCategoryScreen} 
+        options={{ headerShown: false, gestureEnabled: true
+        }}
+        />
+        <Stack.Screen name="HabitDetail" component={HabitDetailScreen} 
+        options={{ headerShown: false, gestureEnabled: true
+        }}
+        />
+        <Stack.Screen name="HabitCheck" component={HabitCheckScreen} 
+        options={{ headerShown: false, gestureEnabled: true
+        }}
+        />
+        <Stack.Screen name="ApartScreen" component={ApartScreen} 
+        options={{
+        }}
+        />
+        <Stack.Screen name="JobScreen" component={JobScreen} 
         options={{
         }}
         />
