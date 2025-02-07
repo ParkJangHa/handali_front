@@ -17,13 +17,14 @@ import HabitCheckScreen from "./screens/HabitCheckScreen";
 import ApartScreen from "./screens/ApartScreen";
 import JobScreen from "./screens/JobScreen";
 
+
 const Stack = createStackNavigator();
 
 const App = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="Home"
+        initialRouteName="MainScreen" //원래 Home, 아파트 화면 수정하느라 변경
         screenOptions={{
           headerStyle: {
             backgroundColor: "#FFD563", // 헤더 배경색
@@ -112,6 +113,9 @@ const App = () => {
         options={{
         }}
         />
+        <Stack.Screen name="ApartScreen" component={ApartScreen}
+        options={{ headerShown: false }} 
+          />
       </Stack.Navigator>
     </NavigationContainer>
   );
