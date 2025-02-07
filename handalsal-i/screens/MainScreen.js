@@ -24,7 +24,7 @@ export default function App({navigation}) {
           </TouchableOpacity>
           <TouchableOpacity>
             <Image
-              source={require("../assets/storage.png")} // 아파트 아이콘 이미지 경로
+              source={require("../assets/storage.png")} // 창고 아이콘 이미지 경로
               style={styles.icon}
             />
           </TouchableOpacity>
@@ -61,9 +61,9 @@ export default function App({navigation}) {
             />
             <Text style={styles.navText}>메인</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.recordButton}>
+          <TouchableOpacity style={styles.recordButton} onPress={()=>navigation.navigate('Record')}>
             <Image
-              source={require("../assets/record.png")} // 아파트 네비게이션 아이콘 경로
+              source={require("../assets/record.png")} // 습관 기록록 아이콘 경로
               style={styles.recordIcon}
             />
           </TouchableOpacity>
@@ -80,7 +80,6 @@ export default function App({navigation}) {
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
