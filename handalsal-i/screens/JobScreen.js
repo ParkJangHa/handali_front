@@ -1,14 +1,52 @@
 import { StyleSheet, Text, View, TouchableOpacity, Image, Dimensions } from "react-native";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 const JobScreen = ({ navigation }) => {
+    // 직업 관련 정보를 저장할 상태
+    const [jobName, setJobName] = useState();
+    const [salary, setSalary] = useState();
+
+    //오늘 날짜
     const today = new Date();
     const formattedDate = `${today.getFullYear()}-${(today.getMonth() + 1)
         .toString()
         .padStart(2, "0")}-${today.getDate().toString().padStart(2, "0")}`;
+
+    // 화면이 로드되면 POST 요청을 보내서 직업 정보를 받아옴
+    useEffect(() => {
+        const fetchJobDetails = async () => {
+            try {
+                const response = await fetch(`https://43.201.250.84/handalis/${handali_id}/job`, {
+                    method: "POST",
+                    headers: {
+                        Authorization: "Bearer <access_token>",
+                        "Content-Type": "application/json",
+                    },
+                    // body가 필요하다면 JSON.stringify로 추가 (예: body: JSON.stringify({ ... }))
+                    body: JSON.stringify({}),
+                });
+
+                // 응답을 JSON으로 파싱
+                const data = await response.json();
+
+                if (response.ok) {
+                    // 받아온 JSON에서 job_name과 salary 값을 상태에 저장
+                    setJobName(data.job_name);
+                    setSalary(data.salary);
+                } else {
+                    console.log("API 응답 오류:", data);
+                }
+            } catch (error) {
+                console.error("직업 정보 요청 실패:", error);
+            }
+        };
+
+        fetchJobDetails();
+    }, [handali_id]);
+
 
     return (
         <View style={styles.container}>
@@ -43,11 +81,11 @@ const JobScreen = ({ navigation }) => {
                     {/**직업, 주급 */}
                     <View style={styles.jobCoin}>
                         <Text style={styles.nameText}>직업</Text>
-                        <Text style={styles.valueText}>의사</Text>
+                        <Text style={styles.valueText}>{jobName}</Text>
                     </View>
                     <View style={styles.jobCoin}>
                         <Text style={styles.nameText}>주급</Text>
-                        <Text style={styles.valueText}>120</Text>
+                        <Text style={styles.valueText}>{salary}</Text>
                     </View>
                 </LinearGradient>
             </View>
