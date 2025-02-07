@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   View,
   Text,
@@ -6,15 +7,25 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
-  Image
+  Image,
 } from "react-native";
 
-const LoginScreen = ({ navigation }) => { // props로 navigation 받음
+const API_URL = "http://43.201.250.84"; // ✅ 실제 API URL
+
+const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
-  // 유효성 검사 함수
+  // ✅ 자동 로그인 확인
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      const token = await AsyncStorage.getItem("authToken");
+      if (token) navigation.navigate("Category");
+    };
+    checkLoginStatus();
+  }, [navigation]); // ✅ navigation 의존성 추가
+
+  // ✅ 유효성 검사
   const validateInput = () => {
     const emailRegex = /\S+@\S+\.\S+/;
     if (!email || !emailRegex.test(email)) {
@@ -28,20 +39,48 @@ const LoginScreen = ({ navigation }) => { // props로 navigation 받음
     return true;
   };
 
-  // 로그인 버튼 클릭 시 실행
-  const handleLogin = () => {
-    if (validateInput()) {
-      Alert.alert("로그인 성공", `${email}님 환영합니다!`);
-      navigation.navigate("Category"); // 카태고리 선택택 화면으로 이동
+  // ✅ 로그인 요청
+  const handleLogin = async () => {
+    if (!validateInput()) return;
+  
+    try {
+      const response = await fetch("http://43.201.250.84/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+  
+      const responseText = await response.text(); // ✅ 응답을 텍스트로 확인
+      console.log("서버 응답:", responseText);
+  
+      // ✅ JSON인지 확인 후 처리
+      let data;
+      if (responseText.startsWith("{")) {
+        data = JSON.parse(responseText); // JSON 형식이면 파싱
+      } else {
+        data = { Bearer: responseText }; // 단순 문자열이면 객체로 변환
+      }
+  
+      if (response.ok) {
+        await AsyncStorage.setItem("authToken", data.Bearer);
+        Alert.alert("로그인 성공", "환영합니다!");
+        navigation.navigate("Category");
+      } else {
+        Alert.alert("로그인 실패", data.message || "이메일 또는 비밀번호를 확인하세요.");
+      }
+    } catch (error) {
+      console.error("로그인 오류:", error);
+      Alert.alert("오류", error.message || "네트워크 연결이 원활하지 않습니다.");
     }
   };
+  
 
   return (
     <View style={styles.container}>
       <View style={styles.imgCon}>
         <Image 
-          source={require("../assets/logo.png")} // 이미지 경로 설정
-          style={styles.img} // 스타일 적용
+          source={require("../assets/logo.png")} 
+          style={styles.img} 
         />
       </View>
       <Text style={styles.title}>한달이</Text>
@@ -52,19 +91,13 @@ const LoginScreen = ({ navigation }) => { // props로 navigation 받음
         value={email}
         onChangeText={setEmail}
       />
-      <View style={styles.passwordContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="비밀번호 입력"
-          secureTextEntry={!isPasswordVisible}
-          value={password}
-          onChangeText={setPassword}
-        />
-        <TouchableOpacity
-          onPress={() => setIsPasswordVisible(!isPasswordVisible)}
-        >
-        </TouchableOpacity>
-      </View>
+      <TextInput
+        style={styles.input}
+        placeholder="비밀번호 입력"
+        secureTextEntry
+        value={password}
+        onChangeText={setPassword}
+      />
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>로그인</Text>
       </TouchableOpacity>
@@ -78,6 +111,7 @@ const LoginScreen = ({ navigation }) => { // props로 navigation 받음
   );
 };
 
+// ✅ 스타일 정리
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -87,7 +121,7 @@ const styles = StyleSheet.create({
   },
   imgCon: {
     flex: 0.4,
-    alignItems: "center", // 이미지 중앙 정렬
+    alignItems: "center",
     justifyContent: "center",
   },
   img: {
@@ -110,10 +144,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderRadius: 5,
     backgroundColor: "#fff",
-  },
-  passwordContainer: {
-    flexDirection: "row",
-    alignItems: "center",
   },
   button: {
     backgroundColor: "#FDA44F",
