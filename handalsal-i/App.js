@@ -23,7 +23,7 @@ const App = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="Home"
+        initialRouteName="Record"
         screenOptions={{
           headerStyle: {
             backgroundColor: "#FFD563", // 헤더 배경색
@@ -37,80 +37,84 @@ const App = () => {
         }}
       >
         <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="Login" component={LoginScreen}/>
-        <Stack.Screen name="Signup" component={SignupScreen} 
-        options={{
-          headerStyle: {
-            backgroundColor: "#FFFDF0", // 헤더 배경색
-            
-          },
-        }}
+        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="Signup" component={SignupScreen}
+          options={{
+            headerStyle: {
+              backgroundColor: "#FFFDF0", // 헤더 배경색
+
+            },
+          }}
         />
 
-        <Stack.Screen name="Category" component={CategorySelect} 
-        options={{
-          headerLeft: () => null,
-          headerStyle: {
-            backgroundColor: "#FFFDF0", // 헤더 배경색
-          },
-        }}
+        <Stack.Screen name="Category" component={CategorySelect}
+          options={{
+            headerLeft: () => null,
+            headerStyle: {
+              backgroundColor: "#FFFDF0", // 헤더 배경색
+            },
+          }}
         />
-        <Stack.Screen name="DetailSelect" component={DetailSelect} 
-        options={{
-          headerStyle: {
-            backgroundColor: "#FFFDF0", // 헤더 배경색
-            
-          },
-        }}
+        <Stack.Screen name="DetailSelect" component={DetailSelect}
+          options={{
+            headerStyle: {
+              backgroundColor: "#FFFDF0", // 헤더 배경색
+
+            },
+          }}
         />
-        <Stack.Screen name="HabitAppendScreen" component={HabitAppendScreen} 
-        options={{
-          headerStyle: {
-            backgroundColor: "#FFFDF0", // 헤더 배경색
-            
-            
-          },
-        }}
+        <Stack.Screen name="HabitAppendScreen" component={HabitAppendScreen}
+          options={{
+            headerStyle: {
+              backgroundColor: "#FFFDF0", // 헤더 배경색
+
+
+            },
+          }}
         />
-        <Stack.Screen name="UserHabitAppendScreen" component={UserHabitAppendScreen} 
-        options={{
-          headerStyle: {
-            backgroundColor: "#FFFDF0", // 헤더 배경색
-            
-          },
-        }}
+        <Stack.Screen name="UserHabitAppendScreen" component={UserHabitAppendScreen}
+          options={{
+            headerStyle: {
+              backgroundColor: "#FFFDF0", // 헤더 배경색
+
+            },
+          }}
         />
-        <Stack.Screen name="HandalStart" component={HandalStart} 
-        options={{
-          headerStyle: {
-            backgroundColor: "#FFFFFF", // 헤더 배경색
-            
-          },
-        }}
+        <Stack.Screen name="HandalStart" component={HandalStart}
+          options={{
+            headerStyle: {
+              backgroundColor: "#FFFFFF", // 헤더 배경색
+
+            },
+          }}
         />
-        <Stack.Screen name="MainScreen" component={MainScreen} 
-        options={{ headerShown: false
-        }}
+        <Stack.Screen name="MainScreen" component={MainScreen}
+          options={{
+            headerShown: false
+          }}
         />
-        <Stack.Screen name="Record" component={HabitCategoryScreen} 
-        options={{ headerShown: false, gestureEnabled: true
-        }}
+        <Stack.Screen name="Record" component={HabitCategoryScreen}
+          options={{
+            headerShown: false, gestureEnabled: true
+          }}
         />
-        <Stack.Screen name="HabitDetail" component={HabitDetailScreen} 
-        options={{ headerShown: false, gestureEnabled: true
-        }}
+        <Stack.Screen name="HabitDetail" component={HabitDetailScreen}
+          options={{
+            headerShown: false, gestureEnabled: true
+          }}
         />
-        <Stack.Screen name="HabitCheck" component={HabitCheckScreen} 
-        options={{ headerShown: false, gestureEnabled: true
-        }}
+        <Stack.Screen name="HabitCheck" component={HabitCheckScreen}
+          options={{
+            headerShown: false, gestureEnabled: true
+          }}
         />
-        <Stack.Screen name="ApartScreen" component={ApartScreen} 
-        options={{
-        }}
+        <Stack.Screen name="ApartScreen" component={ApartScreen}
+          options={{
+          }}
         />
-        <Stack.Screen name="JobScreen" component={JobScreen} 
-        options={{
-        }}
+        <Stack.Screen name="JobScreen" component={JobScreen}
+          options={{
+          }}
         />
       </Stack.Navigator>
     </NavigationContainer>

@@ -1,25 +1,75 @@
-import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Image, FlatList, Modal,TouchableWithoutFeedback } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Image, FlatList, Modal, TouchableWithoutFeedback, ActivityIndicator, Alert } from "react-native";
 import Slider from "@react-native-community/slider";
 import DateTimePicker from "@react-native-community/datetimepicker";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 export default function HabitDetailScreen({ route, navigation }) {
-    //카테고리
+    {/**세부습관 */ }
+    //카테고리 영문화
     const { categoryType } = route.params;
+    let convertedCategoryType;
+    if (categoryType == "활동")
+        convertedCategoryType = "ACTIVITY"
+    else if (categoryType == "지적")
+        convertedCategoryType = "INTELLIGENT"
+    else
+        convertedCategoryType = "ART"
 
-    //세부습관
-    const [habits, setHabits] = useState([{ habit_id: 1, detailed_habit_name: '헬스장 가기' },
-    { habit_id: 2, detailed_habit_name: '매일 30분 걷기' },
-    { habit_id: 3, detailed_habit_name: '스트레칭 하기' },
-    { habit_id: 4, detailed_habit_name: '명상 10분' },
-    { habit_id: 5, detailed_habit_name: '요가 연습' },
-    ]);
-    // const [habits, setHabits] = useState();
+    // 현재 날짜에서 월 가져오기 (1~12)
+    const currentMonth = new Date().getMonth() + 1;
+
+    // 세부 습관 (API 응답 데이터)
+    const [habits, setHabits] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    // 선택된 습관
     const [selectedHabit, setSelectedHabit] = useState(null);
 
-    // 습관시간기록
+    // 습관 데이터 가져오기
+    useEffect(() => {
+        const fetchHabits = async () => {
+            try {
+                const response = await fetch(
+                    `http://43.201.250.84/habits/category-month?category=${convertedCategoryType}&month=${currentMonth}`,
+                    {
+                        method: "GET",
+                        headers: {
+                            Authorization: "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJoYWRhMTExMUBnbWFpbC5jb20iLCJ1c2VySWQiOjEsImlhdCI6MTczODkyOTU4NSwiZXhwIjoxNzM4OTMwNDg1fQ.Ge-3rzz9P9UGqJoAePaN4lR2y9Um679IpsseEHPw6b8",
+                            "Content-Type": "application/json",
+                        },
+                    }
+                );
+
+                const data = await response.json();
+                if (response.ok) {
+                    if (data.habits.length === 0) {
+                        Alert.alert(
+                            "알림",
+                            "이번 달에 등록한 세부습관이 없습니다.",
+                            [
+                                { text: "확인", onPress: () => navigation.goBack() }
+                            ],
+                            { cancelable: false }
+                        );
+                    } else {
+                        setHabits(data.habits);
+                    }
+                } else {
+                    console.error("API 응답 오류:", data);
+                }
+            } catch (error) {
+                console.error("습관 데이터 가져오기 실패:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchHabits();
+    }, [categoryType, currentMonth]);
+
+    {/**습관 시간 */ }
     const [time, setTime] = useState(() => {
         const initialTime = new Date();
         initialTime.setHours(0); // 시간 0 설정
@@ -34,7 +84,7 @@ export default function HabitDetailScreen({ route, navigation }) {
         setTime(currentDate); // 선택된 시간 저장
     };
 
-    //만족도
+    {/**성취 만족도 */ }
     const [satisfaction, setSatisfaction] = useState(50);
     // 동적 스타일 함수 (3색 분기)
     const dynamicTextColor = (satisfaction) => {
@@ -64,41 +114,42 @@ export default function HabitDetailScreen({ route, navigation }) {
 
             <View style={styles.containerRecord}>
 
+                {/**카테고리명 */}
                 <View style={styles.categoryName}>
                     <Text style={styles.categoryNameText}>{categoryType}</Text>
                 </View>
 
+                {/**세부습관 */}
                 <View style={styles.detailHabitCon}>
                     <View style={styles.labels}>
                         <Text style={styles.labelsText}>세부습관</Text>
                     </View>
 
-                    <View>
+                    {loading ? (
+                        <ActivityIndicator size="large" color="#FF9730" />
+                    ) : (
                         <FlatList
                             data={habits}
-                            keyExtractor={(item, index) => index.toString()} // 고유 key로 index 사용
+                            keyExtractor={(item) => item.habit_id.toString()}
                             renderItem={({ item }) => (
                                 <TouchableOpacity
-                                    style={[styles.detailHabitButton,
-                                    selectedHabit === item.detailed_habit_name && styles.selectedButton]}
-                                    onPress={() => {
-                                        setSelectedHabit(item.detailed_habit_name)
-                                    }}>
-                                    <Text style={styles.contentText}>{item.detailed_habit_name}</Text>
+                                    style={[
+                                        styles.detailHabitButton,
+                                        selectedHabit === item.detail && styles.selectedButton,
+                                    ]}
+                                    onPress={() => setSelectedHabit(item.detail)}
+                                >
+                                    <Text style={styles.contentText}>{item.detail}</Text>
                                 </TouchableOpacity>
                             )}
-                            ListEmptyComponent={
-                                <Text style={styles.contentText}>세부습관이 없습니다.</Text>
-                            }
-                            // contentContainerStyle={styles.scrollContent}
-                            style={styles.scrollView} //한번에 몇개씩 보일지
+                            ListEmptyComponent={<Text style={styles.contentText}>세부습관이 없습니다.</Text>}
+                            style={styles.scrollView}
                         />
-                    </View>
-
-
+                    )}
                 </View>
 
 
+                {/**습관 시간*/}
                 <View style={styles.habitTimeCon}>
                     <View style={styles.labels}>
                         <Text style={styles.labelsText}>습관시간</Text>
@@ -116,20 +167,23 @@ export default function HabitDetailScreen({ route, navigation }) {
                         animationType="slide"
                         onRequestClose={() => setShowPicker(false)} // 안드로이드 뒤로가기 지원
                     >
-                    {/* 🛠 모달 바깥을 터치하면 닫히도록 설정 */}
+                        {/* 🛠 모달 바깥을 터치하면 닫히도록 설정 */}
                         <TouchableWithoutFeedback onPress={() => setShowPicker(false)}>
                             <View style={styles.modalContainer}>
+                                <View style={styles.pickerContainer}>
                                     {/* 🛠 DateTimePicker */}
                                     <DateTimePicker
                                         value={time}
                                         mode="time"
                                         locale="en-GB"
                                         display="spinner"
+                                        themeVariant="light" // 🔥 다크 모드에서 강제로 밝은 테마 적용
                                         onChange={(event, selectedTime) => {
                                             if (selectedTime) setTime(selectedTime); // 선택된 시간 저장
-                                            setShowPicker(false); // 선택 후 모달 닫기
+                                            setShowPicker(true); // 선택 후 모달 닫기
                                         }}
                                     />
+                                </View>
                             </View>
                         </TouchableWithoutFeedback>
                     </Modal>
@@ -137,7 +191,7 @@ export default function HabitDetailScreen({ route, navigation }) {
                 </View>
 
 
-
+                {/**성취만족도 */}
                 <View style={styles.satisfactionCon}>
                     <View style={styles.labels}>
                         <Text style={styles.labelsText}>성취만족도 </Text>
@@ -148,7 +202,7 @@ export default function HabitDetailScreen({ route, navigation }) {
                         thumbTintColor="black"
                         minimumTrackTintColor="#FF9730" // 최소 트랙 색상
                         maximumTrackTintColor="#ddd"
-                        minimumValue={0}
+                        minimumValue={1}
                         maximumValue={100}
                         step={5}
                         value={satisfaction}
@@ -158,6 +212,7 @@ export default function HabitDetailScreen({ route, navigation }) {
 
                 </View>
 
+                {/**기록하기 버튼*/}
                 <View style={styles.recordCon}>
                     <TouchableOpacity
                         style={styles.recordButton}
