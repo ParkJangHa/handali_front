@@ -1,78 +1,119 @@
-import React from "react";
-import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions, Alert } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
-export default function App({navigation}) {
+const API_URL = "http://43.201.250.84/handalis/view"; // ✅ API 엔드포인트
+
+export default function App({ navigation }) {
+  // ✅ 한달이 정보 상태 관리
+  const [nickname, setNickname] = useState("");
+  const [daysSinceCreated, setDaysSinceCreated] = useState(0);
+  const [totalCoin, setTotalCoin] = useState(0);
+
+  // ✅ 한달이 상태 조회 API 호출
+  const fetchHandaliStatus = async () => {
+    try {
+      const token = await AsyncStorage.getItem("authToken");
+      if (!token) {
+        Alert.alert("세션 만료", "다시 로그인해주세요.");
+        navigation.navigate("Login");
+        return;
+      }
+
+      const response = await fetch(API_URL, {
+        method: "GET",
+        headers: { "Authorization": `Bearer ${token}` },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("📌 한달이 상태 조회 응답:", data);
+        setNickname(data.nickname);
+        setDaysSinceCreated(data.days_since_created);
+        setTotalCoin(data.total_coin);
+      } else {
+        console.log("📌 한달이가 존재하지 않습니다.");
+        setNickname(""); // ✅ 한달이가 없을 경우 기본값 설정
+        setDaysSinceCreated(0);
+        setTotalCoin(0);
+      }
+    } catch (error) {
+      console.error("🚨 한달이 상태 조회 오류:", error);
+      Alert.alert("오류", "네트워크 오류가 발생했습니다.");
+    }
+  };
+
+  // ✅ 로그아웃 기능
+  const handleLogout = async () => {
+    Alert.alert(
+      "로그아웃",
+      "정말 로그아웃 하시겠습니까?",
+      [
+        { text: "취소", style: "cancel" },
+        {
+          text: "확인",
+          onPress: async () => {
+            await AsyncStorage.removeItem("authToken"); // ✅ 토큰 삭제
+            navigation.reset({
+              index: 0,
+              routes: [{ name: "Login" }], // ✅ 로그인 화면으로 이동
+            });
+          },
+        },
+      ]
+    );
+  };
+
+  // ✅ 메인 화면 진입할 때마다 API 호출
+  useEffect(() => {
+    fetchHandaliStatus();
+  }, []);
+
   return (
     <View style={styles.container}>
       {/* 상단 바 */}
       <View style={styles.topBar}>
         <View style={styles.coinContainer}>
-          <Image
-            source={require("../assets/coin.png")} // 코인 아이콘 이미지 경로
-            style={styles.coinIcon}
-          />
-          <Text style={styles.coinText}>120</Text>
+          <Image source={require("../assets/coin.png")} style={styles.coinIcon} />
+          <Text style={styles.coinText}>{totalCoin}</Text>
         </View>
         <View style={styles.topIcons}>
           <TouchableOpacity>
-            <Image
-              source={require("../assets/store.png")} // 상점 아이콘 이미지 경로
-              style={styles.icon}
-            />
+            <Image source={require("../assets/store.png")} style={styles.icon} />
           </TouchableOpacity>
           <TouchableOpacity>
-            <Image
-              source={require("../assets/storage.png")} // 창고 아이콘 이미지 경로
-              style={styles.icon}
-            />
+            <Image source={require("../assets/storage.png")} style={styles.icon} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleLogout}>
+            <Text style={styles.logoutText}>로그아웃</Text>
           </TouchableOpacity>
         </View>
       </View>
 
       {/* 콘텐츠 영역 */}
       <View style={styles.content}>
-        <Text style={styles.dayText}>n일차, 별명</Text>
-        <Image
-          source={require("../assets/window.png")} // 창문 이미지 경로
-          style={styles.window}
-        />
+        <Text style={styles.dayText}>{daysSinceCreated}일차, {nickname || "별명 없음"}</Text>
+        <Image source={require("../assets/window.png")} style={styles.window} />
         <View style={styles.characterContainer}>
-          <Image
-            source={require("../assets/character.png")} // 캐릭터 이미지 경로
-            style={styles.character}
-          />
+          <Image source={require("../assets/character.png")} style={styles.character} />
         </View>
-        <Image
-          source={require("../assets/sofa.png")} // 소파 이미지 경로
-          style={styles.sofa}
-        />
+        <Image source={require("../assets/sofa.png")} style={styles.sofa} />
       </View>
 
       {/* 하단 배경 */}
       <View style={styles.bottomBackground}>
-        {/* 하단 네비게이션 */}
         <View style={styles.bottomNav}>
           <TouchableOpacity style={styles.navButton}>
-            <Image
-              source={require("../assets/main.png")} // 홈 아이콘 이미지 경로
-              style={styles.navIcon}
-            />
+            <Image source={require("../assets/main.png")} style={styles.navIcon} />
             <Text style={styles.navText}>메인</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.recordButton} onPress={()=>navigation.navigate('Record')}>
-            <Image
-              source={require("../assets/record.png")} // 습관 기록록 아이콘 경로
-              style={styles.recordIcon}
-            />
+          <TouchableOpacity style={styles.recordButton} onPress={() => navigation.navigate("Record")}>
+            <Image source={require("../assets/record.png")} style={styles.recordIcon} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.navButton}
-          onPress={()=>navigation.navigate('ApartScreen')}>
-            <Image
-              source={require("../assets/apartment_nav.png")} // 아파트 네비게이션 아이콘 경로
-              style={styles.navIcon}
-            />
+          <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate("ApartScreen")}>
+            <Image source={require("../assets/apartment_nav.png")} style={styles.navIcon} />
             <Text style={styles.navText}>아파트</Text>
           </TouchableOpacity>
         </View>
@@ -80,6 +121,7 @@ export default function App({navigation}) {
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -119,6 +161,11 @@ const styles = StyleSheet.create({
   icon: {
     width: SCREEN_WIDTH * 0.1,
     height: SCREEN_WIDTH * 0.1,
+  },
+  logoutText: {
+    fontSize: SCREEN_WIDTH * 0.04,
+    fontWeight: "bold",
+    color: "red", // ✅ 로그아웃은 눈에 띄게 빨간색
   },
   content: {
     flex: 1,
