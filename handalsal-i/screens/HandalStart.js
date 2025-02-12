@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, StyleSheet, Image, TouchableOpacity, Dimensions } from "react-native";
+import { View, Text, TextInput, StyleSheet, Image, TouchableOpacity, Dimensions, Alert, ActivityIndicator } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -11,10 +12,71 @@ const HandalStart = ({ navigation }) => {
 
   const [progress, setProgress] = useState(100); // 진행률 (0~100)
   const [nicknameInput, setNicknameInput] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const MainScreen = () => {
-      navigation.navigate("MainScreen");
+  const createHandali = async () => {
+    try {
+      setLoading(true);
+      const token = await AsyncStorage.getItem("authToken");
+  
+      if (!token) {
+        Alert.alert("세션 만료", "다시 로그인해주세요.");
+        navigation.navigate("LoginScreen");
+        return;
+      }
+  
+      if (!nicknameInput.trim()) {
+        Alert.alert("알림", "한달이의 별명을 입력해주세요!");
+        setLoading(false);
+        return;
+      }
+  
+      const handaliData = { nickname: nicknameInput.trim() };
+      console.log("📌 한달이 생성 요청 데이터:", JSON.stringify(handaliData));
+  
+      // 한달이 생성 API 요청
+      const handaliResponse = await fetch("http://43.201.250.84/handalis", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(handaliData),
+      });
+  
+      // 📌 응답을 먼저 `text()`로 받음
+      const responseText = await handaliResponse.text();
+      console.log("📌 한달이 생성 응답 (원본):", responseText);
+  
+      // 📌 JSON인지 확인 후 파싱
+      let handaliResult;
+      try {
+        handaliResult = JSON.parse(responseText); // JSON으로 변환 시도
+      } catch (error) {
+        console.warn("🚨 JSON 파싱 실패, 원본 텍스트 사용:", responseText);
+        handaliResult = { message: responseText }; // JSON이 아니면 그냥 문자열 저장
+      }
+  
+      if (!handaliResponse.ok) {
+        if (handaliResponse.status === 409) {
+          Alert.alert("알림", "이미 한 마리의 한달이가 존재합니다!");
+        } else {
+          Alert.alert("실패", `한달이 생성 실패: ${handaliResult.message || "알 수 없는 오류"}`);
+        }
+        setLoading(false);
+        return;
+      }
+  
+      Alert.alert("완료", "한달이가 성공적으로 생성되었습니다!");
+      navigation.navigate("MainScreen"); // ✅ 메인 화면으로 이동
+    } catch (error) {
+      console.error("🚨 한달이 생성 중 오류 발생:", error);
+      Alert.alert("오류", "네트워크 오류가 발생했습니다. 다시 시도해주세요.");
+    } finally {
+      setLoading(false);
+    }
   };
+  
 
   return (
     <View style={styles.container}>
@@ -34,7 +96,7 @@ const HandalStart = ({ navigation }) => {
       </View>
       <Text style={styles.subTitle}>앞으로 같이 성장할 '한달이'에요.</Text>
       <Image
-          source={require("../assets/pikmin.png")}
+          source={require("../assets/character.png")}
           style={styles.handalImage}
         />
       <View style={styles.nicknameCon}>
@@ -46,9 +108,13 @@ const HandalStart = ({ navigation }) => {
               onChangeText={setNicknameInput}
             />
         </View>
-      <TouchableOpacity style={styles.startButton} onPress={MainScreen}>
-                        <Text style={styles.startButtonText}>시작할래요</Text>
-      </TouchableOpacity>
+        {loading ? (
+        <ActivityIndicator size="large" color="#F8B66C" />
+      ) : (
+        <TouchableOpacity style={styles.startButton} onPress={createHandali}>
+          <Text style={styles.startButtonText}>시작할래요</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 };
@@ -102,7 +168,7 @@ export const styles = StyleSheet.create({
     marginBottom: SCREEN_WIDTH * 0.05,
   },
   handalImage: {
-    width: SCREEN_WIDTH * 0.4, // 반응형 너비
+    width: SCREEN_WIDTH * 0.5, // 반응형 너비
     height: SCREEN_HEIGHT * 0.35, // 반응형 높이
     marginTop: SCREEN_HEIGHT * 0.02,
     marginBottom: SCREEN_HEIGHT * 0.02,
@@ -145,6 +211,5 @@ export const styles = StyleSheet.create({
     textAlign: "center",
   },
 });
-
 
 export default HandalStart;

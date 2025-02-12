@@ -24,7 +24,10 @@ const HabitAppendScreen = ({ route, navigation }) => {
   };
 
   const handalStart = () => {
-    navigation.navigate("HandalStart");
+    navigation.navigate("HandalStart", {
+      category,
+      habits, // 선택한 습관 리스트 전달
+    });
   };
 
   // 카테고리별 데이터 정의
