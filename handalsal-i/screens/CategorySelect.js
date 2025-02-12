@@ -20,9 +20,11 @@ const CategorySelect = ({ navigation }) => {
     if (!selectedButton) {
       alert("카테고리를 선택하세요!");
     } else {
+      console.log("📌 선택한 카테고리:", selectedButton); // ✅ 선택한 카테고리 확인
       navigation.navigate("DetailSelect", { category: selectedButton });
     }
   };
+  
 
   return (
     <View style={styles.container}>

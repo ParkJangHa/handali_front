@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -7,12 +8,20 @@ import {
   Image,
   ScrollView,
   Dimensions,
+  Alert,
 } from "react-native";
-
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
+const categoryMap = {
+  "활동": "ACTIVITY",
+  "지적": "INTELLIGENT",
+  "예술": "ART"
+};
+
+
 const DetailSelect = ({ route, navigation }) => {
-  const { category, userHabits } = route.params || {};
+  const [habits, setHabits] = useState([]); // ✅ 습관 목록 상태 추가
+  const { category, userHabits = [] } = route.params || {}; // ✅ 기본값을 빈 배열로 설정
   const today = new Date();
   const formattedDate = `${today.getFullYear()}-${(today.getMonth() + 1)
     .toString()
@@ -20,17 +29,76 @@ const DetailSelect = ({ route, navigation }) => {
 
   const [selectedButtons, setSelectedButtons] = useState([]); // 다중 선택 상태
   const [progress, setProgress] = useState(65);
-  const [habits, setHabits] = useState(["예 1", "예 2", "예 3"]); // 기본 습관
 
   useEffect(() => {
-    if (userHabits) {
-      // 새로운 습관 추가
-      setHabits((prevHabits) => {
-        const newHabits = userHabits.filter((habit) => !prevHabits.includes(habit));
-        return [...prevHabits, ...newHabits];
-      });
+    if (userHabits && userHabits.length > 0) {
+      setHabits(userHabits); // ✅ userHabits가 있으면 먼저 설정
     }
-  }, [userHabits]);
+    fetchHabits(); // ✅ 이후에 API 요청 실행
+  }, []);
+  const fetchHabits = async () => {
+    try {
+      const token = await AsyncStorage.getItem("authToken");
+      if (!token) {
+        Alert.alert("세션 만료", "다시 로그인해주세요.");
+        navigation.navigate("LoginScreen");
+        return;
+      }
+
+      const mappedCategory = categoryMap[category] || category;
+      console.log("📌 선택한 카테고리:", category);
+      console.log("📌 변환된 category 값:", mappedCategory);
+
+      // ✅ 변수 명확하게 초기화
+      let userHabitsList = [];
+      let devHabitsList = [];
+
+      // 사용자 추가 습관 조회
+      const userResponse = await fetch(`http://43.201.250.84/habits/category-user?category=${mappedCategory}`, {
+        method: "GET",
+        headers: { "Authorization": `Bearer ${token}` },
+      });
+
+      // 개발자가 미리 등록한 습관 조회
+      const devResponse = await fetch(`http://43.201.250.84/habits/category-dev?category=${mappedCategory}`, {
+        method: "GET",
+        headers: { "Authorization": `Bearer ${token}` },
+      });
+
+      const userText = await userResponse.text();
+      const devText = await devResponse.text();
+
+      console.log("📌 사용자 습관 응답:", userText);
+      console.log("📌 개발자 습관 응답:", devText);
+
+      try {
+        const userData = JSON.parse(userText);
+        if (userResponse.ok && userData.habits) {
+          userHabitsList = userData.habits.map(habit => habit.detail);
+        }
+      } catch (jsonError) {
+        console.error("🚨 JSON 파싱 오류 (사용자 습관): 응답이 JSON 형식이 아닙니다!", userText);
+      }
+
+      try {
+        const devData = JSON.parse(devText);
+        if (devResponse.ok && devData.habits) {
+          devHabitsList = devData.habits.map(habit => habit.detail);
+        }
+      } catch (jsonError) {
+        console.error("🚨 JSON 파싱 오류 (개발자 습관): 응답이 JSON 형식이 아닙니다!", devText);
+      }
+
+      // ✅ 기존 `userHabits`와 서버에서 가져온 습관을 병합하고 중복 제거
+      const allHabits = [...new Set([...(userHabits || []), ...userHabitsList, ...devHabitsList])];
+      console.log("📌 최종 합쳐진 습관 목록:", allHabits);
+      setHabits(allHabits);
+
+    } catch (error) {
+      console.error("🚨 서버 요청 오류:", error);
+    }
+};
+  
 
   // 선택 로직 (다중 선택)
   const handlePress = (habit) => {
@@ -48,18 +116,68 @@ const DetailSelect = ({ route, navigation }) => {
       }
     });
   };
-
-  const handleNext = () => {
+  const [loading, setLoading] = useState(false); // ✅ 로딩 상태 추가
+  
+  const handleNext = async () => {
     if (selectedButtons.length === 0) {
       alert("최소 한 개 이상의 항목을 선택하세요!");
-    } else {
-      // 다음 화면으로 선택된 습관 배열 전달
-      navigation.navigate("HabitAppendScreen", {
-        category,
-        habits: selectedButtons,
+      return;
+    }
+  
+    setLoading(true); // 로딩 시작
+  
+    try {
+      const token = await AsyncStorage.getItem("authToken");
+  
+      const categoryMap = {
+        "활동": "ACTIVITY",
+        "지적": "INTELLIGENT",
+        "예술": "ART",
+      };
+      const convertedCategory = categoryMap[category] || category;
+  
+      const today = new Date();
+      const currentMonth = today.getMonth() + 1; // 현재 월
+  
+      const requestBody = {
+        habits: selectedButtons.map((habit) => ({
+          category: convertedCategory,
+          details: habit,
+          created_type: "USER",
+        })),
+      };
+  
+      console.log("📌 이번 달 습관 지정 요청:", JSON.stringify(requestBody, null, 2));
+  
+      const response = await fetch("http://43.201.250.84/habits/set", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
       });
+  
+      const data = await response.json();
+      console.log("📌 이번 달 습관 지정 응답:", data);
+  
+      if (response.ok) {
+        Alert.alert("완료", "이번 달 습관이 성공적으로 지정되었습니다!");
+        navigation.navigate("HabitAppendScreen", { 
+          category,  // ✅ 카테고리 전달
+          habits: selectedButtons // ✅ 선택한 습관 목록 전달
+        });
+      } else {
+        Alert.alert("실패", `습관 지정 실패: ${data.message || "알 수 없는 오류"}`);
+      }
+    } catch (error) {
+      console.error("🚨 이번 달 습관 지정 중 오류 발생:", error);
+      Alert.alert("오류", "네트워크 오류가 발생했습니다. 다시 시도해주세요.");
+    } finally {
+      setLoading(false);
     }
   };
+  
 
   const habitAppend = () => {
     navigation.navigate("UserHabitAppendScreen", {

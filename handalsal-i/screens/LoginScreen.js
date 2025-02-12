@@ -23,7 +23,7 @@ const LoginScreen = ({ navigation }) => {
       if (token) navigation.navigate("Category");
     };
     checkLoginStatus();
-  }, [navigation]); // ✅ navigation 의존성 추가
+  }, [navigation]);
 
   // ✅ 유효성 검사
   const validateInput = () => {
@@ -39,38 +39,52 @@ const LoginScreen = ({ navigation }) => {
     return true;
   };
 
-  // ✅ 로그인 요청
   const handleLogin = async () => {
     if (!validateInput()) return;
   
     try {
-      const response = await fetch("http://43.201.250.84/login", {
+      const response = await fetch(`${API_URL}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
   
-      const responseText = await response.text(); // ✅ 응답을 텍스트로 확인
-      console.log("서버 응답:", responseText);
+      const responseText = await response.text();
+      console.log("📌 로그인 응답:", responseText);
   
-      // ✅ JSON인지 확인 후 처리
       let data;
       if (responseText.startsWith("{")) {
-        data = JSON.parse(responseText); // JSON 형식이면 파싱
+        data = JSON.parse(responseText);
       } else {
-        data = { Bearer: responseText }; // 단순 문자열이면 객체로 변환
+        data = { Bearer: responseText };
       }
   
-      if (response.ok) {
-        await AsyncStorage.setItem("authToken", data.Bearer);
-        Alert.alert("로그인 성공", "환영합니다!");
-        navigation.navigate("Category");
-      } else {
+      if (!response.ok) {
         Alert.alert("로그인 실패", data.message || "이메일 또는 비밀번호를 확인하세요.");
+        return;
+      }
+  
+      await AsyncStorage.setItem("authToken", data.Bearer);
+      console.log("📌 로그인 성공, 토큰 저장 완료");
+  
+      // ✅ 한달이 존재 여부 확인 (json()으로 응답 처리)
+      const handaliViewResponse = await fetch(`${API_URL}/handalis/view`, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${data.Bearer}` },
+      });
+  
+      if (handaliViewResponse.ok) {
+        const handaliData = await handaliViewResponse.json(); // ✅ json()으로 바로 변환
+        console.log("📌 이번 달 한달이 정보:", handaliData);
+        console.log("📌 이번 달 한달이 존재 → MainScreen 이동");
+        navigation.navigate("MainScreen");
+      } else {
+        console.log("📌 이번 달 한달이 없음 → Category 이동");
+        navigation.navigate("Category");
       }
     } catch (error) {
-      console.error("로그인 오류:", error);
-      Alert.alert("오류", error.message || "네트워크 연결이 원활하지 않습니다.");
+      console.error("🚨 로그인 오류 발생:", error);
+      Alert.alert("오류", "네트워크 연결이 원활하지 않습니다.");
     }
   };
   
