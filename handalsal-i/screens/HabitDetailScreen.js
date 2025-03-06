@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Image, FlatList, Modal, TouchableWithoutFeedback, ActivityIndicator, Alert } from "react-native";
 import Slider from "@react-native-community/slider";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -31,12 +32,20 @@ export default function HabitDetailScreen({ route, navigation }) {
     useEffect(() => {
         const fetchHabits = async () => {
             try {
+                const token = await AsyncStorage.getItem("authToken");
+
+                if (!token) {
+                    Alert.alert("세션만료", "재로그인 해주십시요.");
+                    navigation.navigate("Login");
+                    return;
+                }
+
                 const response = await fetch(
                     `http://43.201.250.84/habits/category-month?category=${convertedCategoryType}&month=${currentMonth}`,
                     {
                         method: "GET",
                         headers: {
-                            Authorization: "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJoYWRhMTExMUBnbWFpbC5jb20iLCJ1c2VySWQiOjEsImlhdCI6MTczODkyOTU4NSwiZXhwIjoxNzM4OTMwNDg1fQ.Ge-3rzz9P9UGqJoAePaN4lR2y9Um679IpsseEHPw6b8",
+                            Authorization: `Bearer ${token}`,
                             "Content-Type": "application/json",
                         },
                     }

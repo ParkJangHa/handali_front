@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, Alert } from 'react-native';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -46,10 +47,18 @@ export default function HabitCheckScreen({ route, navigation }) {
         };
 
         try {
+            const token = await AsyncStorage.getItem("authToken");
+
+            if (!token) {
+                Alert.alert("세션 만료", "로그인이 필요합니다.");
+                navigation.navigate("Login");
+                return;
+            }
+
             const response = await fetch('http://43.201.250.84/habits/record', {
                 method: 'POST',
                 headers: {
-                    Authorization: "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJoYWRhMTExMUBnbWFpbC5jb20iLCJ1c2VySWQiOjEsImlhdCI6MTczODkyOTU4NSwiZXhwIjoxNzM4OTMwNDg1fQ.Ge-3rzz9P9UGqJoAePaN4lR2y9Um679IpsseEHPw6b8",
+                    Authorization: `Bearer ${token}`,
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(recordData),
