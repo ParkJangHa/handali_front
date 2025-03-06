@@ -66,6 +66,7 @@ const App = () => {
         />
         <Stack.Screen name="HabitAppendScreen" component={HabitAppendScreen} 
         options={{
+          headerLeft: () => null, // 🔹 뒤로가기 버튼만 삭제
           headerStyle: {
             backgroundColor: "#FFFDF0", // 헤더 배경색
             
@@ -83,6 +84,7 @@ const App = () => {
         />
         <Stack.Screen name="HandalStart" component={HandalStart} 
         options={{
+          headerLeft: () => null, // 🔹 뒤로가기 버튼만 삭제
           headerStyle: {
             backgroundColor: "#FFFFFF", // 헤더 배경색
             
