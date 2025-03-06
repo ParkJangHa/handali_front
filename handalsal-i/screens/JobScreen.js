@@ -45,7 +45,7 @@ const JobScreen = ({ navigation }) => {
         };
 
         fetchJobDetails();
-    }, [handali_id]);
+    });
 
 
     return (

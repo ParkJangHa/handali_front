@@ -24,7 +24,7 @@ const App = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="JobScreen" //원래 Home, 아파트 화면 수정하느라 변경
+        initialRouteName="Home" //앱 실행시, 시작하는 화면
         screenOptions={{
           headerStyle: {
             backgroundColor: "#FFD563", // 헤더 배경색
