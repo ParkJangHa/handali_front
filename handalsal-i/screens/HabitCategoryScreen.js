@@ -1,10 +1,13 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Image } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 export default function HabitCategoryScreen({ navigation }) {
     const [selectedType, setSelectedType] = useState(null);
+    const [imageSource, setImageSource] = useState(require("../assets/000.png"));
+
     const getImageSource = () => {
         switch (selectedType) {
             case "활동":
@@ -14,11 +17,48 @@ export default function HabitCategoryScreen({ navigation }) {
             case "예술":
                 return require('../assets/artLogo.png'); // 예술 이미지
             default:
-                return require('../assets/default.png'); // 기본 이미지
+                return imageSource // 기본 이미지
+        }
+    };
+    // ✅ 이미지 파일명을 매핑하는 객체
+    const imageMap = {
+        "image_0_0_0.png": require("../assets/000.png"),
+        "image_0_0_1.png": require("../assets/001.png"),
+        "image_0_1_0.png": require("../assets/010.png"),
+        "image_0_1_1.png": require("../assets/011.png"),
+        "image_1_0_0.png": require("../assets/100.png"),
+        //add more...
+    }
+
+    const fetchImage = async () => {
+        try {
+            const token = await AsyncStorage.getItem("authToken");
+
+            if (!token) {
+                Alert.alert("세션 만료", "로그인이 필요합니다.");
+                navigation.navigate("Login");
+                return;
+            }
+
+            const response = await fetch('http://43.201.250.84/handalis/view', {
+                method: 'GET',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setImageSource(imageMap[data.image]) || require("../assets/000.png");
+            }
+        } catch (error) {
+            console.error("이미지 호출 실패:", error);
         }
     };
 
-
+    useEffect(() => {
+        fetchImage();
+    }, []);
 
     return (
         <View style={styles.container}>
@@ -114,7 +154,7 @@ const styles = StyleSheet.create({
     containerTop: {
         flex: 1,
         alignItems: 'center',
-        justifyContent: 'flex-end',
+        justifyContent: 'center',
         // backgroundColor: 'blue'
     },
     containerBottom: {
@@ -130,8 +170,8 @@ const styles = StyleSheet.create({
     // in containerTop
     speechBubble: {
         position: 'absolute',
-        top: SCREEN_HEIGHT * 0.03,
-        left: SCREEN_WIDTH * 0.05,
+        top: SCREEN_HEIGHT * 0.01,
+        left: SCREEN_WIDTH * 0.3,
         backgroundColor: 'white',
         borderRadius: 15,
         padding: SCREEN_WIDTH * 0.02,
@@ -153,8 +193,8 @@ const styles = StyleSheet.create({
         borderTopColor: 'white',
     },
     categoryImage: {
-        width: SCREEN_WIDTH * 0.5,
-        height: SCREEN_HEIGHT * 0.3,
+        width: SCREEN_WIDTH * 0.4,
+        height: SCREEN_HEIGHT * 0.2,
         resizeMode: 'contain',
     },
 
