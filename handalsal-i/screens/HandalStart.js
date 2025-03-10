@@ -96,7 +96,7 @@ const HandalStart = ({ navigation }) => {
       </View>
       <Text style={styles.subTitle}>앞으로 같이 성장할 '한달이'에요.</Text>
       <Image
-          source={require("../assets/character.png")}
+          source={require("../assets/default_character.png")}
           style={styles.handalImage}
         />
       <View style={styles.nicknameCon}>
