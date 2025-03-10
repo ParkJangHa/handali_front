@@ -7,7 +7,6 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 export default function HabitCheckScreen({ route, navigation }) {
     const { categoryName, detailedHabit, habitTime, satisfaction } = route.params;
 
-
     // 기록하기 버튼을 눌렀을 때 호출되는 함수
     const handleRecord = async () => {
         // habitTime (예: "3시간 30분")을 숫자형 시간(예: 3.5)으로 변환
@@ -66,17 +65,45 @@ export default function HabitCheckScreen({ route, navigation }) {
 
             if (response.ok) {
                 const data = await response.json();
-                Alert.alert(
-                    "알림",
-                    data.message, // "습관이 성공적으로 기록되었습니다."
-                    [
-                        {
-                            text: "확인",
-                            onPress: () => navigation.navigate("MainScreen"),
-                        },
-                    ],
-                    { cancelable: false }
-                );
+
+                if (data.appearance_change) { // 외형 변화가 있을 때
+                    const response = await fetch('http://43.201.250.84/handalis/change', {
+                        method: "GET",
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    })
+
+                    if (response.ok) {
+                        const imageData = await response.text();
+                        console.log("한달이 이미지 변화 성공: " + imageData);
+                    }
+
+                    Alert.alert(
+                        "한달이의 성장",
+                        "한달이의 외형이 변화하였습니다.",
+                        [
+                            {
+                                text: "확인",
+                                onPress: () => navigation.navigate("MainScreen"),
+                            },
+                        ],
+                        { cancelable: false }
+                    );
+                } else {
+                    Alert.alert(
+                        "알림",
+                        data.message, // "습관이 성공적으로 기록되었습니다."
+                        [
+                            {
+                                text: "확인",
+                                onPress: () => navigation.navigate("MainScreen"),
+                            },
+                        ],
+                        { cancelable: false }
+                    );
+                }
+
             } else {
                 // 409 Conflict 같은 에러 상황
                 const textData = await response.text();
