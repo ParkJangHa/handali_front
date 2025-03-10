@@ -1,13 +1,32 @@
 import { StyleSheet, Text, View, TouchableOpacity, Image, Dimensions } from "react-native";
 import React, { useState, useEffect } from "react";
 import { LinearGradient } from "expo-linear-gradient";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 const JobScreen = ({ navigation }) => {
-    // 직업 관련 정보를 저장할 상태
+    //가장 마지막에 생성한 한달이를 가져옴
+    const [nickname, setNickname] = useState();
     const [jobName, setJobName] = useState();
     const [salary, setSalary] = useState();
+    const [startDate, setStartDate] = useState();
+    const imageSource = require("../assets/000.png");
+
+    // ✅ 이미지 파일명을 매핑하는 객체
+    const imageMap = {
+        "image_0_0_0.png": require("../assets/000.png"),
+        "image_0_0_1.png": require("../assets/001.png"),
+        "image_0_1_0.png": require("../assets/010.png"),
+        "image_0_1_1.png": require("../assets/011.png"),
+        "image_1_0_0.png": require("../assets/100.png"),
+        //add more...
+    }
+
+    // ✅ 동적으로 이미지 파일을 가져오는 함수
+    const setImageSource = (imageName) => {
+        imageSource = imageMap[imageName] || require("../assets/000.png");
+    };
 
     //오늘 날짜
     const today = new Date();
@@ -15,37 +34,56 @@ const JobScreen = ({ navigation }) => {
         .toString()
         .padStart(2, "0")}-${today.getDate().toString().padStart(2, "0")}`;
 
-    // 화면이 로드되면 POST 요청을 보내서 직업 정보를 받아옴
+    // 화면이 로드되면 POST 요청을 보내서 한달이 정보 가져옴
     useEffect(() => {
         const fetchJobDetails = async () => {
+            const token = await AsyncStorage.getItem("authToken");
+
             try {
-                const response = await fetch(`https://43.201.250.84/handalis/${handali_id}/job`, {
-                    method: "POST",
+                const response = await fetch(`http://43.201.250.84/handalis/recent`, {
+                    method: "GET",
                     headers: {
-                        Authorization: "Bearer <access_token>",
-                        "Content-Type": "application/json",
-                    },
-                    // body가 필요하다면 JSON.stringify로 추가 (예: body: JSON.stringify({ ... }))
-                    body: JSON.stringify({}),
+                        Authorization: `Bearer ${token}`
+                    }
                 });
 
-                // 응답을 JSON으로 파싱
-                const data = await response.json();
+                // ✅ 409 응답 처리 (한달이가 존재하지 않는 경우)
+                if (response.status === 409) {
+                    Alert.alert(
+                        "한달이가 존재하지 않습니다.",
+                        "최근에 생성된 한달이가 존재하지 않습니다.",
+                        [
+                            {
+                                text: "확인",
+                                onPress: () => navigation.navigate('MainScreen'), // ✅ 이전 화면으로 이동
+                            }
+                        ],
+                        { cancelable: false }
+                    );
+                    return;
+                }
+
+                const data1 = await response.json();
 
                 if (response.ok) {
-                    // 받아온 JSON에서 job_name과 salary 값을 상태에 저장
-                    setJobName(data.job_name);
-                    setSalary(data.salary);
+                    console.log("📌 한달이 ID 가져오기 성공:", data1);
+                    setNickname(data1.nickname);
+                    setJobName(data1.job_name);
+                    setSalary(data1.salary);
+                    setStartDate(data1.start_date);
+                    setImageSource(data1.image);
+
                 } else {
-                    console.log("API 응답 오류:", data);
+                    console.log("API 응답 오류:", data1);
                 }
+
             } catch (error) {
-                console.error("직업 정보 요청 실패:", error);
+                console.log("❌ 한달이 ID API 응답 오류:", data1);
             }
         };
 
         fetchJobDetails();
-    });
+    }, []);
 
 
     return (
@@ -69,11 +107,16 @@ const JobScreen = ({ navigation }) => {
                     { /**헤더 */}
                     <View style={styles.circlerHeaderContainer}>
                         <View style={styles.circleTitle}><Text style={styles.circleHeaderText}>한달이 독립</Text></View>
-                        <View style={styles.circleDate}><Text style={styles.circleHeaderText}>종료일. {formattedDate}</Text></View>
+                        <View style={styles.circleDate}><Text style={styles.circleHeaderText}>시작일. {startDate}</Text></View>
+                    </View>
+
+                    {/**닉네임 */}
+                    <View style={styles.nicknameContainer}>
+                        <Text style={styles.nicknameText}>{nickname}</Text>
                     </View>
 
                     {/**이미지 */}
-                    <View style={styles.imageContainer}><Image source={require('../assets/doctorHandali.png')} style={styles.handaliImage}></Image></View>
+                    <View style={styles.imageContainer}><Image source={imageSource} style={styles.handaliImage}></Image></View>
 
                     {/**구분선 */}
                     <View style={styles.line}></View>
@@ -133,11 +176,16 @@ const styles = StyleSheet.create({
         width: "90%",
         // backgroundColor: 'green'
     },
+    nicknameContainer: {
+        padding: SCREEN_HEIGHT * 0.01,
+        // backgroundColor: 'red'
+    },
     imageContainer: {
         alignItems: "center",
         justifyContent: "center",
         width: "100%",
-        height: "70%",
+        height: "60%",
+        // backgroundColor: 'blue',
     },
     jobCoin: {
         flexDirection: "row",
@@ -177,8 +225,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center'
     },
     handaliImage: {
-        width: '70%',
-        height: '90%',
+        width: '60%',
         resizeMode: "contain" //이미지 비율 유지
     },
     line: {
@@ -212,6 +259,12 @@ const styles = StyleSheet.create({
     },
     circleHeaderText: {
         color: "#8B5E3C"
+    },
+    nicknameText: {
+        fontSize: SCREEN_WIDTH * 0.06,
+        fontWeight: 'bold',
+        color: "#8B5E3C",
+        justifyContent: 'center',
     },
     nameText: {
         fontSize: SCREEN_WIDTH * 0.047,

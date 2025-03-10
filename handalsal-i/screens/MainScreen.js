@@ -132,6 +132,11 @@ useEffect(() => {
     <View style={styles.container}>
       {/* 상단 바 */}
       <View style={styles.topBar}>
+        <TouchableOpacity
+          onPress={() => { navigation.navigate("JobScreen") }}>
+          <Text>직업 획득</Text>
+        </TouchableOpacity>
+
         <View style={styles.coinContainer}>
           <Image source={require("../assets/coin.png")} style={styles.coinIcon} />
           <Text style={styles.coinText}>{totalCoin}</Text>
