@@ -115,6 +115,7 @@ const App = () => {
         />
         <Stack.Screen name="JobScreen" component={JobScreen}
           options={{
+            headerShown: false, gestureEnabled: true
           }}
         />
         {/* <Stack.Screen name="ApartScreen" component={ApartScreen}
