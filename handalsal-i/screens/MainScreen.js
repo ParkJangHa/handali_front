@@ -6,46 +6,26 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 const API_URL = "http://43.201.250.84/handalis/view"; // ✅ API 엔드포인트
 
-export default function App({ navigation }) {
+// ✅ 이미지 매핑 (로컬 이미지)
+const imageMapping = {
+  "image_0_0_0.png": require("../assets/000.png"),
+  "image_0_0_1.png": require("../assets/001.png"),
+  "image_0_1_0.png": require("../assets/010.png"),
+  "image_0_1_1.png": require("../assets/011.png"),
+  "image_1_0_0.png": require("../assets/100.png"),
+  "image_1_0_1.png": require("../assets/101.png"),
+  "image_1_1_0.png": require("../assets/110.png"),
+  "image_1_1_1.png": require("../assets/111.png"),
+  "default_character.png": require("../assets/default_character.png"),
+};
+
+export default function MainScreen({ navigation }) {
   // ✅ 한달이 정보 상태 관리
   const [nickname, setNickname] = useState("");
   const [daysSinceCreated, setDaysSinceCreated] = useState(0);
   const [totalCoin, setTotalCoin] = useState(0);
+  const [handaliImage, setHandaliImage] = useState(imageMapping["default_character.png"]); // ✅ 기본 이미지 설정
 
-  // ✅ 한달이 상태 조회 API 호출
-  const fetchHandaliStatus = async () => {
-    try {
-      const token = await AsyncStorage.getItem("authToken");
-      if (!token) {
-        Alert.alert("세션 만료", "다시 로그인해주세요.");
-        navigation.navigate("Login");
-        return;
-      }
-
-      const response = await fetch(API_URL, {
-        method: "GET",
-        headers: { "Authorization": `Bearer ${token}` },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log("📌 한달이 상태 조회 응답:", data);
-        setNickname(data.nickname);
-        setDaysSinceCreated(data.days_since_created);
-        setTotalCoin(data.total_coin);
-      } else {
-        console.log("📌 한달이가 존재하지 않습니다.");
-        setNickname(""); // ✅ 한달이가 없을 경우 기본값 설정
-        setDaysSinceCreated(0);
-        setTotalCoin(0);
-      }
-    } catch (error) {
-      console.error("🚨 한달이 상태 조회 오류:", error);
-      Alert.alert("오류", "네트워크 오류가 발생했습니다.");
-    }
-  };
-
-  // ✅ 로그아웃 기능
   const handleLogout = async () => {
     Alert.alert(
       "로그아웃",
@@ -65,11 +45,88 @@ export default function App({ navigation }) {
       ]
     );
   };
+  
+// ✅ 한달이 상태 조회 API 호출
+const fetchHandaliStatus = async () => {
+  try {
+    const token = await AsyncStorage.getItem("authToken");
+    if (!token) {
+      Alert.alert("세션 만료", "다시 로그인해주세요.");
+      navigation.navigate("Login");
+      return;
+    }
 
-  // ✅ 메인 화면 진입할 때마다 API 호출
-  useEffect(() => {
-    fetchHandaliStatus();
-  }, []);
+    const response = await fetch("http://43.201.250.84/handalis/view", {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log("📌 한달이 상태 조회 응답:", data);
+
+      setNickname(data.nickname);
+      setDaysSinceCreated(data.days_since_created);
+      setTotalCoin(data.total_coin);
+
+      // 🔍 이미지 값 확인
+      console.log("🔍 서버에서 받은 이미지:", data.image);
+      console.log("🔍 현재 이미지 매핑 키 목록:", Object.keys(imageMapping));
+      
+      if (data.image && imageMapping[data.image]) {
+        console.log("✅ 로컬 이미지 매칭 성공:", data.image);
+        setHandaliImage(imageMapping[data.image]); // ✅ 로컬 이미지 적용
+      } else {
+        console.log("🚨 로컬 이미지 매칭 실패, 기본 이미지 사용");
+        setHandaliImage(imageMapping["default_character.png"]); // ✅ 기본 이미지 적용
+      }
+    } else if (response.status === 404) {
+      console.log("📌 한달이가 존재하지 않습니다. 마지막 한달이 조회 실행");
+      checkLastHandali(); // 🔍 마지막 생성된 한달이 조회
+    } else {
+      console.log("📌 예상치 못한 오류 발생:", response.status);
+    }
+  } catch (error) {
+    console.error("🚨 한달이 상태 조회 오류:", error);
+    Alert.alert("오류", "네트워크 오류가 발생했습니다.");
+    setHandaliImage(imageMapping["default_character.png"]);
+  }
+};
+
+
+// ✅ 마지막 생성된 한달이 조회
+const checkLastHandali = async () => {
+  try {
+    const token = await AsyncStorage.getItem("authToken");
+    const response = await fetch("http://43.201.250.84/handalis/recent", {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log("📌 마지막 생성된 한달이 조회 응답:", data);
+      
+      // 🔍 마지막 생성된 한달이가 있으면 직업 화면으로 이동
+      navigation.navigate("JobScreen", { handaliId: data.handali_id });
+    } else if (response.status === 404) {
+      console.log("📌 마지막 생성된 한달이도 없음 → 습관 선택 화면으로 이동");
+      navigation.navigate("CategorySelectScreen");
+    } else {
+      console.error("🚨 서버 오류 발생:", response.status);
+      Alert.alert("오류", "서버 오류가 발생했습니다.");
+    }
+  } catch (error) {
+    console.error("🚨 마지막 생성된 한달이 조회 오류:", error);
+    navigation.navigate("CategorySelectScreen");
+  }
+};
+
+// ✅ 메인 화면 진입할 때마다 한달이 상태 확인
+useEffect(() => {
+  fetchHandaliStatus();
+}, []);
+
 
   return (
     <View style={styles.container}>
@@ -102,7 +159,7 @@ export default function App({ navigation }) {
         <Text style={styles.dayText}>{daysSinceCreated}일차, {nickname || "별명 없음"}</Text>
         <Image source={require("../assets/window.png")} style={styles.window} />
         <View style={styles.characterContainer}>
-          <Image source={require("../assets/character.png")} style={styles.character} />
+          <Image source={handaliImage} style={styles.character} />
         </View>
         <Image source={require("../assets/sofa.png")} style={styles.sofa} />
       </View>
@@ -127,67 +184,18 @@ export default function App({ navigation }) {
   );
 }
 
+// ✅ 스타일 설정
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#83BCE7", // 상단 영역 배경 색
-  },
-  topBar: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: SCREEN_WIDTH * 0.05,
-    marginTop: SCREEN_HEIGHT * 0.05
-  },
-  coinContainer: {
-    width: SCREEN_WIDTH * 0.24,
-    height: SCREEN_WIDTH * 0.1,
-    borderRadius: SCREEN_WIDTH * 0.03,
-    backgroundColor: "rgba(217, 217, 217, 0.48)",
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  coinIcon: {
-    width: SCREEN_WIDTH * 0.07,
-    height: SCREEN_WIDTH * 0.07,
-    marginLeft: SCREEN_WIDTH * 0.02,
-    marginRight: SCREEN_WIDTH * 0.02,
-  },
-  coinText: {
-    fontSize: SCREEN_WIDTH * 0.045,
-    fontWeight: "bold",
-    color: "#000",
-    marginLeft: SCREEN_WIDTH * 0.02,
-  },
-  topIcons: {
-    flexDirection: "row",
-    gap: SCREEN_WIDTH * 0.05,
-  },
-  icon: {
-    width: SCREEN_WIDTH * 0.1,
-    height: SCREEN_WIDTH * 0.1,
-  },
-  logoutText: {
-    fontSize: SCREEN_WIDTH * 0.04,
-    fontWeight: "bold",
-    color: "red", // ✅ 로그아웃은 눈에 띄게 빨간색
-  },
-  content: {
-    flex: 1,
-  },
-  dayText: {
-    fontSize: SCREEN_WIDTH * 0.05,
-    fontWeight: "bold",
-    marginBottom: SCREEN_HEIGHT * 0.02,
-    color: "#000",
-    position: "absolute",
-    right: SCREEN_WIDTH * 0.05,
-    top: SCREEN_HEIGHT * 0.001,
-  },
-  window: {
-    width: SCREEN_WIDTH * 0.4,
-    height: SCREEN_WIDTH * 0.4,
-  },
+  container: { flex: 1, backgroundColor: "#83BCE7" },
+  topBar: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: SCREEN_WIDTH * 0.05, marginTop: SCREEN_HEIGHT * 0.05 },
+  coinContainer: { width: SCREEN_WIDTH * 0.24, height: SCREEN_WIDTH * 0.1, borderRadius: SCREEN_WIDTH * 0.03, backgroundColor: "rgba(217, 217, 217, 0.48)", flexDirection: "row", alignItems: "center" },
+  coinIcon: { width: SCREEN_WIDTH * 0.07, height: SCREEN_WIDTH * 0.07, marginLeft: SCREEN_WIDTH * 0.02, marginRight: SCREEN_WIDTH * 0.02 },
+  coinText: { fontSize: SCREEN_WIDTH * 0.045, fontWeight: "bold", color: "#000", marginLeft: SCREEN_WIDTH * 0.02 },
+  topIcons: { flexDirection: "row", gap: SCREEN_WIDTH * 0.05 },
+  icon: { width: SCREEN_WIDTH * 0.1, height: SCREEN_WIDTH * 0.1 },
+  logoutText: { fontSize: SCREEN_WIDTH * 0.04, fontWeight: "bold", color: "red" },
+  content: { flex: 1 },
+  dayText: { fontSize: SCREEN_WIDTH * 0.05, fontWeight: "bold", marginBottom: SCREEN_HEIGHT * 0.02, color: "#000", position: "absolute", right: SCREEN_WIDTH * 0.05, top: SCREEN_HEIGHT * 0.001 },
   characterContainer: {
     position: "absolute",
     top: "90%",
@@ -195,19 +203,8 @@ const styles = StyleSheet.create({
     transform: [{ translateX: -SCREEN_WIDTH * 0.25 }, { translateY: -SCREEN_WIDTH * 0.25 }],
     zIndex: 10,
   },
-  character: {
-    width: SCREEN_WIDTH * 0.5,
-    height: SCREEN_WIDTH * 0.5,
-    resizeMode: "contain",
-  },
-  sofa: {
-    width: SCREEN_WIDTH * 0.8,
-    height: SCREEN_WIDTH * 0.4,
-    position: "absolute",
-    top: "70%",
-    left: "20%",
-    zIndex: 9,
-  },
+  character: { width: SCREEN_WIDTH * 0.5, height: SCREEN_WIDTH * 0.5, resizeMode: "contain" },
+  sofa: { width: SCREEN_WIDTH * 0.8, height: SCREEN_WIDTH * 0.4, position: "absolute", top: "70%", left: "20%", zIndex: 9 },
   bottomBackground: {
     flex: 0.8,
     backgroundColor: "#D7E7F5", // 하단 영역 배경 색
@@ -244,3 +241,4 @@ const styles = StyleSheet.create({
     marginBottom: SCREEN_HEIGHT * 0.02
   },
 });
+
