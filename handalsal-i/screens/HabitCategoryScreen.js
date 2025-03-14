@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Image } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Image, Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 export default function HabitCategoryScreen({ navigation }) {
     const [selectedType, setSelectedType] = useState(null);
-    const [imageSource, setImageSource] = useState(require("../assets/000.png"));
+    const [imageSource, setImageSource] = useState(require("../assets/default_character.png"));
 
     const getImageSource = () => {
         switch (selectedType) {
             case "활동":
                 return require('../assets/activityLogo.png'); // 활동 이미지
-            case "지적":
-                return require('../assets/intelligenceLogo.png'); // 지적 이미지
+            case "지능":
+                return require('../assets/intelligenceLogo.png'); // 지능 이미지
             case "예술":
                 return require('../assets/artLogo.png'); // 예술 이미지
             default:
@@ -47,10 +47,18 @@ export default function HabitCategoryScreen({ navigation }) {
                 },
             });
 
+            if (response.status === 404) {
+                Alert.alert("한달이가 존재하지 않습니다.", "메인화면으로 이동합니다.",
+                    [{ text: "확인", onPress: () => navigation.navigate("MainScreen") }]
+                );
+            }
+
             if (response.ok) {
                 const data = await response.json();
-                setImageSource(imageMap[data.image]) || require("../assets/000.png");
+                setImageSource(imageMap[data.image]) || require("../assets/default_character.png");
+                console.log("습관 기록 화면, 이미지 호출: " + data.image);
             }
+
         } catch (error) {
             console.error("이미지 호출 실패:", error);
         }
@@ -103,11 +111,11 @@ export default function HabitCategoryScreen({ navigation }) {
                     <TouchableOpacity
                         style={[
                             styles.button,
-                            selectedType === "지적" && styles.selectedButton,
+                            selectedType === "지능" && styles.selectedButton,
                         ]}
-                        onPress={() => setSelectedType("지적")}
+                        onPress={() => setSelectedType("지능")}
                     >
-                        <Text style={styles.buttonText}>지 적</Text>
+                        <Text style={styles.buttonText}>지 능</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={[
