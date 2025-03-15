@@ -10,6 +10,7 @@ import {
   Dimensions,
   Alert,
 } from "react-native";
+import { API_BASE_URL } from '@env';
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 const categoryMap = {
@@ -54,13 +55,13 @@ const DetailSelect = ({ route, navigation }) => {
       let devHabitsList = [];
 
       // 사용자 추가 습관 조회
-      const userResponse = await fetch(`http://43.201.250.84/habits/category-user?category=${mappedCategory}`, {
+      const userResponse = await fetch(`${API_BASE_URL}/habits/category-user?category=${mappedCategory}`, {
         method: "GET",
         headers: { "Authorization": `Bearer ${token}` },
       });
 
       // 개발자가 미리 등록한 습관 조회
-      const devResponse = await fetch(`http://43.201.250.84/habits/category-dev?category=${mappedCategory}`, {
+      const devResponse = await fetch(`${API_BASE_URL}/habits/category-dev?category=${mappedCategory}`, {
         method: "GET",
         headers: { "Authorization": `Bearer ${token}` },
       });
@@ -97,8 +98,8 @@ const DetailSelect = ({ route, navigation }) => {
     } catch (error) {
       console.error("🚨 서버 요청 오류:", error);
     }
-};
-  
+  };
+
 
   // 선택 로직 (다중 선택)
   const handlePress = (habit) => {
@@ -117,28 +118,28 @@ const DetailSelect = ({ route, navigation }) => {
     });
   };
   const [loading, setLoading] = useState(false); // ✅ 로딩 상태 추가
-  
+
   const handleNext = async () => {
     if (selectedButtons.length === 0) {
       alert("최소 한 개 이상의 항목을 선택하세요!");
       return;
     }
-  
+
     setLoading(true); // 로딩 시작
-  
+
     try {
       const token = await AsyncStorage.getItem("authToken");
-  
+
       const categoryMap = {
         "활동": "ACTIVITY",
         "지적": "INTELLIGENT",
         "예술": "ART",
       };
       const convertedCategory = categoryMap[category] || category;
-  
+
       const today = new Date();
       const currentMonth = today.getMonth() + 1; // 현재 월
-  
+
       const requestBody = {
         habits: selectedButtons.map((habit) => ({
           category: convertedCategory,
@@ -146,10 +147,10 @@ const DetailSelect = ({ route, navigation }) => {
           created_type: "USER",
         })),
       };
-  
+
       console.log("📌 이번 달 습관 지정 요청:", JSON.stringify(requestBody, null, 2));
-  
-      const response = await fetch("http://43.201.250.84/habits/set", {
+
+      const response = await fetch(`${API_BASE_URL}/habits/set`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -157,13 +158,13 @@ const DetailSelect = ({ route, navigation }) => {
         },
         body: JSON.stringify(requestBody),
       });
-  
+
       const data = await response.json();
       console.log("📌 이번 달 습관 지정 응답:", data);
-  
+
       if (response.ok) {
         Alert.alert("완료", "이번 달 습관이 성공적으로 지정되었습니다!");
-        navigation.navigate("HabitAppendScreen", { 
+        navigation.navigate("HabitAppendScreen", {
           category,  // ✅ 카테고리 전달
           habits: selectedButtons // ✅ 선택한 습관 목록 전달
         });
@@ -177,7 +178,7 @@ const DetailSelect = ({ route, navigation }) => {
       setLoading(false);
     }
   };
-  
+
 
   const habitAppend = () => {
     navigation.navigate("UserHabitAppendScreen", {
@@ -225,8 +226,8 @@ const DetailSelect = ({ route, navigation }) => {
             category === "활동"
               ? require("../assets/activityLogo.png")
               : category === "지적"
-              ? require("../assets/intelligenceLogo.png")
-              : require("../assets/artLogo.png")
+                ? require("../assets/intelligenceLogo.png")
+                : require("../assets/artLogo.png")
           }
           style={styles.categoryImg}
         />

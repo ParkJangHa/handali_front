@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions, Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_BASE_URL } from '@env';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
-const API_URL = "http://43.201.250.84/handalis/view"; // ✅ API 엔드포인트
+const API_URL = `${API_BASE_URL}/handalis/view`; // ✅ API 엔드포인트
 
 // ✅ 이미지 매핑 (로컬 이미지)
 const imageMapping = {
@@ -45,87 +46,91 @@ export default function MainScreen({ navigation }) {
       ]
     );
   };
-  
-// ✅ 한달이 상태 조회 API 호출
-const fetchHandaliStatus = async () => {
-  try {
-    const token = await AsyncStorage.getItem("authToken");
-    if (!token) {
-      Alert.alert("세션 만료", "다시 로그인해주세요.");
-      navigation.navigate("Login");
-      return;
-    }
 
-    const response = await fetch("http://43.201.250.84/handalis/view", {
-      method: "GET",
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      console.log("📌 한달이 상태 조회 응답:", data);
-
-      setNickname(data.nickname);
-      setDaysSinceCreated(data.days_since_created);
-      setTotalCoin(data.total_coin);
-
-      // 🔍 이미지 값 확인
-      console.log("🔍 서버에서 받은 이미지:", data.image);
-      console.log("🔍 현재 이미지 매핑 키 목록:", Object.keys(imageMapping));
-      
-      if (data.image && imageMapping[data.image]) {
-        console.log("✅ 로컬 이미지 매칭 성공:", data.image);
-        setHandaliImage(imageMapping[data.image]); // ✅ 로컬 이미지 적용
-      } else {
-        console.log("🚨 로컬 이미지 매칭 실패, 기본 이미지 사용");
-        setHandaliImage(imageMapping["default_character.png"]); // ✅ 기본 이미지 적용
+  // ✅ 한달이 상태 조회 API 호출
+  const fetchHandaliStatus = async () => {
+    try {
+      const token = await AsyncStorage.getItem("authToken");
+      if (!token) {
+        Alert.alert("세션 만료", "다시 로그인해주세요.");
+        navigation.navigate("Login");
+        return;
       }
-    } else if (response.status === 404) {
-      console.log("📌 한달이가 존재하지 않습니다. 마지막 한달이 조회 실행");
-      checkLastHandali(); // 🔍 마지막 생성된 한달이 조회
-    } else {
-      console.log("📌 예상치 못한 오류 발생:", response.status);
+
+      const response = await fetch(`${API_BASE_URL}/handalis/view`, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("📌 한달이 상태 조회 응답:", data);
+
+        setNickname(data.nickname);
+        setDaysSinceCreated(data.days_since_created);
+        setTotalCoin(data.total_coin);
+
+        // 🔍 이미지 값 확인
+        console.log("🔍 서버에서 받은 이미지:", data.image);
+        console.log("🔍 현재 이미지 매핑 키 목록:", Object.keys(imageMapping));
+
+        if (data.image && imageMapping[data.image]) {
+          console.log("✅ 로컬 이미지 매칭 성공:", data.image);
+          setHandaliImage(imageMapping[data.image]); // ✅ 로컬 이미지 적용
+        } else {
+          console.log("🚨 로컬 이미지 매칭 실패, 기본 이미지 사용");
+          setHandaliImage(imageMapping["default_character.png"]); // ✅ 기본 이미지 적용
+        }
+      } else if (response.status === 404) {
+        console.log("📌 한달이가 존재하지 않습니다. 마지막 한달이 조회 실행");
+        checkLastHandali(); // 🔍 마지막 생성된 한달이 조회
+      } else if (response.status === 412) {
+        console.log("토큰 관련 오류");
+        Alert.alert("세션이 만료되었습니다.", "재로그인이 필요합니다.", [{ text: "확인", onPress: () => navigation.navigate("Login") }]);
+        navigation.navigate("Login") //재로그인할 수 있도록 코드 변경
+      } else {
+        console.log("📌 예상치 못한 오류 발생:", response.status);
+      }
+    } catch (error) {
+      console.error("🚨 한달이 상태 조회 오류:", error);
+      Alert.alert("오류", "네트워크 오류가 발생했습니다.");
+      setHandaliImage(imageMapping["default_character.png"]);
     }
-  } catch (error) {
-    console.error("🚨 한달이 상태 조회 오류:", error);
-    Alert.alert("오류", "네트워크 오류가 발생했습니다.");
-    setHandaliImage(imageMapping["default_character.png"]);
-  }
-};
+  };
 
 
-// ✅ 마지막 생성된 한달이 조회
-const checkLastHandali = async () => {
-  try {
-    const token = await AsyncStorage.getItem("authToken");
-    const response = await fetch("http://43.201.250.84/handalis/recent", {
-      method: "GET",
-      headers: { Authorization: `Bearer ${token}` },
-    });
+  // ✅ 마지막 생성된 한달이 조회
+  const checkLastHandali = async () => {
+    try {
+      const token = await AsyncStorage.getItem("authToken");
+      const response = await fetch(`${API_BASE_URL}/handalis/recent`, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    if (response.ok) {
-      const data = await response.json();
-      console.log("📌 마지막 생성된 한달이 조회 응답:", data);
-      
-      // 🔍 마지막 생성된 한달이가 있으면 직업 화면으로 이동
-      navigation.navigate("JobScreen", { handaliId: data.handali_id });
-    } else if (response.status === 404) {
-      console.log("📌 마지막 생성된 한달이도 없음 → 습관 선택 화면으로 이동");
+      if (response.ok) {
+        const data = await response.json();
+        console.log("📌 마지막 생성된 한달이 조회 응답:", data);
+
+        // 🔍 마지막 생성된 한달이가 있으면 직업 화면으로 이동
+        navigation.navigate("JobScreen", { handaliId: data.handali_id });
+      } else if (response.status === 404) {
+        console.log("📌 마지막 생성된 한달이도 없음 → 습관 선택 화면으로 이동");
+        navigation.navigate("CategorySelectScreen");
+      } else {
+        console.error("🚨 서버 오류 발생:", response.status);
+        Alert.alert("오류", "서버 오류가 발생했습니다.");
+      }
+    } catch (error) {
+      console.error("🚨 마지막 생성된 한달이 조회 오류:", error);
       navigation.navigate("CategorySelectScreen");
-    } else {
-      console.error("🚨 서버 오류 발생:", response.status);
-      Alert.alert("오류", "서버 오류가 발생했습니다.");
     }
-  } catch (error) {
-    console.error("🚨 마지막 생성된 한달이 조회 오류:", error);
-    navigation.navigate("CategorySelectScreen");
-  }
-};
+  };
 
-// ✅ 메인 화면 진입할 때마다 한달이 상태 확인
-useEffect(() => {
-  fetchHandaliStatus();
-}, []);
+  // ✅ 메인 화면 진입할 때마다 한달이 상태 확인
+  useEffect(() => {
+    fetchHandaliStatus();
+  }, []);
 
 
   return (

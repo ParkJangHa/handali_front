@@ -9,8 +9,9 @@ import {
   Alert,
   Image,
 } from "react-native";
+import { API_BASE_URL } from '@env';
 
-const API_URL = "http://43.201.250.84"; // ✅ 실제 API URL
+// const API_URL = "http://43.201.250.84"; // ✅ 실제 API URL
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
@@ -20,7 +21,7 @@ const LoginScreen = ({ navigation }) => {
   useEffect(() => {
     const checkLoginStatus = async () => {
       const token = await AsyncStorage.getItem("authToken");
-      if (token) navigation.navigate("Category");
+      // if (token) navigation.navigate("Category");
     };
     checkLoginStatus();
   }, [navigation]);
@@ -32,10 +33,10 @@ const LoginScreen = ({ navigation }) => {
       Alert.alert("오류", "올바른 이메일을 입력하세요.");
       return false;
     }
-    if (!password || password.length < 6) {
-      Alert.alert("오류", "비밀번호는 최소 6자 이상이어야 합니다.");
-      return false;
-    }
+    // if (!password || password.length < 6) {
+    //   Alert.alert("오류", "비밀번호는 최소 6자 이상이어야 합니다.");
+    //   return false;
+    // }
     return true;
   };
 
@@ -43,7 +44,7 @@ const LoginScreen = ({ navigation }) => {
     if (!validateInput()) return;
 
     try {
-      const response = await fetch(`${API_URL}/login`, {
+      const response = await fetch(`${API_BASE_URL}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -68,7 +69,7 @@ const LoginScreen = ({ navigation }) => {
       console.log("📌 로그인 성공, 토큰 저장 완료");
 
       // ✅ 한달이 존재 여부 확인 (json()으로 응답 처리)
-      const handaliViewResponse = await fetch(`${API_URL}/handalis/view`, {
+      const handaliViewResponse = await fetch(`${API_BASE_URL}/handalis/view`, {
         method: "GET",
         headers: { Authorization: `Bearer ${data.Bearer}` },
       });

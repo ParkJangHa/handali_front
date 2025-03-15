@@ -4,7 +4,7 @@ import Slider from "@react-native-community/slider";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Platform } from "react-native";
-
+import { API_BASE_URL } from '@env';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -43,7 +43,7 @@ export default function HabitDetailScreen({ route, navigation }) {
                 }
 
                 const response = await fetch(
-                    `http://43.201.250.84/habits/category-month?category=${convertedCategoryType}&month=${currentMonth}`,
+                    `${API_BASE_URL}/habits/category-month?category=${convertedCategoryType}&month=${currentMonth}`,
                     {
                         method: "GET",
                         headers: {

@@ -2,6 +2,7 @@ import { StyleSheet, Text, View, TouchableOpacity, Image, Dimensions } from "rea
 import React, { useState, useEffect } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_BASE_URL } from '@env';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -40,7 +41,7 @@ const JobScreen = ({ navigation }) => {
             const token = await AsyncStorage.getItem("authToken");
 
             try {
-                const response = await fetch(`http://43.201.250.84/handalis/recent`, {
+                const response = await fetch(`${API_BASE_URL}/handalis/recent`, {
                     method: "GET",
                     headers: {
                         Authorization: `Bearer ${token}`

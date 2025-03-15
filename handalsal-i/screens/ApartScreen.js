@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Modal, Alert, Dimensions, FlatList, Image } from "react-native";
 import { useFocusEffect } from '@react-navigation/native';
-import AsyncStorage from "@react-native-async-storage/async-storage"
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_BASE_URL } from '@env';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -22,7 +23,7 @@ const ApartScreen = ({ navigation }) => {
         return;
       }
 
-      const response = await fetch("http://43.201.250.84/apartments", {
+      const response = await fetch(`${API_BASE_URL}/apartments`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
