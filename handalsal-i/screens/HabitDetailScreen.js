@@ -9,95 +9,31 @@ import { API_BASE_URL } from '@env';
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 export default function HabitDetailScreen({ route, navigation }) {
-    {/**세부습관 */ }
-    //카테고리 영문화
-    const { categoryType } = route.params;
-    let convertedCategoryType;
-    if (categoryType == "활동")
-        convertedCategoryType = "ACTIVITY"
-    else if (categoryType == "지적")
-        convertedCategoryType = "INTELLIGENT"
-    else
-        convertedCategoryType = "ART"
 
-    // 현재 날짜에서 월 가져오기 (1~12)
-    const currentMonth = new Date().getMonth() + 1;
-
-    // 세부 습관 (API 응답 데이터)
-    const [habits, setHabits] = useState([]);
-    const [loading, setLoading] = useState(true);
-
-    // 선택된 습관
-    const [selectedHabit, setSelectedHabit] = useState(null);
-
-    // 습관 데이터 가져오기
-    useEffect(() => {
-        const fetchHabits = async () => {
-            try {
-                const token = await AsyncStorage.getItem("authToken");
-
-                if (!token) {
-                    Alert.alert("세션만료", "재로그인 해주십시요.");
-                    navigation.navigate("Login");
-                    return;
-                }
-
-                const response = await fetch(
-                    `${API_BASE_URL}/habits/category-month?category=${convertedCategoryType}&month=${currentMonth}`,
-                    {
-                        method: "GET",
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                            "Content-Type": "application/json",
-                        },
-                    }
-                );
-
-                const data = await response.json();
-                if (response.ok) {
-                    if (data.habits.length === 0) {
-                        Alert.alert(
-                            "알림",
-                            "이번 달에 등록한 세부습관이 없습니다.",
-                            [
-                                { text: "확인", onPress: () => navigation.goBack() }
-                            ],
-                            { cancelable: false }
-                        );
-                    } else {
-                        setHabits(data.habits);
-                    }
-                } else {
-                    console.error("API 응답 오류:", data);
-                }
-            } catch (error) {
-                console.error("습관 데이터 가져오기 실패:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchHabits();
-    }, [categoryType, currentMonth]);
-
-    {/**습관 시간 */ }
+    const currentMonth = new Date().getMonth() + 1; // 현재 날짜에서 월 가져오기 (1~12)
+    const [habits, setHabits] = useState([]); // 세부 습관 (API 응답 데이터)
+    const [loading, setLoading] = useState(true); // api 응답 데이터가 로딩중인지 아닌지
+    const [selectedHabit, setSelectedHabit] = useState(null); // 선택된 습관
+    const [satisfaction, setSatisfaction] = useState(50); //성취만족도
+    const [showPicker, setShowPicker] = useState(false); //습관 시간, datetimepicker
     const [time, setTime] = useState(() => {
         const initialTime = new Date();
         initialTime.setHours(0); // 시간 0 설정
         initialTime.setMinutes(0); // 분 0 설정
         return initialTime;
-    });
-    const [showPicker, setShowPicker] = useState(false);
+    });  //습관 시간
 
-    const onChange = (event, selectedTime) => {
-        const currentDate = selectedTime;
-        setShowPicker(true);
-        setTime(currentDate); // 선택된 시간 저장
-    };
+    //카테고리명 영문화
+    const { categoryType } = route.params;
+    let convertedCategoryType;
+    if (categoryType == "활동")
+        convertedCategoryType = "ACTIVITY"
+    else if (categoryType == "지능")
+        convertedCategoryType = "INTELLIGENT"
+    else
+        convertedCategoryType = "ART"
 
-    {/**성취 만족도 */ }
-    const [satisfaction, setSatisfaction] = useState(50);
-    // 동적 스타일 함수 (3색 분기)
+    // 만족도 3색 분기
     const dynamicTextColor = (satisfaction) => {
         if (satisfaction == 100) {
             return { color: '#55d406' }
@@ -111,9 +47,64 @@ export default function HabitDetailScreen({ route, navigation }) {
         }
     };
 
+    // api 호출 
+    const fetchHabits = async () => {
+        try {
+            const token = await AsyncStorage.getItem("authToken");
+
+            const response = await fetch(
+                `${API_BASE_URL}/habits/category-month?category=${convertedCategoryType}&month=${currentMonth}`,
+                {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (response.status === 412) {
+                Alert.alert(
+                    "세션 만료",
+                    "로그인이 만료되었습니다. 다시 로그인해주세요.",
+                    [{
+                        text: "확인", onPress: async () => {
+                            await AsyncStorage.removeItem("authToken");
+                            navigation.navigate("Login");
+                        }
+                    }],
+                    { cancelable: false }
+                );
+                return;
+            }
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.habits.length === 0) {
+                    Alert.alert(`알림`, `이번 달에 ${categoryType}의 세부습관이 없습니다.`,
+                        [{ text: "확인", onPress: () => navigation.goBack() }],
+                        { cancelable: false }
+                    );
+                } else {
+                    setHabits(data.habits);
+                    console.log("습관 : " + JSON.stringify(data.habits, null, 2));
+                }
+            } else {
+                console.error("API 응답 오류:", data);
+            }
+        } catch (error) {
+            console.error("습관 데이터 가져오기 실패:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchHabits();
+    }, []);
+
     return (
         <View style={styles.container}>
-
+            {/**뒤로가기 버튼 */}
             <View style={styles.backButton}>
                 <TouchableOpacity
                     onPress={() => { navigation.goBack() }}>
@@ -137,17 +128,14 @@ export default function HabitDetailScreen({ route, navigation }) {
                     </View>
 
                     {loading ? (
-                        <ActivityIndicator size="large" color="#FF9730" />
+                        <ActivityIndicator size="large" color="#FF9730" /> // 로딩중임을 알리는 스피너
                     ) : (
                         <FlatList
                             data={habits}
                             keyExtractor={(item) => item.habit_id.toString()}
                             renderItem={({ item }) => (
                                 <TouchableOpacity
-                                    style={[
-                                        styles.detailHabitButton,
-                                        selectedHabit === item.detail && styles.selectedButton,
-                                    ]}
+                                    style={[styles.detailHabitButton, selectedHabit === item.detail && styles.selectedButton,]}
                                     onPress={() => setSelectedHabit(item.detail)}
                                 >
                                     <Text style={styles.contentText}>{item.detail}</Text>
@@ -207,7 +195,7 @@ export default function HabitDetailScreen({ route, navigation }) {
                                                 locale="en-GB"
                                                 display="spinner"
                                                 themeVariant="light"
-                                                onChange={(event, selectedTime) => {
+                                                onChange={(event, selectedTime) => { //시간 또는 분이 바뀔 경우
                                                     if (selectedTime) {
                                                         setTime(selectedTime);
                                                     }
@@ -258,7 +246,7 @@ export default function HabitDetailScreen({ route, navigation }) {
                                     satisfaction: satisfaction,
                                 });
                             } else {
-                                alert('세부습관을 선택해주세요!');
+                                Alert.alert("알림", '세부습관을 선택해주세요!', [{ text: "확인" }], { cancelable: false });
                             }
 
                         }}>

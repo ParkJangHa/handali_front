@@ -8,14 +8,14 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 export default function HabitCheckScreen({ route, navigation }) {
     const { categoryName, detailedHabit, habitTime, satisfaction } = route.params;
 
-    // 기록하기 버튼을 눌렀을 때 호출되는 함수
+    // 기록하기 버튼이 눌렸을 때, 습관 기록 데이터 서버로 전송
     const handleRecord = async () => {
+
         // habitTime (예: "3시간 30분")을 숫자형 시간(예: 3.5)으로 변환
         let totalTime = 0;
         try {
             const timeParts = habitTime.split('시간');
             const hours = parseInt(timeParts[0].trim(), 10);
-            // "분" 부분 제거 후 정수로 변환
             const minutes = parseInt(timeParts[1].replace('분', '').trim(), 10);
             totalTime = hours + minutes / 60;
         } catch (error) {
@@ -46,14 +46,9 @@ export default function HabitCheckScreen({ route, navigation }) {
             date: formattedDate,
         };
 
+        //api 호출
         try {
             const token = await AsyncStorage.getItem("authToken");
-
-            if (!token) {
-                Alert.alert("세션 만료", "로그인이 필요합니다.");
-                navigation.navigate("Login");
-                return;
-            }
 
             const response = await fetch(`${API_BASE_URL}/habits/record`, {
                 method: 'POST',
@@ -64,10 +59,26 @@ export default function HabitCheckScreen({ route, navigation }) {
                 body: JSON.stringify(recordData),
             });
 
+            if (response.status === 412) {
+                Alert.alert(
+                    "세션 만료",
+                    "로그인이 만료되었습니다. 다시 로그인해주세요.",
+                    [{
+                        text: "확인", onPress: async () => {
+                            await AsyncStorage.removeItem("authToken");
+                            navigation.navigate("Login");
+                        }
+                    }],
+                    { cancelable: false }
+                );
+                return;
+            }
+
             if (response.ok) {
                 const data = await response.json();
 
-                if (data.appearance_change) { // 외형 변화가 있을 때
+                // 외형 변화가 있을 때
+                if (data.appearance_change) {
                     const response = await fetch(`${API_BASE_URL}/handalis/change`, {
                         method: "GET",
                         headers: {
@@ -85,19 +96,7 @@ export default function HabitCheckScreen({ route, navigation }) {
                         "한달이의 외형이 변화하였습니다.",
                         [
                             {
-                                text: "확인",
-                                onPress: () => navigation.navigate("MainScreen"),
-                            },
-                        ],
-                        { cancelable: false }
-                    );
-                } else {
-                    Alert.alert(
-                        "알림",
-                        data.message, // "습관이 성공적으로 기록되었습니다."
-                        [
-                            {
-                                text: "확인",
+                                text: "메인 화면으로 돌아가기",
                                 onPress: () => navigation.navigate("MainScreen"),
                             },
                         ],
@@ -105,11 +104,35 @@ export default function HabitCheckScreen({ route, navigation }) {
                     );
                 }
 
-            } else {
-                // 409 Conflict 같은 에러 상황
-                const textData = await response.text();
-                Alert.alert("알림", textData);
+                //외형 변화가 없을 때
+                else {
+                    Alert.alert(
+                        "알림",
+                        data.message, // "습관이 성공적으로 기록되었습니다."
+                        [
+                            {
+                                text: "메인 화면으로 돌아가기",
+                                onPress: () => navigation.navigate("MainScreen"),
+                            },
+                        ],
+                        { cancelable: false }
+                    );
+                }
+
             }
+
+            //당일 습관이 이미 기록되었을 때
+            else {
+                const textData = await response.text();
+                Alert.alert("습관 중복 기록", textData, [
+                    {
+                        text: "메인 화면으로 돌아가기",
+                        onPress: () => navigation.navigate("MainScreen"),
+                    },
+                ],
+                    { cancelable: false });
+            }
+
         } catch (error) {
             console.error("기록 요청 실패:", error);
             Alert.alert("오류", "기록 중 오류가 발생했습니다.");
