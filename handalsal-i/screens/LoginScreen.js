@@ -21,10 +21,35 @@ const LoginScreen = ({ navigation }) => {
   useEffect(() => {
     const checkLoginStatus = async () => {
       const token = await AsyncStorage.getItem("authToken");
-      // if (token) navigation.navigate("Category");
+      if (!token) return; // 토큰 없으면 로그인 화면 그대로
+  
+      try {
+        // 토큰 유효성 확인 → handalis/view 호출
+        const response = await fetch(`${API_BASE_URL}/handalis/view`, {
+          method: "GET",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+  
+        if (response.ok) {
+          const data = await response.json();
+          console.log("✅ 자동 로그인 성공, 한달이 있음 → MainScreen 이동");
+          navigation.navigate("MainScreen");
+        } else if (response.status === 404) {
+          console.log("✅ 자동 로그인 성공, 한달이 없음 → Category 이동");
+          navigation.navigate("Category");
+        } else {
+          // 예: 401 Unauthorized → 토큰 만료
+          console.log("⚠️ 자동 로그인 실패 → 토큰 만료 또는 오류");
+          await AsyncStorage.removeItem("authToken"); // 만료된 토큰 제거
+        }
+      } catch (error) {
+        console.error("🚨 자동 로그인 확인 오류:", error);
+      }
     };
+  
     checkLoginStatus();
-  }, [navigation]);
+  }, []);
+  
 
   // ✅ 유효성 검사
   const validateInput = () => {
