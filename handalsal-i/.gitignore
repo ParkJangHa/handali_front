@@ -1,5 +1,8 @@
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
+# 환경 변수 파일을 Git에 올리지 않음
+.env
+
 # dependencies
 node_modules/
 

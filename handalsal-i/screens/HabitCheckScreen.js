@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, Alert } from 'react-native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_BASE_URL } from '@env';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -54,7 +55,7 @@ export default function HabitCheckScreen({ route, navigation }) {
                 return;
             }
 
-            const response = await fetch('http://43.201.250.84/habits/record', {
+            const response = await fetch(`${API_BASE_URL}/habits/record`, {
                 method: 'POST',
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -67,7 +68,7 @@ export default function HabitCheckScreen({ route, navigation }) {
                 const data = await response.json();
 
                 if (data.appearance_change) { // 외형 변화가 있을 때
-                    const response = await fetch('http://43.201.250.84/handalis/change', {
+                    const response = await fetch(`${API_BASE_URL}/handalis/change`, {
                         method: "GET",
                         headers: {
                             Authorization: `Bearer ${token}`

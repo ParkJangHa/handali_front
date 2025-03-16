@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_BASE_URL } from '@env';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -63,7 +64,7 @@ const UserHabitAppendScreen = ({ route, navigation }) => {
 
       console.log("📌 서버로 전송할 JSON:", JSON.stringify(requestBody, null, 2));
 
-      const response = await fetch("http://43.201.250.84/habits", {
+      const response = await fetch(`${API_BASE_URL}/habits`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -77,14 +78,14 @@ const UserHabitAppendScreen = ({ route, navigation }) => {
 
       if (response.ok) {
         Alert.alert("성공", "습관이 성공적으로 추가되었습니다!");
-        
-        navigation.navigate("DetailSelect", { 
-          category, 
+
+        navigation.navigate("DetailSelect", {
+          category,
           userHabits: nonEmptyHabits,  // ✅ 새로 추가한 습관만 전달
         });
       } else {
         Alert.alert("실패", `습관 추가 실패: ${data.message || "알 수 없는 오류"}`);
-      }      
+      }
     } catch (error) {
       console.error("🚨 습관 추가 중 오류 발생:", error);
       Alert.alert("오류", "네트워크 오류가 발생했습니다. 다시 시도해주세요.");

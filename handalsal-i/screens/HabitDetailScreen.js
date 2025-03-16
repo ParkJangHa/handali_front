@@ -3,6 +3,8 @@ import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Image, FlatList, 
 import Slider from "@react-native-community/slider";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Platform } from "react-native";
+import { API_BASE_URL } from '@env';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -41,7 +43,7 @@ export default function HabitDetailScreen({ route, navigation }) {
                 }
 
                 const response = await fetch(
-                    `http://43.201.250.84/habits/category-month?category=${convertedCategoryType}&month=${currentMonth}`,
+                    `${API_BASE_URL}/habits/category-month?category=${convertedCategoryType}&month=${currentMonth}`,
                     {
                         method: "GET",
                         headers: {
@@ -170,32 +172,54 @@ export default function HabitDetailScreen({ route, navigation }) {
                         </View>
                     </TouchableOpacity>
 
-                    <Modal
-                        visible={showPicker}
-                        transparent={true} // 배경을 투명하게
-                        animationType="slide"
-                        onRequestClose={() => setShowPicker(false)} // 안드로이드 뒤로가기 지원
-                    >
-                        {/* 🛠 모달 바깥을 터치하면 닫히도록 설정 */}
-                        <TouchableWithoutFeedback onPress={() => setShowPicker(false)}>
-                            <View style={styles.modalContainer}>
-                                <View style={styles.pickerContainer}>
-                                    {/* 🛠 DateTimePicker */}
-                                    <DateTimePicker
-                                        value={time}
-                                        mode="time"
-                                        locale="en-GB"
-                                        display="spinner"
-                                        themeVariant="light" // 🔥 다크 모드에서 강제로 밝은 테마 적용
-                                        onChange={(event, selectedTime) => {
-                                            if (selectedTime) setTime(selectedTime); // 선택된 시간 저장
-                                            setShowPicker(true); // 선택 후 모달 닫기
-                                        }}
-                                    />
-                                </View>
-                            </View>
-                        </TouchableWithoutFeedback>
-                    </Modal>
+                    {
+                        Platform.OS === 'android' && showPicker && (
+                            <DateTimePicker
+                                value={time}
+                                mode="time"
+                                display="spinner"
+                                themeVariant="light"
+                                is24Hour={true}
+                                onChange={(event, selectedTime) => {
+                                    if (selectedTime) {
+                                        setTime(selectedTime);
+                                    }
+                                    setShowPicker(false);
+                                }}
+                            ></DateTimePicker>
+                        )
+                    }
+
+                    {
+                        Platform.OS === 'ios' && (
+                            <Modal
+                                visible={showPicker}
+                                transparent={true}
+                                animationType="slide"
+                                onRequestClose={() => setShowPicker(false)}
+                            >
+                                <TouchableWithoutFeedback onPress={() => setShowPicker(false)}>
+                                    <View style={styles.modalContainer}>
+                                        <View style={styles.pickerContainer}>
+                                            <DateTimePicker
+                                                value={time}
+                                                mode="time"
+                                                locale="en-GB"
+                                                display="spinner"
+                                                themeVariant="light"
+                                                onChange={(event, selectedTime) => {
+                                                    if (selectedTime) {
+                                                        setTime(selectedTime);
+                                                    }
+                                                    setShowPicker(false);
+                                                }} />
+                                        </View>
+                                    </View>
+                                </TouchableWithoutFeedback>
+                            </Modal>
+                        )
+                    }
+
 
                 </View>
 

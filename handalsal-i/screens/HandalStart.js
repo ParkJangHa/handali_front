@@ -1,14 +1,15 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, StyleSheet, Image, TouchableOpacity, Dimensions, Alert, ActivityIndicator } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_BASE_URL } from '@env';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 const HandalStart = ({ navigation }) => {
   const today = new Date();
   const formattedDate = `${today.getFullYear()}-${(today.getMonth() + 1)
-        .toString()
-        .padStart(2, "0")}-${today.getDate().toString().padStart(2, "0")}`;
+    .toString()
+    .padStart(2, "0")}-${today.getDate().toString().padStart(2, "0")}`;
 
   const [progress, setProgress] = useState(100); // 진행률 (0~100)
   const [nicknameInput, setNicknameInput] = useState("");
@@ -18,24 +19,24 @@ const HandalStart = ({ navigation }) => {
     try {
       setLoading(true);
       const token = await AsyncStorage.getItem("authToken");
-  
+
       if (!token) {
         Alert.alert("세션 만료", "다시 로그인해주세요.");
         navigation.navigate("LoginScreen");
         return;
       }
-  
+
       if (!nicknameInput.trim()) {
         Alert.alert("알림", "한달이의 별명을 입력해주세요!");
         setLoading(false);
         return;
       }
-  
+
       const handaliData = { nickname: nicknameInput.trim() };
       console.log("📌 한달이 생성 요청 데이터:", JSON.stringify(handaliData));
-  
+
       // 한달이 생성 API 요청
-      const handaliResponse = await fetch("http://43.201.250.84/handalis", {
+      const handaliResponse = await fetch(`${API_BASE_URL}/handalis`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -43,11 +44,11 @@ const HandalStart = ({ navigation }) => {
         },
         body: JSON.stringify(handaliData),
       });
-  
+
       // 📌 응답을 먼저 `text()`로 받음
       const responseText = await handaliResponse.text();
       console.log("📌 한달이 생성 응답 (원본):", responseText);
-  
+
       // 📌 JSON인지 확인 후 파싱
       let handaliResult;
       try {
@@ -56,7 +57,7 @@ const HandalStart = ({ navigation }) => {
         console.warn("🚨 JSON 파싱 실패, 원본 텍스트 사용:", responseText);
         handaliResult = { message: responseText }; // JSON이 아니면 그냥 문자열 저장
       }
-  
+
       if (!handaliResponse.ok) {
         if (handaliResponse.status === 409) {
           Alert.alert("알림", "이미 한 마리의 한달이가 존재합니다!");
@@ -66,7 +67,7 @@ const HandalStart = ({ navigation }) => {
         setLoading(false);
         return;
       }
-  
+
       Alert.alert("완료", "한달이가 성공적으로 생성되었습니다!");
       navigation.navigate("MainScreen"); // ✅ 메인 화면으로 이동
     } catch (error) {
@@ -76,39 +77,39 @@ const HandalStart = ({ navigation }) => {
       setLoading(false);
     }
   };
-  
+
 
   return (
     <View style={styles.container}>
       <Text style={styles.dateText}>{formattedDate}</Text>
       <Text style={styles.title}>이제 '한달이'가 태어나요</Text>
-      <View style = {styles.progressBar}>
-        <Image 
+      <View style={styles.progressBar}>
+        <Image
           source={require("../assets/probar.png")} // 이미지 경로 설정
           style={styles.backgroundBar} // 스타일 적용
         />
         <View style={[styles.foregroundWrapper, { width: `${progress}%` }]}>
-        <Image
-          source={require("../assets/probarlevel.png")}
-          style={styles.foregroundBar}
-        />
+          <Image
+            source={require("../assets/probarlevel.png")}
+            style={styles.foregroundBar}
+          />
         </View>
       </View>
       <Text style={styles.subTitle}>앞으로 같이 성장할 '한달이'에요.</Text>
       <Image
-          source={require("../assets/default_character.png")}
-          style={styles.handalImage}
-        />
+        source={require("../assets/default_character.png")}
+        style={styles.handalImage}
+      />
       <View style={styles.nicknameCon}>
         <Text style={styles.nicknameText}>한달이에게 별명을 지어주세요!</Text>
         <TextInput
-              style={styles.input}
-              placeholder="   별명을 입력해 주세요."
-              value={nicknameInput}
-              onChangeText={setNicknameInput}
-            />
-        </View>
-        {loading ? (
+          style={styles.input}
+          placeholder="   별명을 입력해 주세요."
+          value={nicknameInput}
+          onChangeText={setNicknameInput}
+        />
+      </View>
+      {loading ? (
         <ActivityIndicator size="large" color="#F8B66C" />
       ) : (
         <TouchableOpacity style={styles.startButton} onPress={createHandali}>

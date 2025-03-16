@@ -9,8 +9,9 @@ import {
   Alert,
   Image,
 } from "react-native";
+import { API_BASE_URL } from '@env';
 
-const API_URL = "http://43.201.250.84"; // ✅ 실제 API URL
+// const API_URL = "http://43.201.250.84"; // ✅ 실제 API URL
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
@@ -20,7 +21,7 @@ const LoginScreen = ({ navigation }) => {
   useEffect(() => {
     const checkLoginStatus = async () => {
       const token = await AsyncStorage.getItem("authToken");
-      if (token) navigation.navigate("Category");
+      // if (token) navigation.navigate("Category");
     };
     checkLoginStatus();
   }, [navigation]);
@@ -32,47 +33,47 @@ const LoginScreen = ({ navigation }) => {
       Alert.alert("오류", "올바른 이메일을 입력하세요.");
       return false;
     }
-    if (!password || password.length < 6) {
-      Alert.alert("오류", "비밀번호는 최소 6자 이상이어야 합니다.");
-      return false;
-    }
+    // if (!password || password.length < 6) {
+    //   Alert.alert("오류", "비밀번호는 최소 6자 이상이어야 합니다.");
+    //   return false;
+    // }
     return true;
   };
 
   const handleLogin = async () => {
     if (!validateInput()) return;
-  
+
     try {
-      const response = await fetch(`${API_URL}/login`, {
+      const response = await fetch(`${API_BASE_URL}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-  
+
       const responseText = await response.text();
       console.log("📌 로그인 응답:", responseText);
-  
+
       let data;
       if (responseText.startsWith("{")) {
         data = JSON.parse(responseText);
       } else {
         data = { Bearer: responseText };
       }
-  
+
       if (!response.ok) {
         Alert.alert("로그인 실패", data.message || "이메일 또는 비밀번호를 확인하세요.");
         return;
       }
-  
+
       await AsyncStorage.setItem("authToken", data.Bearer);
       console.log("📌 로그인 성공, 토큰 저장 완료");
-  
+
       // ✅ 한달이 존재 여부 확인 (json()으로 응답 처리)
-      const handaliViewResponse = await fetch(`${API_URL}/handalis/view`, {
+      const handaliViewResponse = await fetch(`${API_BASE_URL}/handalis/view`, {
         method: "GET",
         headers: { Authorization: `Bearer ${data.Bearer}` },
       });
-  
+
       if (handaliViewResponse.ok) {
         const handaliData = await handaliViewResponse.json(); // ✅ json()으로 바로 변환
         console.log("📌 이번 달 한달이 정보:", handaliData);
@@ -87,14 +88,14 @@ const LoginScreen = ({ navigation }) => {
       Alert.alert("오류", "네트워크 연결이 원활하지 않습니다.");
     }
   };
-  
+
 
   return (
     <View style={styles.container}>
       <View style={styles.imgCon}>
-        <Image 
-          source={require("../assets/logo.png")} 
-          style={styles.img} 
+        <Image
+          source={require("../assets/logo.png")}
+          style={styles.img}
         />
       </View>
       <Text style={styles.title}>한달이</Text>

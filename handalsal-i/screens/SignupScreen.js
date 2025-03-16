@@ -7,8 +7,9 @@ import {
   Alert,
   ScrollView,
 } from "react-native";
+import { API_BASE_URL } from '@env';
 
-const API_URL = "http://43.201.250.84"; // ✅ 백엔드 서버 주소
+// const API_URL = "http://43.201.250.84"; // ✅ 백엔드 서버 주소
 
 const SignupScreen = ({ navigation }) => {
   // 입력값 상태 관리
@@ -24,7 +25,7 @@ const SignupScreen = ({ navigation }) => {
     const emailRegex = /\S+@\S+\.\S+/;
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":{}|<>])[a-zA-Z\d!@#$%^&*(),.?":{}|<>]{6,}$/;
     const birthdateRegex = /^\d{4}-\d{2}-\d{2}$/; // ✅ YYYY-MM-DD 형식 체크
-  
+
     if (!email || !emailRegex.test(email)) {
       Alert.alert("오류", "올바른 이메일을 입력하세요.");
       return false;
@@ -49,13 +50,13 @@ const SignupScreen = ({ navigation }) => {
       Alert.alert("오류", "생년월일은 YYYY-MM-DD 형식으로 입력하세요.");
       return false;
     }
-  
+
     const [year, month, day] = birthdate.split("-").map(Number);
     if (month < 1 || month > 12 || day < 1 || day > 31) {
       Alert.alert("오류", "생년월일의 월/일 형식이 잘못되었습니다.");
       return false;
     }
-  
+
     return true;
   };
 
@@ -64,7 +65,7 @@ const SignupScreen = ({ navigation }) => {
     if (!validateInput()) return;
 
     try {
-      const response = await fetch(`${API_URL}/signup`, {
+      const response = await fetch(`${API_BASE_URL}/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -104,9 +105,10 @@ const SignupScreen = ({ navigation }) => {
       <TextInput style={styles.input} placeholder="비밀번호 확인" secureTextEntry value={confirmPassword} onChangeText={setConfirmPassword} />
       <TextInput style={styles.input} placeholder="이름" value={name} onChangeText={setName} />
       <TextInput style={styles.input} placeholder="전화번호 (숫자만 입력)" keyboardType="numeric" value={phone} onChangeText={(text) => setPhone(text.replace(/[^0-9]/g, ""))} />
-      <TextInput style={styles.input} placeholder="생년월일 (YYYYMMDD)" keyboardType="numeric" value={birthdate} 
-        onChangeText={(text) => {let formatted = text.replace(/[^0-9]/g, "").slice(0, 8);
-    
+      <TextInput style={styles.input} placeholder="생년월일 (YYYYMMDD)" keyboardType="numeric" value={birthdate}
+        onChangeText={(text) => {
+          let formatted = text.replace(/[^0-9]/g, "").slice(0, 8);
+
           // YYYY-MM-DD 형식으로 변환
           if (formatted.length >= 4) {
             formatted = formatted.slice(0, 4) + "-" + formatted.slice(4);
@@ -114,10 +116,10 @@ const SignupScreen = ({ navigation }) => {
           if (formatted.length >= 7) {
             formatted = formatted.slice(0, 7) + "-" + formatted.slice(7);
           }
-      
+
           setBirthdate(formatted);
-          }} 
-        />
+        }}
+      />
       <TouchableOpacity style={styles.button} onPress={handleSignup}>
         <Text style={styles.buttonText}>회원가입</Text>
       </TouchableOpacity>
