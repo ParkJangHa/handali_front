@@ -127,10 +127,17 @@ export default function MainScreen({ navigation }) {
     }
   };
 
-  // ✅ 메인 화면 진입할 때마다 한달이 상태 확인
-  useEffect(() => {
-    fetchHandaliStatus();
-  }, []);
+// ✅ 메인 화면 진입 + 주기적인 상태 확인
+useEffect(() => {
+  fetchHandaliStatus(); // 첫 진입 시 한번
+
+  const interval = setInterval(() => {
+    fetchHandaliStatus(); // 60초마다 실행
+  }, 60000);
+
+  return () => clearInterval(interval); // 언마운트 시 정리
+}, []);
+
 
 
   return (
