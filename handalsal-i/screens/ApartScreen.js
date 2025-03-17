@@ -198,8 +198,23 @@ const ApartScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      {/**뒤로가기 버튼 */}
+
+
       {/** 동 변경 버튼 */}
       <View style={styles.navContainer}>
+        <View style={styles.backButton}>
+          <TouchableOpacity
+            onPress={() => { navigation.goBack() }}>
+            <Image
+              source={require('../assets/backButton.png')}>
+            </Image>
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.apartTitle}>{apartments.length > 0 ? `${apartments[selectedApartIndex].apart_id}동` : "불러오는 중"}</Text>
+      </View>
+
+      <View style={styles.navContainer2}>
         <TouchableOpacity
           onPress={handlePrevApart}
           disabled={selectedApartIndex === 0}
@@ -207,9 +222,6 @@ const ApartScreen = ({ navigation }) => {
           selectedApartIndex === 0 && styles.disabledButton]}>
           <Text style={styles.navButtonText}>&lt;&lt;</Text>
         </TouchableOpacity>
-
-        <Text style={styles.apartTitle}>{apartments.length > 0 ? `${apartments[selectedApartIndex].apart_id}동` : "불러오는 중"}</Text>
-
         <TouchableOpacity
           onPress={handleNextApart}
           disabled={selectedApartIndex === apartments.length - 1}
@@ -217,6 +229,7 @@ const ApartScreen = ({ navigation }) => {
         >
           <Text style={styles.navButtonText}>&gt;&gt;</Text>
         </TouchableOpacity>
+
       </View>
 
       {/* 잠금 및 한달이 층 */}
@@ -300,10 +313,18 @@ const ApartScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9D9B5'
+    backgroundColor: '#F9D9B5',
+    // backgroundColor: "black"
   },
 
   navContainer: {
+    justifyContent: "space-around",
+    flexDirection: "row",
+    backgroundColor: "black",
+    padding: SCREEN_HEIGHT * 0.01,
+    paddingTop: SCREEN_HEIGHT * 0.06,
+  },
+  navContainer2: {
     justifyContent: "space-around",
     flexDirection: "row",
     backgroundColor: "black",
@@ -314,6 +335,13 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     alignSelf: "center",
     color: "white"
+  },
+
+  backButton: {
+    position: 'absolute', // 절대 위치 설정
+    left: SCREEN_WIDTH * 0.06, // 왼쪽 끝에 배치
+    top: SCREEN_HEIGHT * 0.06,
+    zIndex: 1, // 다른 요소 위에 위치하도록 설정
   },
   navButton: {
     padding: 10,
