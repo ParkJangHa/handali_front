@@ -35,7 +35,7 @@ const JobScreen = ({ navigation }) => {
         .toString()
         .padStart(2, "0")}-${today.getDate().toString().padStart(2, "0")}`;
 
-    // 화면이 로드되면 POST 요청을 보내서 한달이 정보 가져옴
+    // api 호출
     useEffect(() => {
         const fetchJobDetails = async () => {
             const token = await AsyncStorage.getItem("authToken");
@@ -48,14 +48,13 @@ const JobScreen = ({ navigation }) => {
                     }
                 });
 
-                // ✅ 409 응답 처리 (한달이가 존재하지 않는 경우)
                 if (response.status === 409) {
                     Alert.alert(
                         "한달이가 존재하지 않습니다.",
                         "최근에 생성된 한달이가 존재하지 않습니다.",
                         [
                             {
-                                text: "확인",
+                                text: "메인 화면으로 돌아가기",
                                 onPress: () => navigation.navigate('MainScreen'), // ✅ 이전 화면으로 이동
                             }
                         ],
@@ -64,9 +63,8 @@ const JobScreen = ({ navigation }) => {
                     return;
                 }
 
-                const data1 = await response.json();
-
                 if (response.ok) {
+                    const data1 = await response.json();
                     console.log("📌 한달이 ID 가져오기 성공:", data1);
                     setNickname(data1.nickname);
                     setJobName(data1.job_name);

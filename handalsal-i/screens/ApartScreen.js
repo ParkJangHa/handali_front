@@ -13,15 +13,10 @@ const ApartScreen = ({ navigation }) => {
   const [selectedApartIndex, setSelectedApartindex] = useState(0); //현재 선택된 동
   const flatListRef = useRef(null); //층 리스트 참조
 
-  {/*아파트 api 데이터 불러오기*/ }
+  //api 호출
   const fetchApartments = async () => {
     try {
       const token = await AsyncStorage.getItem("authToken");
-      if (!token) {
-        Alert.alert("세션 만료", "로그인이 필요합니다.");
-        navigation.navigate("Login"); // 로그인 화면으로 이동
-        return;
-      }
 
       const response = await fetch(`${API_BASE_URL}/apartments`, {
         method: "GET",
@@ -30,15 +25,14 @@ const ApartScreen = ({ navigation }) => {
         }
       });
 
-      // ✅ 412 (토큰 만료) 응답 처리
       if (response.status === 412) {
         Alert.alert(
           "세션 만료",
           "로그인이 만료되었습니다. 다시 로그인해주세요.",
           [{
             text: "확인", onPress: async () => {
-              await AsyncStorage.removeItem("authToken"); // 토큰 삭제
-              navigation.navigate("Login"); // 로그인 화면으로 이동
+              await AsyncStorage.removeItem("authToken");
+              navigation.navigate("Login");
             }
           }],
           { cancelable: false }
@@ -46,15 +40,14 @@ const ApartScreen = ({ navigation }) => {
         return;
       }
 
-      // ✅ 404 응답 처리 (한달이가 존재하지 않는 경우)
       if (response.status === 404) {
         Alert.alert(
           "아파트 입주 이전 입니다.",
           "아파트에 입주한 한달이가 존재하지 않습니다.",
           [
             {
-              text: "확인",
-              onPress: () => navigation.navigate('MainScreen'), // ✅ 이전 화면으로 이동
+              text: "메인 화면으로 돌아가기",
+              onPress: () => navigation.navigate('MainScreen'),
             }
           ],
           { cancelable: false }
@@ -62,11 +55,9 @@ const ApartScreen = ({ navigation }) => {
         return;
       }
 
-      // ✅ 응답을 먼저 텍스트로 확인
       const textResponse = await response.text();
       console.log("📌 서버 응답 (텍스트):", textResponse);
 
-      // ✅ JSON 파싱 시도
       let data;
       try {
         data = JSON.parse(textResponse);
@@ -96,9 +87,10 @@ const ApartScreen = ({ navigation }) => {
         return {
           apart_id,
           floors: Array.from({ length: 12 }, (_, index) => {
-            const floorNumber = 12 - index;
+            const floorNumber = 12 - index; //index=0~11
 
             return groupedApartments[apart_id][floorNumber] || {
+              //층에 한달이가 없는 경우
               apart_id,
               floor: floorNumber,
               nickname: null,
@@ -133,7 +125,7 @@ const ApartScreen = ({ navigation }) => {
   }, []);
 
 
-  {/*자동 스크롤*/ }
+  {/*자동 스크롤---------------------------------*/ }
   // 현재 달(층)로 부드럽게 스크롤하는 함수
   const scrollToCurrentMonth = () => {
     if (flatListRef.current && apartments[selectedApartIndex]?.floors.length > 0) {
@@ -168,8 +160,9 @@ const ApartScreen = ({ navigation }) => {
       scrollToCurrentMonth();
     }, [apartments, selectedApartIndex])
   );
+  {/*자동 스크롤---------------------------------*/ }
 
-
+  {/**동 변경------------------------------------- */ }
   //이전 동으로 변경
   const handlePrevApart = () => {
     if (selectedApartIndex > 0) {
@@ -183,7 +176,10 @@ const ApartScreen = ({ navigation }) => {
       setSelectedApartindex(selectedApartIndex + 1);
     }
   }
+  {/**동 변경------------------------------------- */ }
 
+
+  {/**한달이 이미지------------------------------------------ */ }
   // ✅ 이미지 파일명을 매핑하는 객체
   const imageMap = {
     "image_0_0_0.png": require("../assets/000.png"),
@@ -198,11 +194,27 @@ const ApartScreen = ({ navigation }) => {
   const getImageSource = (imageName) => {
     return imageMap[imageName] || require("../assets/000.png");
   };
+  {/**한달이 이미지------------------------------------------ */ }
 
   return (
     <View style={styles.container}>
+      {/**뒤로가기 버튼 */}
+
+
       {/** 동 변경 버튼 */}
       <View style={styles.navContainer}>
+        <View style={styles.backButton}>
+          <TouchableOpacity
+            onPress={() => { navigation.goBack() }}>
+            <Image
+              source={require('../assets/backButton.png')}>
+            </Image>
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.apartTitle}>{apartments.length > 0 ? `${apartments[selectedApartIndex].apart_id}동` : "불러오는 중"}</Text>
+      </View>
+
+      <View style={styles.navContainer2}>
         <TouchableOpacity
           onPress={handlePrevApart}
           disabled={selectedApartIndex === 0}
@@ -210,9 +222,6 @@ const ApartScreen = ({ navigation }) => {
           selectedApartIndex === 0 && styles.disabledButton]}>
           <Text style={styles.navButtonText}>&lt;&lt;</Text>
         </TouchableOpacity>
-
-        <Text style={styles.apartTitle}>{apartments.length > 0 ? `${apartments[selectedApartIndex].apart_id}동` : "불러오는 중"}</Text>
-
         <TouchableOpacity
           onPress={handleNextApart}
           disabled={selectedApartIndex === apartments.length - 1}
@@ -220,6 +229,7 @@ const ApartScreen = ({ navigation }) => {
         >
           <Text style={styles.navButtonText}>&gt;&gt;</Text>
         </TouchableOpacity>
+
       </View>
 
       {/* 잠금 및 한달이 층 */}
@@ -303,10 +313,18 @@ const ApartScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9D9B5'
+    backgroundColor: '#F9D9B5',
+    // backgroundColor: "black"
   },
 
   navContainer: {
+    justifyContent: "space-around",
+    flexDirection: "row",
+    backgroundColor: "black",
+    padding: SCREEN_HEIGHT * 0.01,
+    paddingTop: SCREEN_HEIGHT * 0.06,
+  },
+  navContainer2: {
     justifyContent: "space-around",
     flexDirection: "row",
     backgroundColor: "black",
@@ -317,6 +335,13 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     alignSelf: "center",
     color: "white"
+  },
+
+  backButton: {
+    position: 'absolute', // 절대 위치 설정
+    left: SCREEN_WIDTH * 0.06, // 왼쪽 끝에 배치
+    top: SCREEN_HEIGHT * 0.06,
+    zIndex: 1, // 다른 요소 위에 위치하도록 설정
   },
   navButton: {
     padding: 10,

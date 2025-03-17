@@ -6,22 +6,24 @@ import { API_BASE_URL } from '@env';
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 export default function HabitCategoryScreen({ navigation }) {
-    const [selectedType, setSelectedType] = useState(null);
+    const [selectedType, setSelectedType] = useState(null); // 활동, 지능, 예술
     const [imageSource, setImageSource] = useState(require("../assets/default_character.png"));
 
+    // 선택된 활동, 지능, 예술 이미지 반환
     const getImageSource = () => {
         switch (selectedType) {
             case "활동":
-                return require('../assets/activityLogo.png'); // 활동 이미지
+                return require('../assets/activityLogo.png');
             case "지능":
-                return require('../assets/intelligenceLogo.png'); // 지능 이미지
+                return require('../assets/intelligenceLogo.png');
             case "예술":
-                return require('../assets/artLogo.png'); // 예술 이미지
+                return require('../assets/artLogo.png');
             default:
-                return imageSource // 기본 이미지
+                return imageSource
         }
     };
-    // ✅ 이미지 파일명을 매핑하는 객체
+
+    // 이미지 파일명을 매핑하는 객체
     const imageMap = {
         "image_0_0_0.png": require("../assets/000.png"),
         "image_0_0_1.png": require("../assets/001.png"),
@@ -31,22 +33,32 @@ export default function HabitCategoryScreen({ navigation }) {
         //add more...
     }
 
+    // api 호출
     const fetchImage = async () => {
         try {
             const token = await AsyncStorage.getItem("authToken");
 
-            if (!token) {
-                Alert.alert("세션 만료", "로그인이 필요합니다.");
-                navigation.navigate("Login");
-                return;
-            }
-
-            const response = await fetch('http://43.201.250.84/handalis/view', {
+            const response = await fetch(`${API_BASE_URL}/handalis/view`, {
                 method: 'GET',
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
             });
+
+            if (response.status === 412) {
+                Alert.alert(
+                    "세션 만료",
+                    "로그인이 만료되었습니다. 다시 로그인해주세요.",
+                    [{
+                        text: "확인", onPress: async () => {
+                            await AsyncStorage.removeItem("authToken");
+                            navigation.navigate("Login");
+                        }
+                    }],
+                    { cancelable: false }
+                );
+                return;
+            }
 
             if (response.status === 404) {
                 Alert.alert("한달이가 존재하지 않습니다.", "메인화면으로 이동합니다.",
@@ -71,6 +83,7 @@ export default function HabitCategoryScreen({ navigation }) {
 
     return (
         <View style={styles.container}>
+            {/**뒤로가기 버튼 */}
             <View style={styles.backButton}>
                 <TouchableOpacity
                     onPress={() => { navigation.goBack() }}>
@@ -80,55 +93,49 @@ export default function HabitCategoryScreen({ navigation }) {
                 </TouchableOpacity>
             </View>
 
-
+            {/**상단 이미지 */}
             <View style={styles.containerTop}>
-                {selectedType === null ? (
+                {selectedType === null ? ( //선택된 값이 없을 경우, 한달이 기본 이미지
                     <View style={styles.speechBubble}>
                         <Text style={styles.speechText}>오늘 뭐했어요?</Text>
                         <View style={styles.speechTriangle}></View>
                     </View>) : null}
 
                 <Image
-                    source={getImageSource()} // 동적으로 이미지 변경
+                    source={getImageSource()} // 선택된 값이 있을 경우, 값(활동, 지능, 예술)에 따라 동적으로 이미지 변경
                     style={styles.categoryImage}
                 />
             </View>
 
+            {/**하단 버튼 */}
             <View style={styles.containerBottom}>
+                {/**제목 */}
                 <View style={styles.todayHabitRecord}>
                     <Text style={styles.recordTitle}>오늘 습관 기록</Text>
                 </View>
 
+                {/**세부습관 버튼 */}
                 <View style={styles.habitCategories}>
                     <TouchableOpacity
-                        style={[
-                            styles.button,
-                            selectedType === "활동" && styles.selectedButton,
-                        ]}
-                        onPress={() => setSelectedType("활동")}
-                    >
+                        style={[styles.button, selectedType === "활동" && styles.selectedButton,]}
+                        onPress={() => setSelectedType("활동")}>
                         <Text style={styles.buttonText}>활 동</Text>
                     </TouchableOpacity>
+
                     <TouchableOpacity
-                        style={[
-                            styles.button,
-                            selectedType === "지능" && styles.selectedButton,
-                        ]}
-                        onPress={() => setSelectedType("지능")}
-                    >
+                        style={[styles.button, selectedType === "지능" && styles.selectedButton,]}
+                        onPress={() => setSelectedType("지능")}>
                         <Text style={styles.buttonText}>지 능</Text>
                     </TouchableOpacity>
+
                     <TouchableOpacity
-                        style={[
-                            styles.button,
-                            selectedType === "예술" && styles.selectedButton,
-                        ]}
-                        onPress={() => setSelectedType("예술")}
-                    >
+                        style={[styles.button, selectedType === "예술" && styles.selectedButton,]}
+                        onPress={() => setSelectedType("예술")}>
                         <Text style={styles.buttonText}>예 술</Text>
                     </TouchableOpacity>
                 </View>
 
+                {/**선택하기 버튼 */}
                 <View style={styles.selectView}>
                     <TouchableOpacity
                         style={styles.selectButton}
@@ -136,7 +143,7 @@ export default function HabitCategoryScreen({ navigation }) {
                             if (selectedType) {
                                 navigation.navigate("HabitDetail", { categoryType: selectedType });
                             } else {
-                                alert("하나의 카테고리를 선택해주세요!"); // 선택하지 않았을 때 경고
+                                alert("하나의 카테고리를 선택해주세요!");
                             }
                         }}
                     >
@@ -144,7 +151,6 @@ export default function HabitCategoryScreen({ navigation }) {
                     </TouchableOpacity>
                 </View>
             </View>
-
         </View>
     );
 }
