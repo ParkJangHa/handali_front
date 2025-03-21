@@ -11,7 +11,6 @@ import {
 } from "react-native";
 import { API_BASE_URL } from '@env';
 
-// const API_URL = "http://43.201.250.84"; // ✅ 실제 API URL
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");

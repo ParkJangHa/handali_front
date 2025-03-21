@@ -2,14 +2,13 @@ import { StatusBar } from "expo-status-bar";
 import { StyleSheet, Text, View, TouchableOpacity, Image } from "react-native";
 import React from "react";
 
-const HomeScreen = ({ navigation }) => { // navigation props 받음
+const HomeScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
-      {/* 이미지 추가 */}
       <View style={styles.imgCon}>
         <Image 
-          source={require("../assets/logo.png")} // 이미지 경로 설정
-          style={styles.img} // 스타일 적용
+          source={require("../assets/logo.png")}
+          style={styles.img}
         />
       </View>
       <View style={styles.titeCon}>
@@ -45,13 +44,13 @@ const styles = StyleSheet.create({
   },
   imgCon: {
     flex: 0.9,
-    alignItems: "center", // 이미지 중앙 정렬
+    alignItems: "center", 
     justifyContent: "center",
   },
   img: {
-    width: 250, // 이미지 너비
-    height: 250, // 이미지 높이
-    resizeMode: "contain", // 이미지 비율 유지
+    width: 250, 
+    height: 250, 
+    resizeMode: "contain", 
   },
   titeCon: {
     flex: 1,
@@ -72,23 +71,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  // 버튼 스타일 추가
   button: {
-    backgroundColor: "#FDA44F", // 버튼 배경색
-    paddingVertical: 20, // 버튼 높이
-    paddingHorizontal: 80, // 버튼 너비
-    borderRadius: 30, // 버튼 둥근 테두리
+    backgroundColor: "#FDA44F", 
+    paddingVertical: 20, 
+    paddingHorizontal: 80, 
+    borderRadius: 30, 
   },
   buttonlogin: {
-    backgroundColor: "#FDA44F", // 버튼 배경색
-    paddingVertical: 20, // 버튼 높이
-    paddingHorizontal: 90, // 버튼 너비
-    borderRadius: 30, // 버튼 둥근 테두리
+    backgroundColor: "#FDA44F", 
+    paddingVertical: 20, 
+    paddingHorizontal: 90, 
+    borderRadius: 30, 
   },
   buttonText: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#000", // 버튼 텍스트 색상 검정색
+    color: "#000", 
     textAlign: "center",
   },
 });
