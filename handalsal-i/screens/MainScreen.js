@@ -36,10 +36,36 @@ export default function MainScreen({ navigation }) {
         {
           text: "확인",
           onPress: async () => {
-            await AsyncStorage.removeItem("authToken"); // ✅ 토큰 삭제
+            try {
+              const token = await AsyncStorage.getItem("authToken");
+              if (!token) throw new Error("토큰이 없습니다.");
+  
+              const response = await fetch(`${API_BASE_URL}/logout`, {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              });
+  
+              const resText = await response.text();
+              const resData = resText.startsWith("{") ? JSON.parse(resText) : {};
+  
+              if (response.ok) {
+                console.log("✅ 서버 로그아웃 성공:", resData);
+              } else if (response.status === 412) {
+                console.warn("🚫 유효하지 않은 토큰:", resData.message);
+              } else {
+                console.warn("❗기타 로그아웃 오류:", resData);
+              }
+            } catch (error) {
+              console.error("🚨 로그아웃 요청 실패:", error);
+            }
+  
+            // 항상 로컬 토큰 삭제 및 화면 이동
+            await AsyncStorage.removeItem("authToken");
             navigation.reset({
               index: 0,
-              routes: [{ name: "Login" }], // ✅ 로그인 화면으로 이동
+              routes: [{ name: "Login" }],
             });
           },
         },
@@ -154,7 +180,7 @@ useEffect(() => {
           <Text style={styles.coinText}>{totalCoin}</Text>
         </View>
         <View style={styles.topIcons}>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate("Store")}>
             <Image source={require("../assets/store.png")} style={styles.icon} />
           </TouchableOpacity>
           <TouchableOpacity>
