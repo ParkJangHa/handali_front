@@ -17,33 +17,6 @@ import { API_BASE_URL } from "@env";
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  useEffect(() => {
-    const checkLoginStatus = async () => {
-      const token = await AsyncStorage.getItem("authToken");
-      if (!token) return;
-
-      try {
-        const response = await fetch(`${API_BASE_URL}/handalis/view`, {
-          method: "GET",
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (response.ok) {
-          navigation.navigate("MainScreen");
-        } else if (response.status === 404) {
-          navigation.navigate("Category");
-        } else {
-          await AsyncStorage.removeItem("authToken");
-        }
-      } catch (error) {
-        console.error("자동 로그인 확인 오류:", error);
-      }
-    };
-
-    checkLoginStatus();
-  }, []);
-
   const validateInput = () => {
     const emailRegex = /\S+@\S+\.\S+/;
     if (!email || !emailRegex.test(email)) {
