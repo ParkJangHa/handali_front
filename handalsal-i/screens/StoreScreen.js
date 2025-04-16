@@ -132,23 +132,26 @@ export default function StoreScreen({ navigation }) {
 
   const handleBuyItem = async () => {
     if (currentItem.buy) {
-      const storageKey = `appliedItem-${selectedTab}`;
-      const alreadyApplied = appliedItemName === currentItem.name;
-
-      if (alreadyApplied) {
-        await AsyncStorage.removeItem(storageKey);
-        Alert.alert("해제 완료", "아이템 적용이 해제되었습니다.");
-        setAppliedItemName("");
-      } else {
-        await AsyncStorage.setItem(storageKey, currentItem.name);
-        Alert.alert("적용 완료", "아이템이 적용되었습니다.");
-        setAppliedItemName(currentItem.name);
+      // 이미 구매한 아이템 → 적용 처리
+      try {
+        const appliedKey = `appliedItem-${selectedTab}`;
+        const currentName = await AsyncStorage.getItem(appliedKey);
+  
+        // 이미 적용된 아이템이면 해제
+        if (currentName === currentItem.name) {
+          await AsyncStorage.removeItem(appliedKey);
+          Alert.alert("해제 완료", "아이템 적용이 해제되었습니다.");
+        } else {
+          await AsyncStorage.setItem(appliedKey, currentItem.name);
+          Alert.alert("적용 완료", "아이템이 적용되었습니다.");
+        }
+      } catch (e) {
+        Alert.alert("적용 실패", "저장 중 오류가 발생했습니다.");
       }
-
       setModalVisible(false);
       return;
     }
-
+  
     try {
       const token = await AsyncStorage.getItem("authToken");
       const response = await fetch(`${API_BASE_URL}/store/buy`, {
@@ -163,25 +166,27 @@ export default function StoreScreen({ navigation }) {
           price: currentItem.price,
         }),
       });
-
-      const text = await response.text();
-      const data = text.startsWith("{") ? JSON.parse(text) : {};
-
+  
+      const text = await response.text(); // JSON이 아닐 수 있으므로 text로 받음
+  
       if (response.ok) {
-        Alert.alert("구매 완료", data.message || "아이템을 구매했습니다!");
+        Alert.alert("구매 완료", "아이템을 구매했습니다!");
         setModalVisible(false);
         fetchItems();
         fetchTotalCoin();
         setCurrentItem({ ...currentItem, buy: true });
-      } else if (data.message === "코인이 부족합니다.") {
+      } else if (text.includes("코인이 부족합니다")) {
         Alert.alert("구매 실패", "코인이 부족합니다.");
+      } else if (text.includes("이미 구매한 아이템입니다")) {
+        Alert.alert("구매 실패", "이미 구매한 아이템입니다.");
       } else {
-        Alert.alert("에러", data.message || "예상치 못한 오류가 발생했습니다.");
+        Alert.alert("에러", text || "예상치 못한 오류가 발생했습니다.");
       }
     } catch (error) {
       Alert.alert("오류", "네트워크 오류가 발생했습니다.");
     }
   };
+  
 
   const renderItem = ({ item }) => {
     const imageName = item.name.replace(/ /g, "_");
