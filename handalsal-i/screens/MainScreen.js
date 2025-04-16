@@ -139,9 +139,6 @@ export default function MainScreen({ navigation }) {
           <TouchableOpacity onPress={() => navigation.navigate("Store")}>
             <Image source={require("../assets/store.png")} style={styles.icon} />
           </TouchableOpacity>
-          <TouchableOpacity>
-            <Image source={require("../assets/storage.png")} style={styles.icon} />
-          </TouchableOpacity>
           <TouchableOpacity onPress={handleLogout}>
             <Text style={styles.logoutText}>로그아웃</Text>
           </TouchableOpacity>
@@ -212,7 +209,7 @@ const styles = StyleSheet.create({
     marginTop: SCREEN_HEIGHT * 0.05,
   },
   coinContainer: {
-    width: SCREEN_WIDTH * 0.24,
+    width: SCREEN_WIDTH * 0.35,
     height: SCREEN_WIDTH * 0.1,
     borderRadius: SCREEN_WIDTH * 0.03,
     backgroundColor: "rgba(217, 217, 217, 0.48)",
