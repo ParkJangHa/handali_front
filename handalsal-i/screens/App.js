@@ -16,7 +16,7 @@ import HabitDetailScreen from "./screens/HabitDetailScreen";
 import HabitCheckScreen from "./screens/HabitCheckScreen";
 import ApartScreen from "./screens/ApartScreen";
 import JobScreen from "./screens/JobScreen";
-import StorageShopScreen from "./screens/StoreScreen";
+import StoreScreen from "./screens/StoreScreen";
 
 const Stack = createStackNavigator();
 
@@ -123,7 +123,7 @@ const App = () => {
           options={{ headerShown: false }}
         /> */}
 
-        <Stack.Screen name="Store" component={StorageShopScreen}
+        <Stack.Screen name="Store" component={StoreScreen}
           options={{
             headerShown: false, gestureEnabled: true
           }}
@@ -132,5 +132,4 @@ const App = () => {
     </NavigationContainer>
   );
 };
-
 export default App;
