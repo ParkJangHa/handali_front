@@ -8,7 +8,7 @@ import {
   Text,
   Dimensions,
   Alert,
-  ScrollView,
+  Modal,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from "@env";
@@ -22,6 +22,7 @@ const categoryIcons = {
   벽장식: require("../assets/Store_Window.png"),
   바닥장식: require("../assets/Store_Clock.png"),
 };
+
 const imageMap = {
   /* "원룸": require("./assets/storeItems/원룸.png"),
   "빌라": require("./assets/storeItems/빌라.png"),
@@ -37,14 +38,12 @@ const imageMap = {
   "철제_의자": require("./assets/storeItems/철제_의자.png"),
   "디자인_의자": require("./assets/storeItems/디자인_의자.png"),
   "나무_소파": require("./assets/storeItems/나무_소파.png"),
-  "푹신한_소파": require("./assets/storeItems/푹신한_소파.png"),
   "철제_소파": require("./assets/storeItems/철제_소파.png"),
   "디자인_소파": require("./assets/storeItems/디자인_소파.png"),
   "가죽_소파": require("./assets/storeItems/가죽_소파.png"),
   "모듈형_소파": require("./assets/storeItems/모듈형_소파.png"),
   "빈티지_패브릭_소파": require("./assets/storeItems/빈티지_패브릭_소파.png"),
   "나무_시계": require("./assets/storeItems/나무_시계.png"),
-  "철_창문": require("./assets/storeItems/철_창문.png"),
   "값싼_액자": require("./assets/storeItems/값싼_액자.png"),
   "비싼_액자": require("./assets/storeItems/비싼_액자.png"),
   "모던한_벽걸이_선반": require("./assets/storeItems/모던한_벽걸이_선반.png"),
@@ -63,47 +62,131 @@ const imageMap = {
   "불멍용_미니_화로": require("./assets/storeItems/불멍용_미니_화로.png"),
   "전신_거울": require("./assets/storeItems/전신_거울.png"),
   "앤틱_보석함": require("./assets/storeItems/앤틱_보석함.png"),*/
+  "푹신한_소파": require("../assets/storeItems/푹신한_소파.png"),
+  "철_창문": require("../assets/storeItems/철_창문.png"),
   default: require("../assets/default.png"),
 };
 
-export default function StoreScreen() {
+export default function StoreScreen({ navigation }) {
   const [selectedTab, setSelectedTab] = useState("소파");
   const [selectedItem, setSelectedItem] = useState(null);
-  const [selectedTopButton, setSelectedTopButton] = useState("background");
   const [items, setItems] = useState([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [currentItem, setCurrentItem] = useState(null);
+  const [totalCoin, setTotalCoin] = useState(0);
+  const [appliedItemName, setAppliedItemName] = useState("");
+  const [selectedTopButton, setSelectedTopButton] = useState("background");
+
 
   useEffect(() => {
     fetchItems();
+    fetchTotalCoin();
+    getAppliedItem();
   }, [selectedTab]);
 
   const fetchItems = async () => {
     try {
       const token = await AsyncStorage.getItem("authToken");
-      const response = await fetch(
-        `${API_BASE_URL}/store/view?category=${selectedTab}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
+      const response = await fetch(`${API_BASE_URL}/store/view?category=${selectedTab}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const text = await response.text();
-      try {
-        const data = JSON.parse(text);
-        if (response.ok) {
-          setItems(data);
-        } else {
-          console.warn("조회 실패:", data);
-          setItems([]);
-          Alert.alert("조회 실패", data.message || "아이템을 불러올 수 없습니다.");
-        }
-      } catch (e) {
-        console.error("JSON 파싱 오류:", text);
-        Alert.alert("서버 오류", "응답 형식이 잘못되었습니다.");
+      const data = JSON.parse(text);
+
+      if (response.ok) setItems(data);
+      else {
         setItems([]);
+        Alert.alert("조회 실패", data.message || "아이템을 불러올 수 없습니다.");
       }
     } catch (error) {
-      console.error("서버 통신 오류:", error);
       Alert.alert("네트워크 오류", "인터넷 연결을 확인해주세요.");
     }
   };
+
+  const fetchTotalCoin = async () => {
+    try {
+      const token = await AsyncStorage.getItem("authToken");
+      const response = await fetch(`${API_BASE_URL}/handalis/view`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await response.json();
+      if (response.ok) setTotalCoin(data.total_coin);
+    } catch (error) {
+      console.error("코인 조회 실패:", error);
+    }
+  };
+
+  const getAppliedItem = async () => {
+    const saved = await AsyncStorage.getItem(`appliedItem-${selectedTab}`);
+    setAppliedItemName(saved || "");
+  };
+
+  const handleItemPress = (item) => {
+    if (selectedItem === item.storeId) {
+      setCurrentItem(item);
+      setModalVisible(true);
+    } else {
+      setSelectedItem(item.storeId);
+    }
+  };
+
+  const handleBuyItem = async () => {
+    if (currentItem.buy) {
+      // 이미 구매한 아이템 → 적용 처리
+      try {
+        const appliedKey = `appliedItem-${selectedTab}`;
+        const currentName = await AsyncStorage.getItem(appliedKey);
+  
+        // 이미 적용된 아이템이면 해제
+        if (currentName === currentItem.name) {
+          await AsyncStorage.removeItem(appliedKey);
+          Alert.alert("해제 완료", "아이템 적용이 해제되었습니다.");
+        } else {
+          await AsyncStorage.setItem(appliedKey, currentItem.name);
+          Alert.alert("적용 완료", "아이템이 적용되었습니다.");
+        }
+      } catch (e) {
+        Alert.alert("적용 실패", "저장 중 오류가 발생했습니다.");
+      }
+      setModalVisible(false);
+      return;
+    }
+  
+    try {
+      const token = await AsyncStorage.getItem("authToken");
+      const response = await fetch(`${API_BASE_URL}/store/buy`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          category: selectedTab,
+          name: currentItem.name,
+          price: currentItem.price,
+        }),
+      });
+  
+      const text = await response.text(); // JSON이 아닐 수 있으므로 text로 받음
+  
+      if (response.ok) {
+        Alert.alert("구매 완료", "아이템을 구매했습니다!");
+        setModalVisible(false);
+        fetchItems();
+        fetchTotalCoin();
+        setCurrentItem({ ...currentItem, buy: true });
+      } else if (text.includes("코인이 부족합니다")) {
+        Alert.alert("구매 실패", "코인이 부족합니다.");
+      } else if (text.includes("이미 구매한 아이템입니다")) {
+        Alert.alert("구매 실패", "이미 구매한 아이템입니다.");
+      } else {
+        Alert.alert("에러", text || "예상치 못한 오류가 발생했습니다.");
+      }
+    } catch (error) {
+      Alert.alert("오류", "네트워크 오류가 발생했습니다.");
+    }
+  };
+  
 
   const renderItem = ({ item }) => {
     const imageName = item.name.replace(/ /g, "_");
@@ -112,7 +195,7 @@ export default function StoreScreen() {
     return (
       <TouchableOpacity
         style={[styles.itemBox, selectedItem === item.storeId && styles.itemBoxSelected]}
-        onPress={() => setSelectedItem(item.storeId)}
+        onPress={() => handleItemPress(item)}
       >
         <Image source={imageSource} style={styles.itemImage} />
         {!item.buy && (
@@ -127,53 +210,34 @@ export default function StoreScreen() {
 
   return (
     <View style={styles.container}>
-      {/* 헤더 */}
       <View style={styles.header}>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate("MainScreen")}>
           <Image source={require("../assets/x.png")} style={styles.closeIcon} />
         </TouchableOpacity>
         <View style={styles.coinWrapper}>
           <Image source={require("../assets/coin.png")} style={styles.coinIcon} />
-          <Text style={styles.coinText}>120</Text>
+          <Text style={styles.coinText}>{totalCoin}</Text>
         </View>
       </View>
 
-      {/* 상단 배경 및 탭 버튼들 */}
       <View style={styles.backgroundArea}>
         <View style={styles.rightButtons}>
           <TouchableOpacity onPress={() => setSelectedTopButton("background")}>
-            <Image
-              source={require("../assets/bg_Icon.png")}
-              style={[
-                styles.smallIcon,
-                selectedTopButton === "background" && styles.selectedSmallIcon,
-              ]}
-            />
+            <Image source={require("../assets/bg_Icon.png")}
+              style={[styles.smallIcon, selectedTopButton === "background" && styles.selectedSmallIcon]} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => setSelectedTopButton("character")}>
-            <Image
-              source={require("../assets/ch_Icon.png")}
-              style={[
-                styles.smallIcon,
-                selectedTopButton === "character" && styles.selectedSmallIcon,
-              ]}
-            />
+            <Image source={require("../assets/ch_Icon.png")}
+              style={[styles.smallIcon, selectedTopButton === "character" && styles.selectedSmallIcon]} />
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* 아이템 리스트 - 하단만 스크롤 */}
       <View style={styles.itemContainer}>
         <View style={styles.tabContainer}>
           {categories.map((cat) => (
             <TouchableOpacity key={cat} onPress={() => setSelectedTab(cat)}>
-              <Image
-                source={categoryIcons[cat]}
-                style={[
-                  styles.tabIcon,
-                  selectedTab === cat && styles.selectedTabIcon,
-                ]}
-              />
+              <Image source={categoryIcons[cat]} style={[styles.tabIcon, selectedTab === cat && styles.selectedTabIcon]} />
             </TouchableOpacity>
           ))}
         </View>
@@ -186,6 +250,44 @@ export default function StoreScreen() {
           contentContainerStyle={styles.itemList}
         />
       </View>
+
+      {currentItem && (
+        <Modal
+          visible={modalVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalBox}>
+              <Image
+                source={imageMap[currentItem.name.replace(/ /g, "_")] || imageMap.default}
+                style={{ width: 80, height: 80, marginBottom: 10 }}
+              />
+              {!currentItem.buy && (
+                <View style={[styles.priceTag, { marginBottom: 12 }]}>
+                  <Image source={require("../assets/coin.png")} style={styles.coinIcon} />
+                  <Text style={styles.priceText}>{currentItem.price}</Text>
+                </View>
+              )}
+              <View style={styles.modalButtonRow}>
+                <TouchableOpacity style={styles.modalButton} onPress={handleBuyItem}>
+                  <Text style={styles.modalButtonText}>
+                    {currentItem.buy
+                      ? appliedItemName === currentItem.name
+                        ? "해제"
+                        : "적용"
+                      : "구매"}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.modalButton} onPress={() => setModalVisible(false)}>
+                  <Text style={styles.modalButtonText}>닫기</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+      )}
     </View>
   );
 }
@@ -196,11 +298,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     padding: 16,
+    marginTop: SCREEN_HEIGHT * 0.06,
   },
-  closeIcon: {
-    width: 24,
-    height: 24,
-  },
+  closeIcon: { width: 24, height: 24 },
   coinWrapper: {
     flexDirection: "row",
     alignItems: "center",
@@ -208,15 +308,8 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 20,
   },
-  coinIcon: {
-    width: 20,
-    height: 20,
-    marginRight: 5,
-  },
-  coinText: {
-    fontWeight: "bold",
-    color: "#333",
-  },
+  coinIcon: { width: 20, height: 20, marginRight: 5 },
+  coinText: { fontWeight: "bold", color: "#333" },
   backgroundArea: {
     height: SCREEN_HEIGHT * 0.4,
     backgroundColor: "#B9D7F1",
@@ -240,11 +333,9 @@ const styles = StyleSheet.create({
     tintColor: "#ccc",
     marginHorizontal: 5,
   },
-  selectedSmallIcon: {
-    tintColor: "#002D73",
-  },
+  selectedSmallIcon: { tintColor: "#002D73" },
   itemContainer: {
-   height: SCREEN_HEIGHT * 0.5,
+    height: SCREEN_HEIGHT * 0.5,
     backgroundColor: "#fff",
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
@@ -256,17 +347,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     marginBottom: 16,
   },
-  tabIcon: {
-    width: 30,
-    height: 30,
-    tintColor: "#ccc",
-  },
-  selectedTabIcon: {
-    tintColor: "#3258A5",
-  },
-  itemList: {
-    paddingBottom: 30,
-  },
+  tabIcon: { width: 30, height: 30, tintColor: "#ccc" },
+  selectedTabIcon: { tintColor: "#3258A5" },
+  itemList: { paddingBottom: 30 },
   itemBox: {
     width: SCREEN_WIDTH / 3.9,
     height: SCREEN_WIDTH / 3.9,
@@ -281,14 +364,8 @@ const styles = StyleSheet.create({
     borderColor: "#002D73",
     borderWidth: 2,
   },
-  itemImage: {
-    width: 35,
-    height: 35,
-  },
+  itemImage: { width: 35, height: 35, marginBottom: 10 },
   priceTag: {
-    position: "absolute",
-    top: 8,
-    left: 8,
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#fff",
@@ -296,9 +373,34 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     paddingVertical: 2,
   },
-  priceText: {
-    marginLeft: 4,
-    fontSize: 12,
+  priceText: { marginLeft: 4, fontSize: 12, fontWeight: "bold" },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  modalBox: {
+    backgroundColor: "white",
+    padding: 20,
+    height: SCREEN_HEIGHT * 0.28,
+    width: SCREEN_WIDTH * 0.6,
+    borderRadius: 15,
+    alignItems: "center",
+  },
+  modalButtonRow: {
+    flexDirection: "row",
+    marginTop: 15,
+    gap: 10,
+  },
+  modalButton: {
+    backgroundColor: "#3258A5",
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+  },
+  modalButtonText: {
+    color: "#fff",
     fontWeight: "bold",
   },
 });

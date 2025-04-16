@@ -42,7 +42,7 @@ const App = () => {
         <Stack.Screen name="Signup" component={SignupScreen}
           options={{
             headerStyle: {
-              backgroundColor: "#FFFDF0", // 헤더 배경색
+              backgroundColor: "#FFE98A", // 헤더 배경색
 
             },
           }}

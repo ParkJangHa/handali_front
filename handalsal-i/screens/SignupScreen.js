@@ -9,8 +9,12 @@ import {
   KeyboardAvoidingView,
   ScrollView,
   Platform,
+  ImageBackground,
+  Dimensions,
 } from "react-native";
 import { API_BASE_URL } from "@env";
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 const SignupScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
@@ -97,98 +101,109 @@ const SignupScreen = ({ navigation }) => {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    <ImageBackground
+      source={require("../assets/Vector.png")}
+      style={styles.background}
+      resizeMode="stretch"
     >
-      <ScrollView
-        contentContainerStyle={styles.container}
-        keyboardShouldPersistTaps="handled"
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
       >
-        <Text style={styles.title}>회원가입</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="이메일"
-          keyboardType="email-address"
-          value={email}
-          onChangeText={setEmail}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="비밀번호"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="비밀번호 확인"
-          secureTextEntry
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="이름"
-          value={name}
-          onChangeText={setName}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="전화번호 (숫자만 입력)"
-          keyboardType="numeric"
-          value={phone}
-          onChangeText={(text) => setPhone(text.replace(/[^0-9]/g, ""))}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="생년월일 (YYYY-MM-DD)"
-          keyboardType="numeric"
-          value={birthdate}
-          onChangeText={(text) => {
-            let formatted = text.replace(/[^0-9]/g, "").slice(0, 8);
-            if (formatted.length >= 4) {
-              formatted = formatted.slice(0, 4) + "-" + formatted.slice(4);
-            }
-            if (formatted.length >= 7) {
-              formatted = formatted.slice(0, 7) + "-" + formatted.slice(7);
-            }
-            setBirthdate(formatted);
-          }}
-        />
-        <TouchableOpacity style={styles.button} onPress={handleSignup}>
-          <Text style={styles.buttonText}>회원가입</Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          keyboardShouldPersistTaps="handled"
+        >
+          <Text style={styles.title}>회원가입</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="이메일"
+            keyboardType="email-address"
+            value={email}
+            onChangeText={setEmail}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="비밀번호"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="비밀번호 확인"
+            secureTextEntry
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="이름"
+            value={name}
+            onChangeText={setName}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="전화번호 (숫자만 입력)"
+            keyboardType="numeric"
+            value={phone}
+            onChangeText={(text) => setPhone(text.replace(/[^0-9]/g, ""))}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="생년월일 (YYYY-MM-DD)"
+            keyboardType="numeric"
+            value={birthdate}
+            onChangeText={(text) => {
+              let formatted = text.replace(/[^0-9]/g, "").slice(0, 8);
+              if (formatted.length >= 4) {
+                formatted = formatted.slice(0, 4) + "-" + formatted.slice(4);
+              }
+              if (formatted.length >= 7) {
+                formatted = formatted.slice(0, 7) + "-" + formatted.slice(7);
+              }
+              setBirthdate(formatted);
+            }}
+          />
+          <TouchableOpacity style={styles.button} onPress={handleSignup}>
+            <Text style={styles.buttonText}>회원가입</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
+  background: {
+    flex: 1,
+    width: SCREEN_WIDTH,
+    height: SCREEN_HEIGHT * 0.8,
+    backgroundColor: "#76D6F4"
+  },
+  scrollContainer: {
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
-    backgroundColor: "#FFFDF0",
+    paddingVertical: 40,
   },
   title: {
     fontSize: 35,
     fontWeight: "bold",
     marginBottom: 20,
+    color: "#333",
   },
   input: {
-    width: 350,
+    width: SCREEN_WIDTH * 0.85,
     height: 50,
     borderWidth: 1,
     borderColor: "#ddd",
     marginBottom: 15,
-    paddingHorizontal: 10,
+    paddingHorizontal: 15,
     borderRadius: 15,
-    backgroundColor: "#FFF1A3",
+    backgroundColor: "#FFF",
   },
   button: {
-    backgroundColor: "#FDA44F",
+    backgroundColor: "#FFF",
     paddingVertical: 15,
     paddingHorizontal: 40,
     borderRadius: 10,
