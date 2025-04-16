@@ -1,121 +1,175 @@
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View, TouchableOpacity, Image } from "react-native";
-import React from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  Image,
+  Dimensions,
+  ImageBackground,
+} from "react-native";
+import React, { useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useEffect } from "react";
-import { API_BASE_URL } from '@env';
+import { API_BASE_URL } from "@env";
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 const HomeScreen = ({ navigation }) => {
-    useEffect(() => {
-      const checkLoginStatus = async () => {
-        const token = await AsyncStorage.getItem("authToken");
-        if (!token) return;
-  
-        try {
-          const response = await fetch(`${API_BASE_URL}/handalis/view`, {
-            method: "GET",
-            headers: { Authorization: `Bearer ${token}` },
-          });
-  
-          if (response.ok) {
-            navigation.navigate("MainScreen");
-          } else if (response.status === 404) {
-            navigation.navigate("Category");
-          } else {
-            await AsyncStorage.removeItem("authToken");
-          }
-        } catch (error) {
-          console.error("자동 로그인 확인 오류:", error);
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      const token = await AsyncStorage.getItem("authToken");
+      if (!token) return;
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/handalis/view`, {
+          method: "GET",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (response.ok) {
+          navigation.navigate("MainScreen");
+        } else if (response.status === 404) {
+          navigation.navigate("Category");
+        } else {
+          await AsyncStorage.removeItem("authToken");
         }
-      };
-  
-      checkLoginStatus();
-    }, []);
+      } catch (error) {
+        console.error("자동 로그인 확인 오류:", error);
+      }
+    };
+
+    checkLoginStatus();
+  }, []);
+
   return (
-    <View style={styles.container}>
-      <View style={styles.imgCon}>
-        <Image 
-          source={require("../assets/logo.png")}
-          style={styles.img}
-        />
-      </View>
-      <View style={styles.titeCon}>
-        <View style={styles.tite}>
+    <View style={styles.wrapper}>
+      <StatusBar style="dark" />
+      <View style={styles.container}>
+        {/* 상단 이미지 */}
+        <View style={styles.imgCon}>
+          <Image
+            source={require("../assets/HomeScreen/달력 그림.png")}
+            style={styles.img}
+          />
+        </View>
+
+        {/* 타이틀 및 버튼 */}
+        <View style={styles.titeCon}>
           <Text style={styles.titetext}>한달이</Text>
-        </View>
-        <View style={styles.ButtonCon}>
-          {/* 로그인 버튼 */}
-          <TouchableOpacity 
-            style={styles.buttonlogin} 
-            onPress={() => navigation.navigate("Login")} // navigation 객체 사용
+
+          <TouchableOpacity
+            style={styles.buttonlogin}
+            onPress={() => navigation.navigate("Login")}
           >
-            <Text style={styles.buttonText}>로그인</Text>
+            <Image
+              source={require("../assets/HomeScreen/Assign_icon.png")}
+              style={styles.icon}
+            />
+            <Text style={styles.buttonText}>login</Text>
           </TouchableOpacity>
-          {/* 회원가입 버튼 */}
-          <TouchableOpacity 
-            style={styles.button} 
-            onPress={() => navigation.navigate("Signup")} // navigation 객체 사용
+
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => navigation.navigate("Signup")}
           >
-            <Text style={styles.buttonText}>회원가입</Text>
+            <Image
+              source={require("../assets/HomeScreen/Login_icon.png")}
+              style={styles.icon}
+            />
+            <Text style={styles.buttonText}>assign</Text>
           </TouchableOpacity>
         </View>
       </View>
-      <StatusBar style="auto" />
+
+      {/* 고양이 이미지 */}
+      <Image
+        source={require("../assets/HomeScreen/Yellow.png")}
+        style={styles.catIcon}
+      />
+
+      {/* 하단 배경 이미지 */}
+      <Image
+        source={require("../assets/HomeScreen/Weve.png")}
+        style={styles.background}
+        resizeMode="stretch"
+      />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  wrapper: {
+    flex: 1,
+    backgroundColor: "#FFE98A",
+  },
   container: {
     flex: 1,
-    backgroundColor: "#FFD563",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingTop: SCREEN_HEIGHT * 0.05,
+    zIndex: 1,
+  },
+  background: {
+    position: "absolute",
+    bottom: 0,
+    width: SCREEN_WIDTH,
+    height: SCREEN_HEIGHT * 0.38,
+    zIndex: 0,
   },
   imgCon: {
-    flex: 0.9,
-    alignItems: "center", 
-    justifyContent: "center",
+    flex: SCREEN_HEIGHT * 0.2
   },
   img: {
-    width: 250, 
-    height: 250, 
-    resizeMode: "contain", 
+    width: 215,
+    height: 226,
+    resizeMode: "contain",
   },
   titeCon: {
-    flex: 1,
-  },
-  tite: {
-    flex: 0.2,
+    flex: SCREEN_HEIGHT * 0.5,
     alignItems: "center",
-    justifyContent: "center",
+    gap: 20,
   },
   titetext: {
-    fontSize: 50,
+    fontSize: 48,
     fontWeight: "bold",
-    marginTop: -50,
-  },
-  ButtonCon: {
-    flex: 0.5,
-    gap: 10,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  button: {
-    backgroundColor: "#FDA44F", 
-    paddingVertical: 20, 
-    paddingHorizontal: 80, 
-    borderRadius: 30, 
   },
   buttonlogin: {
-    backgroundColor: "#FDA44F", 
-    paddingVertical: 20, 
-    paddingHorizontal: 90, 
-    borderRadius: 30, 
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#76D6F4",
+    paddingVertical: 12,
+    paddingHorizontal: 60,
+    borderRadius: 30,
+    width: SCREEN_WIDTH * 0.5,
+    gap: 10,
+  },
+  button: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#76D6F4",
+    paddingVertical: 12,
+    paddingHorizontal: 60,
+    borderRadius: 30,
+    width: SCREEN_WIDTH * 0.5,
+    gap: 10,
+  },
+  icon: {
+    width: 13.42,
+    height: 20,
   },
   buttonText: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#000", 
-    textAlign: "center",
+    color: "#2D5D6B",
+  },
+  catIcon: {
+    position: "absolute",
+    bottom: SCREEN_HEIGHT * 0.05,
+    width: 209,
+    height: 197,
+    resizeMode: "contain",
+    alignSelf: "center",
+    zIndex: 2,
   },
 });
 
