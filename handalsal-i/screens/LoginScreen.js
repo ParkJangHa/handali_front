@@ -10,9 +10,12 @@ import {
   KeyboardAvoidingView,
   ScrollView,
   Platform,
+  Dimensions,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from "@env";
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
@@ -73,33 +76,53 @@ const LoginScreen = ({ navigation }) => {
         contentContainerStyle={styles.container}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={styles.imgCon}>
-          <Image source={require("../assets/logo.png")} style={styles.img} />
+        <Image source={require("../assets/LoginScreen/Weve.png")} style={styles.img} resizeMode="stretch" />
+        
+        <Image
+                source={require("../assets/LoginScreen/Blue.png")}
+                style={styles.catIcon}
+        />
+        <View style={styles.bContainer}>
         </View>
-        <Text style={styles.title}>한달이</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="이메일 입력"
-          keyboardType="email-address"
-          value={email}
-          onChangeText={setEmail}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="비밀번호 입력"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>로그인</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
+        <View style={styles.inputWithIcon}>
+  <Image
+    source={require("../assets/LoginScreen/Email_icon.png")}
+    style={styles.icon}
+  />
+  <TextInput
+    style={styles.inputField}
+    placeholder="email"
+    keyboardType="email-address"
+    value={email}
+    onChangeText={setEmail}
+    placeholderTextColor="#2D5D6B"
+  />
+</View>
+<View style={styles.inputWithIcon}>
+  <Image
+    source={require("../assets/LoginScreen/Password_icon.png")}
+    style={styles.icon}
+  />
+  <TextInput
+    style={styles.inputField}
+    placeholder="password"
+    secureTextEntry
+    value={password}
+    onChangeText={setPassword}
+    placeholderTextColor="#2D5D6B"
+  />
+</View>
+      <View style={styles.rowContainer}>
+      <TouchableOpacity
           style={styles.signupButton}
           onPress={() => navigation.navigate("Signup")}
         >
           <Text style={styles.signupText}>회원가입</Text>
         </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={handleLogin}>
+          <Text style={styles.buttonText}>로그인</Text>
+        </TouchableOpacity>
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -110,51 +133,80 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#FFD563",
-    paddingBottom: 40,
+    backgroundColor: "#76D6F4",
   },
-  imgCon: {
-    alignItems: "center",
-    marginBottom: 20,
+  bContainer: {
+    marginBottom: SCREEN_HEIGHT *0.4,
   },
   img: {
-    width: 250,
+    top: 0,
+    position: "absolute",
+    width: SCREEN_WIDTH * 1,
     height: 250,
+    zIndex: 0,
+  },
+  catIcon: {
+    position: "absolute",
+    top: SCREEN_HEIGHT * 0.01,
+    width: 209,
+    height: 197,
     resizeMode: "contain",
+    alignSelf: "center",
+    zIndex: 2,
   },
-  title: {
-    fontSize: 50,
-    fontWeight: "bold",
-    marginBottom: 20,
-  },
-  input: {
-    width: 300,
-    height: 40,
+  inputWithIcon: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: SCREEN_WIDTH * 0.8,
+    height: SCREEN_HEIGHT * 0.07,
+    paddingVertical: 12,
+    paddingHorizontal: 60,
+    borderRadius: 30,
     borderWidth: 1,
     borderColor: "#ddd",
-    marginBottom: 10,
-    paddingHorizontal: 10,
-    borderRadius: 5,
-    backgroundColor: "#fff",
+    marginBottom: 20,
+    backgroundColor: "#FFE98A",
+  },
+  icon: {
+    width: 13.42,
+    height: 20,
+    marginRight: 8,
+  },
+  inputField: {
+    flex: 1,
+    fontSize: 14,
+    color: "#2D5D6B",
+  },
+  rowContainer: {
+    flexDirection: "row",
+    justifyContent: "space-evenly",
+    alignItems: "center",
+    width: SCREEN_WIDTH * 0.8,
+    gap: 15,
   },
   button: {
-    backgroundColor: "#FDA44F",
+    backgroundColor: "#FFE98A",
     paddingVertical: 15,
-    paddingHorizontal: 40,
-    borderRadius: 10,
+    paddingHorizontal: 60,
+    borderRadius: 30,
     marginTop: 10,
   },
   buttonText: {
     color: "#000",
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: "bold",
   },
   signupButton: {
-    marginTop: 20,
+    backgroundColor: "#ECF7F7",
+    paddingVertical: 15,
+    paddingHorizontal: 30,
+    borderRadius: 30,
+    marginTop: 10,
   },
   signupText: {
-    color: "#000",
-    fontSize: 14,
+    color: "#2D5D6B",
+    fontSize: 17,
+    fontWeight: "bold",
   },
 });
 

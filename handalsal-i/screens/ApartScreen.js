@@ -182,17 +182,17 @@ const ApartScreen = ({ navigation }) => {
   {/**한달이 이미지------------------------------------------ */ }
   // ✅ 이미지 파일명을 매핑하는 객체
   const imageMap = {
-    "image_0_0_0.png": require("../assets/000.png"),
-    "image_0_0_1.png": require("../assets/001.png"),
-    "image_0_1_0.png": require("../assets/010.png"),
-    "image_0_1_1.png": require("../assets/011.png"),
-    "image_1_0_0.png": require("../assets/100.png"),
+    "image_0_0_0.png": require("../assets/0,0,0.png"),
+    "image_0_0_1.png": require("../assets/0,0,1.png"),
+    "image_0_1_0.png": require("../assets/0,1,0.png"),
+    "image_0_1_1.png": require("../assets/0,1,1.png"),
+    "image_1_0_0.png": require("../assets/1,0,0.png"),
     //add more...
   }
 
   // ✅ 동적으로 이미지 파일을 가져오는 함수
   const getImageSource = (imageName) => {
-    return imageMap[imageName] || require("../assets/000.png");
+    return imageMap[imageName] || require("../assets/0,0,0.png");
   };
   {/**한달이 이미지------------------------------------------ */ }
 

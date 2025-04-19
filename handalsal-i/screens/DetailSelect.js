@@ -15,7 +15,7 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 const categoryMap = {
   "활동": "ACTIVITY",
-  "지적": "INTELLIGENT",
+  "지능": "INTELLIGENT",
   "예술": "ART"
 };
 
@@ -132,7 +132,7 @@ const DetailSelect = ({ route, navigation }) => {
 
       const categoryMap = {
         "활동": "ACTIVITY",
-        "지적": "INTELLIGENT",
+        "지능": "INTELLIGENT",
         "예술": "ART",
       };
       const convertedCategory = categoryMap[category] || category;
@@ -188,9 +188,9 @@ const DetailSelect = ({ route, navigation }) => {
           image: require("../assets/activityLogo.png"),
           label: "활동",
         },
-        지적: {
+        지능: {
           image: require("../assets/intelligenceLogo.png"),
-          label: "지적",
+          label: "지능",
         },
         예술: {
           image: require("../assets/artLogo.png"),
@@ -202,6 +202,7 @@ const DetailSelect = ({ route, navigation }) => {
 
   return (
     <View style={styles.container}>
+      <Image source={require("../assets/Category/Weve.png")} style={styles.img} resizeMode="stretch" />
       <Text style={styles.dateText}>{formattedDate}</Text>
       <Text style={styles.title}>한달이를 시작합니다</Text>
 
@@ -225,7 +226,7 @@ const DetailSelect = ({ route, navigation }) => {
           source={
             category === "활동"
               ? require("../assets/activityLogo.png")
-              : category === "지적"
+              : category === "지능"
                 ? require("../assets/intelligenceLogo.png")
                 : require("../assets/artLogo.png")
           }
@@ -250,7 +251,12 @@ const DetailSelect = ({ route, navigation }) => {
       </ScrollView>
 
       <View style={styles.habitAppendContainer}>
+        
         <TouchableOpacity style={styles.habitAppendButton} onPress={habitAppend}>
+        <Image
+            source={require("../assets/Category/Plus.png")}
+            style={styles.icon}
+          />
           <Text style={styles.habitAppendButtonText}>습관 추가하기</Text>
         </TouchableOpacity>
       </View>
@@ -267,22 +273,30 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     padding: SCREEN_WIDTH * 0.05,
-    backgroundColor: "#FFFDF0",
+    backgroundColor: "#FFE98A",
     marginTop: -SCREEN_WIDTH * 0.06,
+  },
+  img: {
+    top: 0,
+    position: "absolute",
+    width: SCREEN_WIDTH * 1,
+    height: SCREEN_HEIGHT * 0.47,
+    zIndex: 0,
   },
   dateText: {
     fontSize: SCREEN_WIDTH * 0.06,
     fontWeight: "bold",
-    color: "#000",
+    color: "#2D5D6B",
     alignSelf: "flex-start",
   },
   title: {
     fontSize: SCREEN_WIDTH * 0.08,
     fontWeight: "bold",
+    color: "#2D5D6B",
     alignSelf: "flex-start",
   },
   progressBar: {
-    width: "90%",
+    width: "100%",
     height: SCREEN_HEIGHT * 0.01,
     justifyContent: "center",
     marginVertical: SCREEN_HEIGHT * 0.02,
@@ -308,7 +322,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "rgba(0, 0, 0, 0.5)",
     alignSelf: "flex-start",
-    marginBottom: SCREEN_WIDTH * 0.05,
+    marginBottom: SCREEN_WIDTH * 0.06,
   },
   categoryCon: {
     flexDirection: "row",
@@ -316,7 +330,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: SCREEN_WIDTH * 0.9,
     height: SCREEN_HEIGHT * 0.15,
-    backgroundColor: "#F8E36E",
+    backgroundColor: "#FFFFFF",
     borderRadius: SCREEN_WIDTH * 0.05,
     marginTop: SCREEN_HEIGHT * 0.03,
     marginBottom: SCREEN_HEIGHT * 0.05,
@@ -329,7 +343,7 @@ const styles = StyleSheet.create({
   categoryText: {
     fontSize: SCREEN_WIDTH * 0.09,
     fontWeight: "bold",
-    color: "#000",
+    color: "#2D5D6B",
   },
   habitButton: {
     width: SCREEN_WIDTH * 0.9,
@@ -344,21 +358,26 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   selectedButton: {
-    backgroundColor: "rgba(248, 227, 110, 0.9)",
+    backgroundColor: "rgba(2, 80, 224, 0.5)",
   },
   habitButtonText: {
     fontSize: SCREEN_WIDTH * 0.045,
-    color: "#000",
+    color: "#2D5D6B",
     fontWeight: "bold",
   },
   habitAppendContainer: {
-    width: "100%",
+    alignSelf: "flex-end",
     marginBottom: SCREEN_HEIGHT * 0.03,
   },
   habitAppendButton: {
+    flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    alignSelf: "flex-end",
+  },
+  icon: {
+    width: 21,
+    height: 24,
+    marginRight: 8,
   },
   habitAppendButtonText: {
     fontSize: SCREEN_WIDTH * 0.045,
@@ -368,7 +387,7 @@ const styles = StyleSheet.create({
   },
   nextButton: {
     width: SCREEN_WIDTH * 0.9,
-    backgroundColor: "#000000",
+    backgroundColor: "#76D6F4",
     paddingVertical: SCREEN_HEIGHT * 0.02,
     borderRadius: 30,
     marginTop: SCREEN_HEIGHT * 0.01,
@@ -376,7 +395,7 @@ const styles = StyleSheet.create({
   },
   nextButtonText: {
     fontSize: SCREEN_WIDTH * 0.045,
-    color: "#FFF",
+    color: "#2D5D6B",
     fontWeight: "bold",
     textAlign: "center",
   },
