@@ -199,35 +199,35 @@ const ApartScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       {/**뒤로가기 버튼 */}
-
-
-      {/** 동 변경 버튼 */}
       <View style={styles.navContainer}>
         <View style={styles.backButton}>
           <TouchableOpacity
             onPress={() => { navigation.goBack() }}>
             <Image
-              source={require('../assets/backButton.png')}>
+              source={require('../assets/x.png')}>
             </Image>
           </TouchableOpacity>
         </View>
-        <Text style={styles.apartTitle}>{apartments.length > 0 ? `${apartments[selectedApartIndex].apart_id}동` : "불러오는 중"}</Text>
       </View>
 
+      {/** 동 변경 버튼 */}
       <View style={styles.navContainer2}>
         <TouchableOpacity
           onPress={handlePrevApart}
           disabled={selectedApartIndex === 0}
           style={[styles.navButton,
           selectedApartIndex === 0 && styles.disabledButton]}>
-          <Text style={styles.navButtonText}>&lt;&lt;</Text>
+          <Text style={styles.navButtonText}>&lt;</Text>
         </TouchableOpacity>
+
+        <Text style={styles.apartTitle}>{apartments.length > 0 ? `${apartments[selectedApartIndex].apart_id}동` : "불러오는 중"}</Text>
+
         <TouchableOpacity
           onPress={handleNextApart}
           disabled={selectedApartIndex === apartments.length - 1}
           style={[styles.navButton, selectedApartIndex === apartments.length - 1 ? styles.disabledButton : null]}
         >
-          <Text style={styles.navButtonText}>&gt;&gt;</Text>
+          <Text style={styles.navButtonText}>&gt;</Text>
         </TouchableOpacity>
 
       </View>
@@ -241,19 +241,21 @@ const ApartScreen = ({ navigation }) => {
         onScrollToIndexFailed={onScrollToIndexFailed} // ✅ 스크롤 실패 시 자동 재시도
         onContentSizeChange={scrollToCurrentMonth} // ✅ 처음 렌더링될 때 자동 스크롤
         ListHeaderComponent={ //아파트 꼭대기
-          <View style={styles.topBuilding}>
+          <View style={styles.rooftopColor}>
             <Image
               source={require("../assets/apartRoofTop.png")}
               style={styles.rooftopImage}
             />
           </View>
         }
+
+
         renderItem={({ item }) => (
           <TouchableOpacity //잠금인지 아닌지 판별
             style={styles.itemContainer}
             onPress={() => {
               if (item.nickname) {
-                setSelectedData(item);
+                setSelectedData(item); //모달로 전달할 데이터
                 setModalVisible(true);
               }
             }}
@@ -261,7 +263,9 @@ const ApartScreen = ({ navigation }) => {
             {item.nickname ? ( // ✅ 한달이가 있을 경우
 
               <View style={styles.floors}>
-                <Text style={styles.title}>{item.floor}층   {item.nickname}</Text>
+                <View style={styles.handaliTextCon}>
+                  <Text style={styles.title}>{item.floor}층   {item.nickname}</Text>
+                </View>
                 <Image
                   style={styles.handaliImage}
                   source={getImageSource(item.image)}
@@ -313,28 +317,53 @@ const ApartScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9D9B5',
     // backgroundColor: "black"
   },
 
   navContainer: {
     justifyContent: "space-around",
     flexDirection: "row",
-    backgroundColor: "black",
+    backgroundColor: "#4f291b",
     padding: SCREEN_HEIGHT * 0.01,
     paddingTop: SCREEN_HEIGHT * 0.06,
   },
   navContainer2: {
     justifyContent: "space-around",
     flexDirection: "row",
-    backgroundColor: "black",
-    padding: SCREEN_HEIGHT * 0.01,
+    backgroundColor: "#4f291b",
+    padding: SCREEN_HEIGHT * 0.04,
   },
-  apartTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    alignSelf: "center",
-    color: "white"
+
+  rooftopImage: {
+    width: '100%',
+    height: SCREEN_HEIGHT * 0.5,
+  },
+  rooftopColor: {
+    backgroundColor: '#A66E38'
+  },
+  itemContainer: {
+    backgroundColor: '#FFE98A',
+  },
+  floors: {
+    height: SCREEN_HEIGHT * 0.3,
+  },
+  lockIcon: {
+    width: "100%",
+    height: SCREEN_HEIGHT * 0.3,
+  },
+  lockLine: {
+    backgroundColor: "#684626",
+    height: SCREEN_HEIGHT * 0.01,
+  },
+  handaliTextCon: {
+    paddingLeft: SCREEN_WIDTH * 0.04,
+    paddingTop: SCREEN_WIDTH * 0.04,
+    // backgroundColor: 'red'
+  },
+  handaliImage: {
+    width: SCREEN_WIDTH * 0.4,
+    height: SCREEN_HEIGHT * 0.25,
+    alignSelf: 'center',
   },
 
   backButton: {
@@ -345,43 +374,18 @@ const styles = StyleSheet.create({
   },
   navButton: {
     padding: 10,
-    backgroundColor: "#684626",
-    borderRadius: 10,
+    backgroundColor: "#FFE98A",
+    borderRadius: 20,
   },
   disabledButton: {
-    backgroundColor: "#BDBDBD",
+    backgroundColor: "white",
   },
-  navButtonText: {
-    color: "white",
-    fontWeight: "bold",
-  },
-
-  topBuilding: {
-    backgroundColor: '#878282',
-    opacity: 0.6
-  },
-  rooftopImage: {
+  closeButton: {
+    marginTop: 20,
+    backgroundColor: "#FFE98A",
     width: "100%",
-  },
-
-  itemContainer: {
-    backgroundColor: '#F9D9B5',
-  },
-  floors: {
-    height: SCREEN_HEIGHT * 0.3,
-  },
-  lockIcon: {
-    width: "100%",
-    height: SCREEN_HEIGHT * 0.33,
-  },
-  lockLine: {
-    backgroundColor: "#684626",
-    height: SCREEN_HEIGHT * 0.01,
-  },
-  handaliImage: {
-    width: SCREEN_WIDTH * 0.4,
-    height: SCREEN_HEIGHT * 0.2,
-    alignSelf: 'center',
+    padding: 10,
+    borderRadius: 30,
   },
 
   modalContainer: {
@@ -399,6 +403,12 @@ const styles = StyleSheet.create({
   },
 
 
+  apartTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    alignSelf: "center",
+    color: "black"
+  },
   title: {
     fontSize: 25,
     fontWeight: "bold",
@@ -413,19 +423,15 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   closeButtonText: {
-    color: "#fff",
+    color: "black",
     fontWeight: "bold",
     alignSelf: "center",
   },
-
-
-  closeButton: {
-    marginTop: 20,
-    backgroundColor: "black",
-    width: "100%",
-    padding: 10,
-    borderRadius: 30,
+  navButtonText: {
+    color: "black",
+    fontWeight: "bold",
   },
+
 });
 
 export default ApartScreen;

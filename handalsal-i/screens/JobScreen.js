@@ -100,7 +100,7 @@ const JobScreen = ({ navigation }) => {
             { /* 한달이*/}
             <View style={styles.handaliContainer}>
                 <LinearGradient
-                    colors={["#FFE0B2", "#FFB07F", "#FF865E"]} // 그라데이션 색상
+                    colors={["#feebe1", "#fdd7be", "#fdcfae", "#FFB08A",]} // 그라데이션 색상
                     style={styles.circle}
                 >
                     { /**헤더 */}
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: SCREEN_HEIGHT * 0.02,
-        backgroundColor: '#FFFDF0'
+        backgroundColor: '#FFE98A'
     },
 
 
@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: SCREEN_WIDTH * 0.03
     },
     circleTitle: {
-        backgroundColor: "#FFF4E1",
+        backgroundColor: "#fcddd3",
         borderRadius: 10,
         height: SCREEN_HEIGHT * 0.03,
         width: SCREEN_WIDTH * 0.2,
@@ -224,17 +224,17 @@ const styles = StyleSheet.create({
         justifyContent: 'center'
     },
     handaliImage: {
-        width: '60%',
+        width: '85%',
         resizeMode: "contain" //이미지 비율 유지
     },
     line: {
-        backgroundColor: '#FFEBD8',
+        backgroundColor: 'white',
         height: 1,
         width: '100%',
     },
 
     button: {
-        backgroundColor: 'black',
+        backgroundColor: '#76D6F4',
         width: SCREEN_WIDTH * 0.8,
         paddingVertical: SCREEN_HEIGHT * 0.02,
         alignItems: 'center',
@@ -253,29 +253,29 @@ const styles = StyleSheet.create({
     },
     memoText: {
         fontSize: SCREEN_WIDTH * 0.05,
-        color: '#FF8000',
+        color: '#ff8851',
         fontWeight: 'bold'
     },
     circleHeaderText: {
-        color: "#8B5E3C"
+        color: "#5A3A29"
     },
     nicknameText: {
         fontSize: SCREEN_WIDTH * 0.06,
         fontWeight: 'bold',
-        color: "#8B5E3C",
+        color: "#5A3A29",
         justifyContent: 'center',
     },
     nameText: {
         fontSize: SCREEN_WIDTH * 0.047,
-        color: '#FFEBD8'
+        color: 'white'
     },
     valueText: {
         fontSize: SCREEN_WIDTH * 0.047,
         fontWeight: 'bold',
-        color: "#8B5E3C"
+        color: "#5A3A29"
     },
     buttonText: {
-        color: 'white',
+        color: '#2D5D6B',
         fontSize: SCREEN_WIDTH * 0.05,
         fontWeight: 'bold'
     }
