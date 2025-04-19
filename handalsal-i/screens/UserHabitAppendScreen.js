@@ -49,7 +49,7 @@ const UserHabitAppendScreen = ({ route, navigation }) => {
       // 카테고리 변환: 한글 → 대문자 영어 변환
       const categoryMap = {
         "활동": "ACTIVITY",
-        "지적": "INTELLIGENT",
+        "지능": "INTELLIGENT",
         "예술": "ART",
       };
       const convertedCategory = categoryMap[category] || category;
