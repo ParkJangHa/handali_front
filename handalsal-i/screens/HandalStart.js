@@ -81,6 +81,7 @@ const HandalStart = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+       <Image source={require("../assets/Category/Weve.png")} style={styles.img} resizeMode="stretch" />
       <Text style={styles.dateText}>{formattedDate}</Text>
       <Text style={styles.title}>이제 '한달이'가 태어나요</Text>
       <View style={styles.progressBar}>
@@ -100,13 +101,20 @@ const HandalStart = ({ navigation }) => {
         source={require("../assets/default_character.png")}
         style={styles.handalImage}
       />
-      <View style={styles.nicknameCon}>
+      <Image
+        source={require("../assets/Category/Vector.png")}
+        style={styles.handalbackImage}
+      />
+      <View style={styles.bottomCon}>
+        <View style={styles.nicknameCon}>
         <Text style={styles.nicknameText}>한달이에게 별명을 지어주세요!</Text>
         <TextInput
           style={styles.input}
           placeholder="   별명을 입력해 주세요."
+          placeholderTextColor= "#BFBDBD"
           value={nicknameInput}
           onChangeText={setNicknameInput}
+          maxLength={9} // 닉네임 최대 9자
         />
       </View>
       {loading ? (
@@ -116,6 +124,8 @@ const HandalStart = ({ navigation }) => {
           <Text style={styles.startButtonText}>시작할래요</Text>
         </TouchableOpacity>
       )}
+      </View>
+      <Image source={require("../assets/Category/B_weve.png")} style={styles.background} resizeMode="stretch" />
     </View>
   );
 };
@@ -128,19 +138,27 @@ export const styles = StyleSheet.create({
     backgroundColor: "#FFF",
     marginTop: -SCREEN_WIDTH * 0.06,
   },
+  img: {
+    top: 0,
+    position: "absolute",
+    width: SCREEN_WIDTH,
+    height: SCREEN_HEIGHT * 0.25,
+    zIndex: 0,
+  },
   dateText: {
     fontSize: SCREEN_WIDTH * 0.06,
     fontWeight: "bold",
-    color: "#000",
+    color: "#2D5D6B",
     alignSelf: "flex-start",
   },
   title: {
     fontSize: SCREEN_WIDTH * 0.08,
     fontWeight: "bold",
+    color: "#2D5D6B",
     alignSelf: "flex-start",
   },
   progressBar: {
-    width: "90%",
+    width: "100%",
     height: SCREEN_HEIGHT * 0.01,
     justifyContent: "center",
     marginVertical: SCREEN_HEIGHT * 0.02,
@@ -169,23 +187,36 @@ export const styles = StyleSheet.create({
     marginBottom: SCREEN_WIDTH * 0.05,
   },
   handalImage: {
-    width: SCREEN_WIDTH * 0.5, // 반응형 너비
+    top: SCREEN_HEIGHT * 0.15,
+    position: "absolute",
+    width: SCREEN_WIDTH * 0.4, // 반응형 너비
+    height: SCREEN_HEIGHT * 0.6, // 반응형 높이
+  },
+  handalbackImage: {
+    top: SCREEN_HEIGHT * 0.2,
+    position: "absolute",
+    width: SCREEN_WIDTH * 0.63, // 반응형 너비
     height: SCREEN_HEIGHT * 0.35, // 반응형 높이
-    marginTop: SCREEN_HEIGHT * 0.02,
-    marginBottom: SCREEN_HEIGHT * 0.02,
+    marginTop: SCREEN_HEIGHT * 0.06,
+    zIndex: -1,
+  },
+  bottomCon: {
+    bottom: 0,
+    position: "absolute",
   },
   nicknameCon: {
-    flex: 1,
     width: SCREEN_WIDTH * 0.9, // 반응형 너비
+    height: SCREEN_HEIGHT * 0.15,
     justifyContent: "center",
     alignItems: "center",
     borderRadius: SCREEN_WIDTH * 0.05, // 둥근 테두리 반응형
-    backgroundColor: "rgba(224, 242, 31, 0.5)",
+    backgroundColor: "#76D6F4",
     marginBottom: SCREEN_HEIGHT * 0.02, // 반응형 아래 여백
   },
   nicknameText: {
     fontSize: SCREEN_WIDTH * 0.06, // 반응형 텍스트 크기
     marginBottom: SCREEN_HEIGHT * 0.02, // 반응형 아래 여백
+    color: "#2D5D6B",
     fontWeight: "bold",
   },
   input: {
@@ -196,20 +227,29 @@ export const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: SCREEN_WIDTH * 0.05, // 반응형 폰트 크기
     color: "#000",
+    fontWeight: "bold",
   },
   startButton: {
-    width: SCREEN_WIDTH * 0.9,
-    backgroundColor: "#F8B66C",
-    paddingVertical: SCREEN_HEIGHT * 0.02, // 반응형 세로 여백
+    width: SCREEN_WIDTH * 0.6,
+    backgroundColor: "#FFD5B7",
+    paddingVertical: SCREEN_HEIGHT * 0.015, // 반응형 세로 여백
     paddingHorizontal: SCREEN_WIDTH * 0.1, // 반응형 가로 여백
     borderRadius: SCREEN_WIDTH * 0.05, // 둥근 테두리 반응형
     alignSelf: "center",
+    marginBottom: SCREEN_HEIGHT * 0.01,
   },
   startButtonText: {
     fontSize: SCREEN_WIDTH * 0.045, // 반응형 폰트 크기
     fontWeight: "bold",
-    color: "#000",
+    color: "#2D5D6B",
     textAlign: "center",
+  },
+  background: {
+    position: "absolute",
+    bottom: 0,
+    width: SCREEN_WIDTH,
+    height: SCREEN_HEIGHT * 0.3,
+    zIndex: -1,
   },
 });
 
