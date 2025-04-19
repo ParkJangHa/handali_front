@@ -59,7 +59,7 @@ const App = () => {
           options={{
             headerLeft: () => null,
             headerStyle: {
-              backgroundColor: "#FFFDF0", // 헤더 배경색
+              backgroundColor: "#76D6F4", // 헤더 배경색
             },
           }}
         />

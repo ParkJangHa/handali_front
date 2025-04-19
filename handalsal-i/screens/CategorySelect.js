@@ -28,6 +28,7 @@ const CategorySelect = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      <Image source={require("../assets/Category/Weve.png")} style={styles.img} resizeMode="stretch" />
       <Text style={styles.dateText}>{formattedDate}</Text>
       <Text style={styles.title}>한달이를 시작합니다</Text>
       <View style={styles.progressBar}>
@@ -60,7 +61,7 @@ const CategorySelect = ({ navigation }) => {
           ]}
           onPress={() => handlePress("지적")}
         >
-          <Text style={styles.habitButtonText}>지적</Text>
+          <Text style={styles.habitButtonText}>지능</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[
@@ -84,25 +85,33 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     padding: SCREEN_WIDTH * 0.05,
-    backgroundColor: "#FFFDF0",
-    marginTop: -SCREEN_WIDTH * 0.06,
+    backgroundColor: "#FFE98A",
+    marginTop: -SCREEN_WIDTH * 0.07,
+  },
+  img: {
+    top: 0,
+    position: "absolute",
+    width: SCREEN_WIDTH * 1,
+    height: SCREEN_HEIGHT * 0.3,
+    zIndex: 0,
   },
   dateText: {
     fontSize: SCREEN_WIDTH * 0.06,
     fontWeight: "bold",
-    color: "#000",
+    color: "#2D5D6B",
     alignSelf: "flex-start",
   },
   title: {
     fontSize: SCREEN_WIDTH * 0.08,
     fontWeight: "bold",
+    color: "#2D5D6B",
     alignSelf: "flex-start",
   },
   progressBar: {
-    width: "90%",
+    width: "100%",
     height: SCREEN_HEIGHT * 0.01,
     justifyContent: "center",
-    marginVertical: SCREEN_HEIGHT * 0.02,
+    marginVertical: SCREEN_HEIGHT * 0.04,
   },
   backgroundBar: {
     width: "100%",
@@ -125,40 +134,40 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "rgba(0, 0, 0, 0.5)",
     alignSelf: "flex-start",
-    marginBottom: SCREEN_WIDTH * 0.05,
+    marginBottom: SCREEN_WIDTH * 0.13,
   },
   rowContainer: {
     flexDirection: "row",
     justifyContent: "space-evenly",
     width: "100%",
-    marginBottom: SCREEN_WIDTH * 0.9,
+    marginBottom: SCREEN_WIDTH * 0.75,
   },
   habitButton: {
-    backgroundColor: "rgba(248, 227, 110, 0.5)",
+    backgroundColor: "rgba(999, 999, 999, 1)",
     width: SCREEN_WIDTH * 0.25,
-    height: SCREEN_HEIGHT * 0.08,
+    height: SCREEN_HEIGHT * 0.1,
     borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",
   },
   selectedButton: {
-    backgroundColor: "rgba(248, 227, 110, 0.9)",
+    backgroundColor: "rgba(2, 80, 224, 0.5)",
   },
   habitButtonText: {
     fontSize: SCREEN_WIDTH * 0.04,
     fontWeight: "bold",
-    color: "#000",
+    color: "#2D5D6B",
   },
   nextButton: {
     width: "100%",
-    backgroundColor: "#000",
+    backgroundColor: "#76D6F4",
     paddingVertical: SCREEN_HEIGHT * 0.02,
-    borderRadius: 30,
+    borderRadius: 20,
     alignItems: "center",
     marginVertical: SCREEN_HEIGHT * 0.02,
   },
   nextButtonText: {
-    color: "#FFF",
+    color: "#2D5D6B",
     fontSize: SCREEN_WIDTH * 0.05,
     fontWeight: "bold",
   },
