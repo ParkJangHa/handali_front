@@ -200,7 +200,7 @@ export default function MainScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#83BCE7" },
+  container: { flex: 1, backgroundColor: "#F1F1F1" },
   topBar: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
     marginLeft: SCREEN_WIDTH * 0.02,
   },
   topIcons: { flexDirection: "row", gap: SCREEN_WIDTH * 0.05 },
-  icon: { width: SCREEN_WIDTH * 0.1, height: SCREEN_WIDTH * 0.1 },
+  icon: { width: SCREEN_WIDTH * 0.076, height: SCREEN_WIDTH * 0.07 },
   logoutText: { fontSize: SCREEN_WIDTH * 0.04, fontWeight: "bold", color: "red" },
   content: { flex: 1 },
   dayText: {
@@ -242,17 +242,17 @@ const styles = StyleSheet.create({
   },
   characterContainer: {
     position: "absolute",
-    top: "90%",
-    left: "46%",
+    top: "20%",
+    left: "10%",
     transform: [
       { translateX: -SCREEN_WIDTH * 0.25 },
-      { translateY: -SCREEN_WIDTH * 0.25 },
+      { translateY: -SCREEN_WIDTH * 0.35 },
     ],
-    zIndex: 10,
+    zIndex: -1,
   },
   character: {
-    width: SCREEN_WIDTH * 0.5,
-    height: SCREEN_WIDTH * 0.5,
+    width: SCREEN_WIDTH * 1.3,
+    height: SCREEN_HEIGHT * 1,
     resizeMode: "contain",
   },
   sofa: {
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: "70%",
     left: "20%",
-    zIndex: 9,
+    zIndex: -2,
   },
   window: {
     width: SCREEN_WIDTH * 0.4,
@@ -269,11 +269,12 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: "40%",
     left: "10%",
-    zIndex: 5,
+    zIndex: -2,
   },
   bottomBackground: {
     flex: 0.8,
-    backgroundColor: "#D7E7F5",
+    backgroundColor: "#DFAA76",
+    zIndex: -3,
   },
   bottomNav: {
     position: "absolute",
@@ -283,13 +284,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: "#FFF",
+    backgroundColor: "#DFAA76",
     paddingHorizontal: SCREEN_WIDTH * 0.15,
     paddingVertical: SCREEN_HEIGHT * 0.02,
   },
   navButton: { alignItems: "center" },
   navIcon: {
-    width: SCREEN_WIDTH * 0.06,
+    width: SCREEN_WIDTH * 0.08,
     height: SCREEN_WIDTH * 0.08,
   },
   navText: {
@@ -298,7 +299,7 @@ const styles = StyleSheet.create({
   },
   recordButton: { alignItems: "center" },
   recordIcon: {
-    width: SCREEN_WIDTH * 0.17,
+    width: SCREEN_WIDTH * 0.19,
     height: SCREEN_WIDTH * 0.17,
     marginBottom: SCREEN_HEIGHT * 0.02,
   },
