@@ -26,6 +26,11 @@ const imageMap = {
   "image_1_0_1.png": require("../assets/1,0,1.png"),
   "image_1_1_0.png": require("../assets/1,1,0.png"),
   "image_1_1_1.png": require("../assets/1,1,1.png"),
+  "image_0_0_0.png": require("../assets/2,0,1.png"),
+  "image_0_0_1.png": require("../assets/2,0,2.png"),
+  "image_0_1_0.png": require("../assets/2,0,3.png"),
+  "image_0_1_1.png": require("../assets/2,0,4.png"),
+  "image_1_0_0.png": require("../assets/2,0,5.png"),
   "default_character.png": require("../assets/default_character.png"),
 };
 
