@@ -156,6 +156,8 @@ export default function HabitCheckScreen({ route, navigation }) {
                 {/**타이틀 */}
                 <View style={styles.mainTitleCon}>
                     <Text style={styles.mainTitleText}>기록할 내용을 확인해주세요</Text>
+                    <Text style={styles.mainSubTitleText}>같은 습관에 대한 기록은 하루에 한번만 할 수 있어요!</Text>
+                    <Text style={styles.mainSubTitleText}> 수정이 불가하니 신중히 기록해주세요!</Text>
                 </View>
 
                 {/**카테고리명 */}
@@ -208,8 +210,7 @@ const styles = StyleSheet.create({
     //container
     container: {
         flex: 1,
-        // backgroundColor: '#FF9730',
-        backgroundColor: '#FFF5DA',
+        backgroundColor: '#76D6F4',
     },
     backButton: {
         marginTop: SCREEN_HEIGHT * 0.06,
@@ -218,7 +219,10 @@ const styles = StyleSheet.create({
     },
     mainContainer: {
         flex: 1,
-        padding: SCREEN_WIDTH * 0.07,
+        paddingTop: SCREEN_WIDTH * 0.02,
+        paddingLeft: SCREEN_WIDTH * 0.07,
+        paddingRight: SCREEN_WIDTH * 0.07,
+        paddingBottom: SCREEN_WIDTH * 0.07,
     },
     mainTitleCon: {
         flex: 0.5,
@@ -258,19 +262,15 @@ const styles = StyleSheet.create({
 
     //in view
     card: {
-        // backgroundColor: '#FFF5DA',
-        backgroundColor: '#FF9730',
-        opacity: 0.8,
+        backgroundColor: 'white',
         width: '100%',
         padding: SCREEN_WIDTH * 0.05,
         borderRadius: 20,
-        borderColor: '#FFF5DA',
-        borderWidth: 1,
     },
 
     //button
     recordButton: {
-        backgroundColor: "black",
+        backgroundColor: "#FFE98A",
         padding: SCREEN_HEIGHT * 0.02,
         borderRadius: 30,
         alignItems: "center",
@@ -281,6 +281,11 @@ const styles = StyleSheet.create({
         fontSize: SCREEN_WIDTH * 0.07,
         fontWeight: 'bold',
         color: 'black'
+    },
+    mainSubTitleText: {
+        fontSize: SCREEN_WIDTH * 0.04,
+        color: '#3076f7',
+        fontWeight: 'bold'
     },
     labelsText: {
         fontSize: SCREEN_WIDTH * 0.04,
@@ -297,7 +302,7 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: SCREEN_WIDTH * 0.05,
         fontWeight: 'bold',
-        color: 'white'
+        color: 'black'
     },
 
 });

@@ -36,14 +36,14 @@ export default function HabitDetailScreen({ route, navigation }) {
     // 만족도 3색 분기
     const dynamicTextColor = (satisfaction) => {
         if (satisfaction == 100) {
-            return { color: '#55d406' }
+            return { color: '#00bc61' }
         }
         else if (satisfaction >= 75) {
-            return { color: '#FF9730' };
+            return { color: '#3076f7' };
         } else if (satisfaction >= 50) {
             return { color: 'black' };
         } else {
-            return { color: '#a8b7a8' };
+            return { color: '#e1e4e1' };
         }
     };
 
@@ -135,10 +135,10 @@ export default function HabitDetailScreen({ route, navigation }) {
                             keyExtractor={(item) => item.habit_id.toString()}
                             renderItem={({ item }) => (
                                 <TouchableOpacity
-                                    style={[styles.detailHabitButton, selectedHabit === item.detail && styles.selectedButton,]}
+                                    style={[styles.detailHabitButton, selectedHabit === item.detail && styles.selectedButton]}
                                     onPress={() => setSelectedHabit(item.detail)}
                                 >
-                                    <Text style={styles.contentText}>{item.detail}</Text>
+                                    <Text style={[styles.contentText, selectedHabit === item.detail && styles.selectedText]}>{item.detail}</Text>
                                 </TouchableOpacity>
                             )}
                             ListEmptyComponent={<Text style={styles.contentText}>세부습관이 없습니다.</Text>}
@@ -221,11 +221,11 @@ export default function HabitDetailScreen({ route, navigation }) {
 
                     <Slider
                         thumbTintColor="black"
-                        minimumTrackTintColor="#FF9730" // 최소 트랙 색상
-                        maximumTrackTintColor="#ddd"
+                        minimumTrackTintColor="#3076f7" // 최소 트랙 색상
+                        maximumTrackTintColor="white"
                         minimumValue={1}
                         maximumValue={100}
-                        step={5}
+                        step={1}
                         value={satisfaction}
                         onValueChange={(value) => setSatisfaction(value)
                         }
@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
     //container
     container: {
         flex: 1,
-        backgroundColor: "#FF9730"
+        backgroundColor: "#FFE98A"
     },
     backButton: {
         marginTop: SCREEN_HEIGHT * 0.06,
@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
     },
     containerRecord: {
         flex: 1,
-        backgroundColor: "#FFF5DA",
+        backgroundColor: "#76D6F4",
         borderTopLeftRadius: 50,
         borderTopRightRadius: 50
         , padding: SCREEN_HEIGHT * 0.04,
@@ -329,7 +329,7 @@ const styles = StyleSheet.create({
     },
     pickerContainer: {
         width: SCREEN_WIDTH * 0.8,
-        backgroundColor: '#FFF5DA',
+        backgroundColor: '#fdfaeb',
         borderRadius: 20,
         padding: 20,
         alignItems: 'center',
@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
 
     //button
     detailHabitButton: {
-        backgroundColor: "#FFC387",
+        backgroundColor: "white",
         opacity: 0.8,
         padding: SCREEN_HEIGHT * 0.02,
         marginVertical: SCREEN_HEIGHT * 0.01,
@@ -345,16 +345,16 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     selectedButton: {
-        backgroundColor: "#FF8000", // 선택된 버튼 스타일
+        backgroundColor: "#3076f7", // 선택된 버튼 스타일
     },
     recordButton: {
-        backgroundColor: "black",
+        backgroundColor: "#FFE98A",
         padding: SCREEN_HEIGHT * 0.02,
         borderRadius: 30,
         alignItems: "center",
     },
     timeButton: {
-        backgroundColor: "#FFC387",
+        backgroundColor: "white",
         opacity: 0.8,
         padding: SCREEN_HEIGHT * 0.02,
         marginVertical: SCREEN_HEIGHT * 0.01,
@@ -380,7 +380,7 @@ const styles = StyleSheet.create({
     recordText: {
         fontSize: SCREEN_WIDTH * 0.05,
         fontWeight: 'bold',
-        color: 'white'
+        color: 'black'
     },
     contentText: {
         fontSize: SCREEN_WIDTH * 0.05,
@@ -389,6 +389,9 @@ const styles = StyleSheet.create({
         fontSize: SCREEN_WIDTH * 0.05,
         color: 'white',
         alignSelf: 'center'
-    }
+    },
+    selectedText: {
+        fontWeight: 'bold'
+    },
 
 });

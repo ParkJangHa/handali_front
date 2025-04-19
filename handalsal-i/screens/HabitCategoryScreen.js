@@ -119,19 +119,19 @@ export default function HabitCategoryScreen({ navigation }) {
                     <TouchableOpacity
                         style={[styles.button, selectedType === "활동" && styles.selectedButton,]}
                         onPress={() => setSelectedType("활동")}>
-                        <Text style={styles.buttonText}>활 동</Text>
+                        <Text style={[styles.buttonText, selectedType === "활동" && styles.selectedText]}>활 동</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
                         style={[styles.button, selectedType === "지능" && styles.selectedButton,]}
                         onPress={() => setSelectedType("지능")}>
-                        <Text style={styles.buttonText}>지 능</Text>
+                        <Text style={[styles.buttonText, selectedType === "지능" && styles.selectedText]}>지 능</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
                         style={[styles.button, selectedType === "예술" && styles.selectedButton,]}
                         onPress={() => setSelectedType("예술")}>
-                        <Text style={styles.buttonText}>예 술</Text>
+                        <Text style={[styles.buttonText, selectedType === "예술" && styles.selectedText]}>예 술</Text>
                     </TouchableOpacity>
                 </View>
 
@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
     //container
     container: {
         flex: 1,
-        backgroundColor: "#FF9730"
+        backgroundColor: "#FFE98A"
     },
     backButton: {
         marginTop: SCREEN_HEIGHT * 0.06,
@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
     },
     containerBottom: {
         flex: 1.3,
-        backgroundColor: "#FFF1CA",
+        backgroundColor: "#76D6F4",
         borderTopLeftRadius: 50,
         borderTopRightRadius: 50,
         paddingTop: SCREEN_HEIGHT * 0.04,
@@ -208,8 +208,8 @@ const styles = StyleSheet.create({
         borderTopColor: 'white',
     },
     categoryImage: {
-        width: SCREEN_WIDTH * 0.4,
-        height: SCREEN_HEIGHT * 0.2,
+        width: SCREEN_HEIGHT * 0.25,
+        height: SCREEN_HEIGHT * 0.25,
         resizeMode: 'contain',
     },
 
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
 
     //buttons
     button: {
-        backgroundColor: "#FFC387",
+        backgroundColor: "white",
         opacity: 0.8,
         padding: SCREEN_HEIGHT * 0.02,
         marginVertical: SCREEN_HEIGHT * 0.01,
@@ -244,10 +244,10 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     selectedButton: {
-        backgroundColor: "#FF8000", // 선택된 버튼 스타일
+        backgroundColor: "#3076f7", // 선택된 버튼 스타일
     },
     selectButton: {
-        backgroundColor: "black",
+        backgroundColor: "#FFE98A",
         padding: SCREEN_HEIGHT * 0.023,
         borderRadius: 30,
         width: "100%",
@@ -267,13 +267,15 @@ const styles = StyleSheet.create({
     selectButtonText: {
         fontSize: SCREEN_WIDTH * 0.049,
         fontWeight: 'bold',
-        color: 'white'
+        color: 'black'
     },
     speechText: {
         fontSize: SCREEN_WIDTH * 0.045,
         fontWeight: 'bold',
         color: 'black',
     },
-
+    selectedText: {
+        fontWeight: 'bold'
+    }
 
 });
