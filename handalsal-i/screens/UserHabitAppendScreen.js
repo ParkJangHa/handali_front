@@ -97,6 +97,7 @@ const UserHabitAppendScreen = ({ route, navigation }) => {
 
   return (
     <View style={styles.container}>
+      <Image source={require("../assets/Category/Weve.png")} style={styles.img} resizeMode="stretch" />
       <Text style={styles.dateText}>{formattedDate}</Text>
       <Text style={styles.title}>한달이를 시작합니다</Text>
 
@@ -120,6 +121,7 @@ const UserHabitAppendScreen = ({ route, navigation }) => {
           key={index}
           style={styles.input}
           placeholder={`습관 ${index + 1}을(를) 입력하세요`}
+          placeholderTextColor="#2D5D6B"
           value={habit}
           onChangeText={(text) => handleInputChange(text, index)}
         />
@@ -130,7 +132,7 @@ const UserHabitAppendScreen = ({ route, navigation }) => {
         <ActivityIndicator size="large" color="#F8B66C" />
       ) : (
         <TouchableOpacity style={styles.addButton} onPress={handleSubmit}>
-          <Text style={styles.addButtonText}>추가했어요</Text>
+          <Text style={styles.addButtonText}>입력했어요</Text>
         </TouchableOpacity>
       )}
     </View>
@@ -142,22 +144,30 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     padding: SCREEN_WIDTH * 0.05,
-    backgroundColor: "#FFFDF0",
+    backgroundColor: "#FFE98A",
     marginTop: -SCREEN_WIDTH * 0.06,
+  },
+  img: {
+    top: 0,
+    position: "absolute",
+    width: SCREEN_WIDTH * 1,
+    height: SCREEN_HEIGHT * 0.7,
+    zIndex: 0,
   },
   dateText: {
     fontSize: SCREEN_WIDTH * 0.06,
     fontWeight: "bold",
-    color: "#000",
+    color: "#2D5D6B",
     alignSelf: "flex-start",
   },
   title: {
     fontSize: SCREEN_WIDTH * 0.08,
     fontWeight: "bold",
+    color: "#2D5D6B",
     alignSelf: "flex-start",
   },
   progressBar: {
-    width: "90%",
+    width: "100%",
     height: SCREEN_HEIGHT * 0.01,
     justifyContent: "center",
     marginVertical: SCREEN_HEIGHT * 0.02,
@@ -183,7 +193,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "rgba(0, 0, 0, 0.5)",
     alignSelf: "flex-start",
-    marginBottom: SCREEN_WIDTH * 0.05,
+    marginBottom: SCREEN_WIDTH * 0.06,
   },
   categoryCon: {
     flexDirection: "row",
@@ -191,7 +201,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: SCREEN_WIDTH * 0.9,
     height: SCREEN_HEIGHT * 0.15,
-    backgroundColor: "#F8E36E",
+    backgroundColor: "#FFFFFF",
     borderRadius: SCREEN_WIDTH * 0.05,
     marginTop: SCREEN_HEIGHT * 0.03,
     marginBottom: SCREEN_HEIGHT * 0.05,
@@ -204,11 +214,11 @@ const styles = StyleSheet.create({
   categoryText: {
     fontSize: SCREEN_WIDTH * 0.09,
     fontWeight: "bold",
-    color: "#000",
+    color: "#2D5D6B",
   },
   input: {
     width: "100%",
-    height: SCREEN_HEIGHT * 0.06,
+    height: SCREEN_HEIGHT * 0.07,
     borderWidth: SCREEN_WIDTH * 0.003,
     borderColor: "#000",
     borderRadius: SCREEN_WIDTH * 0.02,
@@ -216,16 +226,18 @@ const styles = StyleSheet.create({
     marginBottom: SCREEN_HEIGHT * 0.03,
     backgroundColor: "#FFFDF0",
     alignSelf: "center",
+    color: "#2D5D6B",
+    fontWeight: "bold"
   },
   addButton: {
     width: "100%",
-    backgroundColor: "#F8B66C",
+    backgroundColor: "#76D6F4",
     paddingVertical: SCREEN_HEIGHT * 0.02,
     borderRadius: 30,
     marginTop: SCREEN_HEIGHT * 0.07,
   },
   addButtonText: {
-    color: "#000",
+    color: "#2D5D6B",
     fontSize: SCREEN_WIDTH * 0.045,
     fontWeight: "bold",
     textAlign: "center",
