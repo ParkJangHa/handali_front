@@ -361,10 +361,10 @@ const styles = StyleSheet.create({
     // backgroundColor: 'red'
   },
   handaliImage: {
-    width: SCREEN_WIDTH * 0.5,
-    height: SCREEN_HEIGHT * 0.5,
+    width: SCREEN_WIDTH * 0.4,
+    height: SCREEN_HEIGHT * 0.3,
     transform: [
-      { translateY: -SCREEN_WIDTH * 0.3 },
+      { translateY: -SCREEN_WIDTH * 0.1 },
     ],
     alignSelf: 'center',
   },
@@ -372,7 +372,7 @@ const styles = StyleSheet.create({
   backButton: {
     position: 'absolute', // 절대 위치 설정
     left: SCREEN_WIDTH * 0.06, // 왼쪽 끝에 배치
-    top: SCREEN_HEIGHT * 0.06,
+    top: SCREEN_HEIGHT * 0.04,
     zIndex: 1, // 다른 요소 위에 위치하도록 설정
   },
   navButton: {

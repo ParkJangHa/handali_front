@@ -105,12 +105,12 @@ export default function HabitCategoryScreen({ navigation }) {
                     source={getImageSource()} // 선택된 값이 있을 경우, 값(활동, 지능, 예술)에 따라 동적으로 이미지 변경
                     style={[styles.categoryImage,
                         selectedType === null && { 
-                            width: SCREEN_HEIGHT * 0.8, 
-                            height: SCREEN_HEIGHT * 0.8,
+                            width: SCREEN_HEIGHT * 0.3, 
+                            height: SCREEN_HEIGHT * 0.3,
                             zIndex: -1,
                             position: 'absolute',
-                            top: -SCREEN_WIDTH * 0.2,
-                            left: -SCREEN_WIDTH * 0.18,
+                            top: SCREEN_WIDTH * 0.25,
+                            left: SCREEN_WIDTH * 0.3,
                         } // 선택 안 했을 때 키우기
                     ]}
                 />

@@ -152,22 +152,22 @@ const styles = StyleSheet.create({
 
 
     titleContainer: {
-        flex: 0.2,
         marginTop: SCREEN_HEIGHT * 0.06,
-        // backgroundColor: 'blue'
+        //backgroundColor: 'blue'
     },
     memoContainer: {
         justifyContent: 'center',
         alignItems: 'center',
         marginTop: SCREEN_HEIGHT * 0.01,
-        // backgroundColor: 'red'
+        marginBottom: SCREEN_HEIGHT * 0.01,
+        //backgroundColor: 'red'
     },
 
 
     handaliContainer: {
-        flex: 0.67,
         alignItems: 'center',
-        // backgroundColor: 'orange'
+        marginBottom: SCREEN_HEIGHT * 0.02,
+        //backgroundColor: 'orange'
     },
     circlerHeaderContainer: {
         flexDirection: "row",
@@ -196,9 +196,9 @@ const styles = StyleSheet.create({
 
 
     buttonContainer: {
-        flex: 0.13,
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
+        //backgroundColor: "red",
     },
 
 
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center'
     },
     handaliImage: {
-        width: '200%',
+        width: '90%',
         resizeMode: "contain" //이미지 비율 유지
     },
     line: {

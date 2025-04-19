@@ -245,14 +245,14 @@ const styles = StyleSheet.create({
     top: "20%",
     left: "10%",
     transform: [
-      { translateX: -SCREEN_WIDTH * 0.25 },
-      { translateY: -SCREEN_WIDTH * 0.35 },
+      { translateX: SCREEN_WIDTH * 0.11 },
+      { translateY: SCREEN_WIDTH * 0.35 },
     ],
     zIndex: -1,
   },
   character: {
-    width: SCREEN_WIDTH * 1.3,
-    height: SCREEN_HEIGHT * 1,
+    width: SCREEN_WIDTH * 0.6,
+    height: SCREEN_HEIGHT * 0.3,
     resizeMode: "contain",
   },
   sofa: {
