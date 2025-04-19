@@ -57,9 +57,9 @@ const CategorySelect = ({ navigation }) => {
         <TouchableOpacity
           style={[
             styles.habitButton,
-            selectedButton === "지적" && styles.selectedButton,
+            selectedButton === "지능" && styles.selectedButton,
           ]}
-          onPress={() => handlePress("지적")}
+          onPress={() => handlePress("지능")}
         >
           <Text style={styles.habitButtonText}>지능</Text>
         </TouchableOpacity>
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     marginBottom: SCREEN_WIDTH * 0.75,
   },
   habitButton: {
-    backgroundColor: "rgba(999, 999, 999, 1)",
+    backgroundColor: "rgba(255, 255, 255, 1)",
     width: SCREEN_WIDTH * 0.25,
     height: SCREEN_HEIGHT * 0.1,
     borderRadius: 20,
