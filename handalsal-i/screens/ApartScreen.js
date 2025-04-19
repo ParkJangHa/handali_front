@@ -361,8 +361,11 @@ const styles = StyleSheet.create({
     // backgroundColor: 'red'
   },
   handaliImage: {
-    width: SCREEN_WIDTH * 0.4,
-    height: SCREEN_HEIGHT * 0.25,
+    width: SCREEN_WIDTH * 0.5,
+    height: SCREEN_HEIGHT * 0.5,
+    transform: [
+      { translateY: -SCREEN_WIDTH * 0.3 },
+    ],
     alignSelf: 'center',
   },
 

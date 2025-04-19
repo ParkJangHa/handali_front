@@ -103,7 +103,16 @@ export default function HabitCategoryScreen({ navigation }) {
 
                 <Image
                     source={getImageSource()} // 선택된 값이 있을 경우, 값(활동, 지능, 예술)에 따라 동적으로 이미지 변경
-                    style={styles.categoryImage}
+                    style={[styles.categoryImage,
+                        selectedType === null && { 
+                            width: SCREEN_HEIGHT * 0.8, 
+                            height: SCREEN_HEIGHT * 0.8,
+                            zIndex: -1,
+                            position: 'absolute',
+                            top: -SCREEN_WIDTH * 0.2,
+                            left: -SCREEN_WIDTH * 0.18,
+                        } // 선택 안 했을 때 키우기
+                    ]}
                 />
             </View>
 
@@ -185,7 +194,7 @@ const styles = StyleSheet.create({
     // in containerTop
     speechBubble: {
         position: 'absolute',
-        top: SCREEN_HEIGHT * 0.01,
+        top: SCREEN_HEIGHT * 0.08,
         left: SCREEN_WIDTH * 0.3,
         backgroundColor: 'white',
         borderRadius: 15,

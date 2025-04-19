@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
     memoContainer: {
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: SCREEN_HEIGHT * 0.03,
+        marginTop: SCREEN_HEIGHT * 0.01,
         // backgroundColor: 'red'
     },
 
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center'
     },
     handaliImage: {
-        width: '85%',
+        width: '200%',
         resizeMode: "contain" //이미지 비율 유지
     },
     line: {

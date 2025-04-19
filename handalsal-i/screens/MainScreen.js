@@ -175,7 +175,8 @@ export default function MainScreen({ navigation }) {
 
       {/* 하단 네비게이션 */}
       <View style={styles.bottomBackground}>
-        <View style={styles.bottomNav}>
+      </View>
+      <View style={styles.bottomNav}>
           <TouchableOpacity style={styles.navButton}>
             <Image source={require("../assets/main.png")} style={styles.navIcon} />
             <Text style={styles.navText}>메인</Text>
@@ -194,7 +195,6 @@ export default function MainScreen({ navigation }) {
             <Text style={styles.navText}>아파트</Text>
           </TouchableOpacity>
         </View>
-      </View>
     </View>
   );
 }
@@ -287,6 +287,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#DFAA76",
     paddingHorizontal: SCREEN_WIDTH * 0.15,
     paddingVertical: SCREEN_HEIGHT * 0.02,
+    zIndex: 1,
   },
   navButton: { alignItems: "center" },
   navIcon: {
@@ -295,7 +296,7 @@ const styles = StyleSheet.create({
   },
   navText: {
     fontSize: SCREEN_WIDTH * 0.03,
-    color: "#000",
+    color: "#2D5D6B",
   },
   recordButton: { alignItems: "center" },
   recordIcon: {
