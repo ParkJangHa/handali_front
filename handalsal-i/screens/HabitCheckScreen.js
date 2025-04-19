@@ -32,7 +32,7 @@ export default function HabitCheckScreen({ route, navigation }) {
         let convertedCategoryType;
         if (categoryName == "활동")
             convertedCategoryType = "ACTIVITY"
-        else if (categoryName == "지적")
+        else if (categoryName == "지능")
             convertedCategoryType = "INTELLIGENT"
         else
             convertedCategoryType = "ART"
