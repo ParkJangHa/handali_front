@@ -66,7 +66,7 @@ const App = () => {
         <Stack.Screen name="DetailSelect" component={DetailSelect}
           options={{
             headerStyle: {
-              backgroundColor: "#FFFDF0", // 헤더 배경색
+              backgroundColor: "#76D6F4", // 헤더 배경색
 
             },
           }}
@@ -74,7 +74,7 @@ const App = () => {
         <Stack.Screen name="HabitAppendScreen" component={HabitAppendScreen}
           options={{
             headerStyle: {
-              backgroundColor: "#FFFDF0", // 헤더 배경색
+              backgroundColor: "#76D6F4", // 헤더 배경색
 
 
             },
@@ -83,7 +83,7 @@ const App = () => {
         <Stack.Screen name="UserHabitAppendScreen" component={UserHabitAppendScreen}
           options={{
             headerStyle: {
-              backgroundColor: "#FFFDF0", // 헤더 배경색
+              backgroundColor: "#76D6F4", // 헤더 배경색
 
             },
           }}
@@ -91,7 +91,7 @@ const App = () => {
         <Stack.Screen name="HandalStart" component={HandalStart}
           options={{
             headerStyle: {
-              backgroundColor: "#FFFFFF", // 헤더 배경색
+              backgroundColor: "#76D6F4", // 헤더 배경색
 
             },
           }}
