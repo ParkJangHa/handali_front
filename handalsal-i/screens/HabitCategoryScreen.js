@@ -30,6 +30,14 @@ export default function HabitCategoryScreen({ navigation }) {
         "image_0_1_0.png": require("../assets/0,1,0.png"),
         "image_0_1_1.png": require("../assets/0,1,1.png"),
         "image_1_0_0.png": require("../assets/1,0,0.png"),
+        "image_1_0_1.png": require("../assets/1,0,1.png"),
+        "image_1_1_0.png": require("../assets/1,1,0.png"),
+        "image_1_1_1.png": require("../assets/1,1,1.png"),
+        "image_2_0_1.png": require("../assets/2,0,1.png"),
+        "image_2_0_2.png": require("../assets/2,0,2.png"),
+        "image_2_0_3.png": require("../assets/2,0,3.png"),
+        "image_2_0_4.png": require("../assets/2,0,4.png"),
+        "image_2_0_5.png": require("../assets/2,0,5.png"),
         //add more...
     }
 
@@ -103,7 +111,16 @@ export default function HabitCategoryScreen({ navigation }) {
 
                 <Image
                     source={getImageSource()} // 선택된 값이 있을 경우, 값(활동, 지능, 예술)에 따라 동적으로 이미지 변경
-                    style={styles.categoryImage}
+                    style={[styles.categoryImage,
+                        selectedType === null && { 
+                            width: SCREEN_HEIGHT * 0.3, 
+                            height: SCREEN_HEIGHT * 0.3,
+                            zIndex: -1,
+                            position: 'absolute',
+                            top: SCREEN_WIDTH * 0.25,
+                            left: SCREEN_WIDTH * 0.3,
+                        } // 선택 안 했을 때 키우기
+                    ]}
                 />
             </View>
 
@@ -185,7 +202,7 @@ const styles = StyleSheet.create({
     // in containerTop
     speechBubble: {
         position: 'absolute',
-        top: SCREEN_HEIGHT * 0.01,
+        top: SCREEN_HEIGHT * 0.08,
         left: SCREEN_WIDTH * 0.3,
         backgroundColor: 'white',
         borderRadius: 15,

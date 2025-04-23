@@ -187,6 +187,14 @@ const ApartScreen = ({ navigation }) => {
     "image_0_1_0.png": require("../assets/0,1,0.png"),
     "image_0_1_1.png": require("../assets/0,1,1.png"),
     "image_1_0_0.png": require("../assets/1,0,0.png"),
+    "image_1_0_1.png": require("../assets/1,0,1.png"),
+    "image_1_1_0.png": require("../assets/1,1,0.png"),
+    "image_1_1_1.png": require("../assets/1,1,1.png"),
+    "image_2_0_1.png": require("../assets/2,0,1.png"),
+    "image_2_0_2.png": require("../assets/2,0,2.png"),
+    "image_2_0_3.png": require("../assets/2,0,3.png"),
+    "image_2_0_4.png": require("../assets/2,0,4.png"),
+    "image_2_0_5.png": require("../assets/2,0,5.png"),
     //add more...
   }
 
@@ -362,14 +370,17 @@ const styles = StyleSheet.create({
   },
   handaliImage: {
     width: SCREEN_WIDTH * 0.4,
-    height: SCREEN_HEIGHT * 0.25,
+    height: SCREEN_HEIGHT * 0.3,
+    transform: [
+      { translateY: -SCREEN_WIDTH * 0.1 },
+    ],
     alignSelf: 'center',
   },
 
   backButton: {
     position: 'absolute', // 절대 위치 설정
     left: SCREEN_WIDTH * 0.06, // 왼쪽 끝에 배치
-    top: SCREEN_HEIGHT * 0.06,
+    top: SCREEN_HEIGHT * 0.04,
     zIndex: 1, // 다른 요소 위에 위치하도록 설정
   },
   navButton: {

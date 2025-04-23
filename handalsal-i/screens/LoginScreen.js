@@ -11,6 +11,7 @@ import {
   ScrollView,
   Platform,
   Dimensions,
+  StatusBar,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from "@env";
@@ -68,6 +69,8 @@ const LoginScreen = ({ navigation }) => {
   };
 
   return (
+    <>
+    <StatusBar hidden={true} />
     <KeyboardAvoidingView
       style={{ flex: 1 }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -125,6 +128,7 @@ const LoginScreen = ({ navigation }) => {
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
+    </>
   );
 };
 

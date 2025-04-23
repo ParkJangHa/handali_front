@@ -187,10 +187,10 @@ export const styles = StyleSheet.create({
     marginBottom: SCREEN_WIDTH * 0.05,
   },
   handalImage: {
-    top: SCREEN_HEIGHT * 0.15,
+    top: SCREEN_HEIGHT * 0.28,
     position: "absolute",
-    width: SCREEN_WIDTH * 0.4, // 반응형 너비
-    height: SCREEN_HEIGHT * 0.6, // 반응형 높이
+    width: SCREEN_WIDTH * 0.35, // 반응형 너비
+    height: SCREEN_HEIGHT * 0.3, // 반응형 높이
   },
   handalbackImage: {
     top: SCREEN_HEIGHT * 0.2,

@@ -32,7 +32,7 @@ export default function HabitCheckScreen({ route, navigation }) {
         let convertedCategoryType;
         if (categoryName == "활동")
             convertedCategoryType = "ACTIVITY"
-        else if (categoryName == "지적")
+        else if (categoryName == "지능")
             convertedCategoryType = "INTELLIGENT"
         else
             convertedCategoryType = "ART"
@@ -219,16 +219,16 @@ const styles = StyleSheet.create({
     },
     mainContainer: {
         flex: 1,
-        paddingTop: SCREEN_WIDTH * 0.02,
+        paddingTop: SCREEN_WIDTH * 0.03,
         paddingLeft: SCREEN_WIDTH * 0.07,
         paddingRight: SCREEN_WIDTH * 0.07,
         paddingBottom: SCREEN_WIDTH * 0.07,
     },
     mainTitleCon: {
-        flex: 0.5,
+        flex: 0.8,
         justifyContent: 'center',
         alignItems: 'center',
-        // backgroundColor: 'yellow',
+        //backgroundColor: 'yellow',
     },
     categoryNameCon: {
         flex: 1,
@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
         color: 'black'
     },
     mainSubTitleText: {
-        fontSize: SCREEN_WIDTH * 0.04,
+        fontSize: SCREEN_WIDTH * 0.037,
         color: '#3076f7',
         fontWeight: 'bold'
     },

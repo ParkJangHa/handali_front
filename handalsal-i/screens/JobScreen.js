@@ -12,8 +12,7 @@ const JobScreen = ({ navigation }) => {
     const [jobName, setJobName] = useState();
     const [salary, setSalary] = useState();
     const [startDate, setStartDate] = useState();
-    const imageSource = require("../assets/0,0,0.png");
-
+    const [imageSource, setImageSource] = useState(require("../assets/0,0,0.png"));
     // ✅ 이미지 파일명을 매핑하는 객체
     const imageMap = {
         "image_0_0_0.png": require("../assets/0,0,0.png"),
@@ -21,13 +20,22 @@ const JobScreen = ({ navigation }) => {
         "image_0_1_0.png": require("../assets/0,1,0.png"),
         "image_0_1_1.png": require("../assets/0,1,1.png"),
         "image_1_0_0.png": require("../assets/1,0,0.png"),
+        "image_1_0_1.png": require("../assets/1,0,1.png"),
+        "image_1_1_0.png": require("../assets/1,1,0.png"),
+        "image_1_1_1.png": require("../assets/1,1,1.png"),
+        "image_2_0_1.png": require("../assets/2,0,1.png"),
+        "image_2_0_2.png": require("../assets/2,0,2.png"),
+        "image_2_0_3.png": require("../assets/2,0,3.png"),
+        "image_2_0_4.png": require("../assets/2,0,4.png"),
+        "image_2_0_5.png": require("../assets/2,0,5.png"),
         //add more...
     }
 
     // ✅ 동적으로 이미지 파일을 가져오는 함수
-    const setImageSource = (imageName) => {
-        imageSource = imageMap[imageName] || require("../assets/0,0,0.png");
-    };
+    const setImageSourceByName = (imageName) => {
+        const mapped = imageMap[imageName] || require("../assets/0,0,0.png");
+        setImageSource(mapped);
+      };
 
     //오늘 날짜
     const today = new Date();
@@ -70,7 +78,7 @@ const JobScreen = ({ navigation }) => {
                     setJobName(data1.job_name);
                     setSalary(data1.salary);
                     setStartDate(data1.start_date);
-                    setImageSource(data1.image);
+                    setImageSourceByName(data1.image);
 
                 } else {
                     console.log("API 응답 오류:", data1);
@@ -152,22 +160,22 @@ const styles = StyleSheet.create({
 
 
     titleContainer: {
-        flex: 0.2,
         marginTop: SCREEN_HEIGHT * 0.06,
-        // backgroundColor: 'blue'
+        //backgroundColor: 'blue'
     },
     memoContainer: {
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: SCREEN_HEIGHT * 0.03,
-        // backgroundColor: 'red'
+        marginTop: SCREEN_HEIGHT * 0.01,
+        marginBottom: SCREEN_HEIGHT * 0.01,
+        //backgroundColor: 'red'
     },
 
 
     handaliContainer: {
-        flex: 0.67,
         alignItems: 'center',
-        // backgroundColor: 'orange'
+        marginBottom: SCREEN_HEIGHT * 0.02,
+        //backgroundColor: 'orange'
     },
     circlerHeaderContainer: {
         flexDirection: "row",
@@ -196,9 +204,9 @@ const styles = StyleSheet.create({
 
 
     buttonContainer: {
-        flex: 0.13,
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
+        //backgroundColor: "red",
     },
 
 
@@ -224,7 +232,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center'
     },
     handaliImage: {
-        width: '85%',
+        width: '90%',
         resizeMode: "contain" //이미지 비율 유지
     },
     line: {

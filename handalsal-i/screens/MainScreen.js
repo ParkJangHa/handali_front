@@ -26,6 +26,11 @@ const imageMap = {
   "image_1_0_1.png": require("../assets/1,0,1.png"),
   "image_1_1_0.png": require("../assets/1,1,0.png"),
   "image_1_1_1.png": require("../assets/1,1,1.png"),
+  "image_2_0_1.png": require("../assets/2,0,1.png"),
+  "image_2_0_2.png": require("../assets/2,0,2.png"),
+  "image_2_0_3.png": require("../assets/2,0,3.png"),
+  "image_2_0_4.png": require("../assets/2,0,4.png"),
+  "image_2_0_5.png": require("../assets/2,0,5.png"),
   "default_character.png": require("../assets/default_character.png"),
 };
 
@@ -43,40 +48,81 @@ export default function MainScreen({ navigation }) {
 
   const intervalRef = useRef(null);
 
-  const fetchHandaliStatus = async () => {
-    try {
-      const token = await AsyncStorage.getItem("authToken");
-      if (!token) {
-        Alert.alert("세션 만료", "다시 로그인해주세요.");
-        navigation.navigate("Login");
-        return;
-      }
-
-      const response = await fetch(`${API_BASE_URL}/handalis/view`, {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setNickname(data.nickname);
-        setDaysSinceCreated(data.days_since_created);
-        setTotalCoin(data.total_coin);
-
-        const matchedImage = imageMap[data.image];
-        setHandaliImage(matchedImage || imageMap["default_character.png"]);
-      } else if (response.status === 404) {
-        navigation.navigate("CategorySelectScreen");
-      } else if (response.status === 412) {
-        Alert.alert("세션이 만료되었습니다.", "재로그인이 필요합니다.");
-        navigation.navigate("Login");
-      }
-    } catch (error) {
-      Alert.alert("오류", "네트워크 오류가 발생했습니다.");
-      setHandaliImage(imageMap["default_character.png"]);
+  // ✅ 한달이 상태 조회 API 호출
+const fetchHandaliStatus = async () => {
+  try {
+    const token = await AsyncStorage.getItem("authToken");
+    if (!token) {
+      Alert.alert("세션 만료", "다시 로그인해주세요.");
+      navigation.navigate("Login");
+      return;
     }
-  };
 
+    const response = await fetch(`${API_BASE_URL}/handalis/view`, {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log("📌 한달이 상태 조회 응답:", data);
+
+      setNickname(data.nickname);
+      setDaysSinceCreated(data.days_since_created);
+      setTotalCoin(data.total_coin);
+
+      // 🔍 이미지 값 확인
+      console.log("🔍 서버에서 받은 이미지:", data.image);
+      console.log("🔍 현재 이미지 매핑 키 목록:", Object.keys(imageMap));
+      
+      if (data.image && imageMap[data.image]) {
+        console.log("✅ 로컬 이미지 매칭 성공:", data.image);
+        setHandaliImage(imageMap[data.image]); // ✅ 로컬 이미지 적용
+      } else {
+        console.log("🚨 로컬 이미지 매칭 실패, 기본 이미지 사용");
+        setHandaliImage(imageMap["default_character.png"]); // ✅ 기본 이미지 적용
+      }
+    } else if (response.status === 404) {
+      console.log("📌 한달이가 존재하지 않습니다. 마지막 한달이 조회 실행");
+      checkLastHandali(); // 🔍 마지막 생성된 한달이 조회
+    } else {
+      console.log("📌 예상치 못한 오류 발생:", response.status);
+    }
+  } catch (error) {
+    console.error("🚨 한달이 상태 조회 오류:", error);
+    Alert.alert("오류", "네트워크 오류가 발생했습니다.");
+    setHandaliImage(imageMap["default_character.png"]);
+  }
+};
+
+
+// ✅ 마지막 생성된 한달이 조회
+const checkLastHandali = async () => {
+  try {
+    const token = await AsyncStorage.getItem("authToken");
+    const response = await fetch(`${API_BASE_URL}/handalis/recent`, {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log("📌 마지막 생성된 한달이 조회 응답:", data);
+      
+      // 🔍 마지막 생성된 한달이가 있으면 직업 화면으로 이동
+      navigation.navigate("JobScreen", { handaliId: data.handali_id });
+    } else if (response.status === 404) {
+      console.log("📌 마지막 생성된 한달이도 없음 → 습관 선택 화면으로 이동");
+      navigation.navigate("CategorySelectScreen");
+    } else {
+      console.error("🚨 서버 오류 발생:", response.status);
+      Alert.alert("오류", "서버 오류가 발생했습니다.");
+    }
+  } catch (error) {
+    console.error("🚨 마지막 생성된 한달이 조회 오류:", error);
+    navigation.navigate("CategorySelectScreen");
+  }
+};
   const fetchAppliedItems = async () => {
     try {
       const categories = ["소파", "배경", "벽장식", "바닥장식"];
@@ -175,7 +221,8 @@ export default function MainScreen({ navigation }) {
 
       {/* 하단 네비게이션 */}
       <View style={styles.bottomBackground}>
-        <View style={styles.bottomNav}>
+      </View>
+      <View style={styles.bottomNav}>
           <TouchableOpacity style={styles.navButton}>
             <Image source={require("../assets/main.png")} style={styles.navIcon} />
             <Text style={styles.navText}>메인</Text>
@@ -194,7 +241,6 @@ export default function MainScreen({ navigation }) {
             <Text style={styles.navText}>아파트</Text>
           </TouchableOpacity>
         </View>
-      </View>
     </View>
   );
 }
@@ -245,14 +291,14 @@ const styles = StyleSheet.create({
     top: "20%",
     left: "10%",
     transform: [
-      { translateX: -SCREEN_WIDTH * 0.25 },
-      { translateY: -SCREEN_WIDTH * 0.35 },
+      { translateX: SCREEN_WIDTH * 0.11 },
+      { translateY: SCREEN_WIDTH * 0.35 },
     ],
     zIndex: -1,
   },
   character: {
-    width: SCREEN_WIDTH * 1.3,
-    height: SCREEN_HEIGHT * 1,
+    width: SCREEN_WIDTH * 0.6,
+    height: SCREEN_HEIGHT * 0.3,
     resizeMode: "contain",
   },
   sofa: {
@@ -287,6 +333,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#DFAA76",
     paddingHorizontal: SCREEN_WIDTH * 0.15,
     paddingVertical: SCREEN_HEIGHT * 0.02,
+    zIndex: 1,
   },
   navButton: { alignItems: "center" },
   navIcon: {
@@ -295,7 +342,7 @@ const styles = StyleSheet.create({
   },
   navText: {
     fontSize: SCREEN_WIDTH * 0.03,
-    color: "#000",
+    color: "#2D5D6B",
   },
   recordButton: { alignItems: "center" },
   recordIcon: {
