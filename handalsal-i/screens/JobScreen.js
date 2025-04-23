@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from '@env';
-
+import { characterImageMap } from "../utils/characterImageMap";
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 const JobScreen = ({ navigation }) => {
@@ -12,28 +12,12 @@ const JobScreen = ({ navigation }) => {
     const [jobName, setJobName] = useState();
     const [salary, setSalary] = useState();
     const [startDate, setStartDate] = useState();
-    const [imageSource, setImageSource] = useState(require("../assets/0,0,0.png"));
+    const [imageSource, setImageSource] = useState(require("../assets/character/0,0,0.png"));
     // ✅ 이미지 파일명을 매핑하는 객체
-    const imageMap = {
-        "image_0_0_0.png": require("../assets/0,0,0.png"),
-        "image_0_0_1.png": require("../assets/0,0,1.png"),
-        "image_0_1_0.png": require("../assets/0,1,0.png"),
-        "image_0_1_1.png": require("../assets/0,1,1.png"),
-        "image_1_0_0.png": require("../assets/1,0,0.png"),
-        "image_1_0_1.png": require("../assets/1,0,1.png"),
-        "image_1_1_0.png": require("../assets/1,1,0.png"),
-        "image_1_1_1.png": require("../assets/1,1,1.png"),
-        "image_2_0_1.png": require("../assets/2,0,1.png"),
-        "image_2_0_2.png": require("../assets/2,0,2.png"),
-        "image_2_0_3.png": require("../assets/2,0,3.png"),
-        "image_2_0_4.png": require("../assets/2,0,4.png"),
-        "image_2_0_5.png": require("../assets/2,0,5.png"),
-        //add more...
-    }
 
     // ✅ 동적으로 이미지 파일을 가져오는 함수
     const setImageSourceByName = (imageName) => {
-        const mapped = imageMap[imageName] || require("../assets/0,0,0.png");
+        const mapped = characterImageMap[imageName] || require("../assets/character/0,0,0.png");
         setImageSource(mapped);
       };
 

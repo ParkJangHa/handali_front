@@ -12,6 +12,8 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from "@env";
+import { characterImageMap } from "../utils/characterImageMap";
+import { storeItemImageMap } from "../utils/storeItemImageMap";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -23,49 +25,6 @@ const categoryIcons = {
   바닥장식: require("../assets/Store_Clock.png"),
 };
 
-const imageMap = {
-  /* "원룸": require("./assets/storeItems/원룸.png"),
-  "빌라": require("./assets/storeItems/빌라.png"),
-  "아파트": require("./assets/storeItems/아파트.png"),
-  "스위트룸": require("./assets/storeItems/스위트룸.png"),
-  "고풍스러운_서재": require("./assets/storeItems/고풍스러운_서재.png"),
-  "미니멀리스트_거실": require("./assets/storeItems/미니멀리스트_거실.png"),
-  "화려한_펜트하우스": require("./assets/storeItems/화려한_펜트하우스.png"),
-  "일본식_다다미방": require("./assets/storeItems/일본식_다다미방.png"),
-  "유럽풍_클래식_인테리어": require("./assets/storeItems/유럽풍_클래식_인테리어.png"),
-  "따뜻한_카페_스타일_공간": require("./assets/storeItems/따뜻한_카페_스타일_공간.png"),
-  "나무_의자": require("./assets/storeItems/나무_의자.png"),
-  "철제_의자": require("./assets/storeItems/철제_의자.png"),
-  "디자인_의자": require("./assets/storeItems/디자인_의자.png"),
-  "나무_소파": require("./assets/storeItems/나무_소파.png"),
-  "철제_소파": require("./assets/storeItems/철제_소파.png"),
-  "디자인_소파": require("./assets/storeItems/디자인_소파.png"),
-  "가죽_소파": require("./assets/storeItems/가죽_소파.png"),
-  "모듈형_소파": require("./assets/storeItems/모듈형_소파.png"),
-  "빈티지_패브릭_소파": require("./assets/storeItems/빈티지_패브릭_소파.png"),
-  "나무_시계": require("./assets/storeItems/나무_시계.png"),
-  "값싼_액자": require("./assets/storeItems/값싼_액자.png"),
-  "비싼_액자": require("./assets/storeItems/비싼_액자.png"),
-  "모던한_벽걸이_선반": require("./assets/storeItems/모던한_벽걸이_선반.png"),
-  "빈티지_거울": require("./assets/storeItems/빈티지_거울.png"),
-  "LED_네온_사인": require("./assets/storeItems/LED_네온_사인.png"),
-  "그림_액자": require("./assets/storeItems/그림_액자.png"),
-  "벽걸이_플랜트": require("./assets/storeItems/벽걸이_플랜트.png"),
-  "세계_지도_장식": require("./assets/storeItems/세계_지도_장식.png"),
-  "스탠딩_조명": require("./assets/storeItems/스탠딩_조명.png"),
-  "크리스마스_트리": require("./assets/storeItems/크리스마스_트리.png"),
-  "모던_러그": require("./assets/storeItems/모던_러그.png"),
-  "대형_화분": require("./assets/storeItems/대형_화분.png"),
-  "빈티지_서랍장": require("./assets/storeItems/빈티지_서랍장.png"),
-  "자동_로봇_청소기": require("./assets/storeItems/자동_로봇_청소기.png"),
-  "책_무더기": require("./assets/storeItems/책_무더기.png"),
-  "불멍용_미니_화로": require("./assets/storeItems/불멍용_미니_화로.png"),
-  "전신_거울": require("./assets/storeItems/전신_거울.png"),
-  "앤틱_보석함": require("./assets/storeItems/앤틱_보석함.png"),*/
-  "푹신한_소파": require("../assets/storeItems/푹신한_소파.png"),
-  "철_창문": require("../assets/storeItems/철_창문.png"),
-  default: require("../assets/default.png"),
-};
 
 export default function StoreScreen({ navigation }) {
   const [selectedTab, setSelectedTab] = useState("소파");
@@ -190,7 +149,7 @@ export default function StoreScreen({ navigation }) {
 
   const renderItem = ({ item }) => {
     const imageName = item.name.replace(/ /g, "_");
-    const imageSource = imageMap[imageName] || imageMap.default;
+    const imageSource = storeItemImageMap[imageName] || storeItemImageMap.default;
 
     return (
       <TouchableOpacity
@@ -261,7 +220,7 @@ export default function StoreScreen({ navigation }) {
           <View style={styles.modalOverlay}>
             <View style={styles.modalBox}>
               <Image
-                source={imageMap[currentItem.name.replace(/ /g, "_")] || imageMap.default}
+                source={storeItemImageMap[currentItem.name.replace(/ /g, "_")] || storeItemImageMap.default}
                 style={{ width: 80, height: 80, marginBottom: 10 }}
               />
               {!currentItem.buy && (

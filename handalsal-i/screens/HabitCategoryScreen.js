@@ -2,12 +2,13 @@ import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Image, Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from '@env';
-
+import { characterImageMap } from "../utils/characterImageMap";
+import { storeItemImageMap } from "../utils/storeItemImageMap";
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 export default function HabitCategoryScreen({ navigation }) {
     const [selectedType, setSelectedType] = useState(null); // 활동, 지능, 예술
-    const [imageSource, setImageSource] = useState(require("../assets/default_character.png"));
+    const [imageSource, setImageSource] = useState(require("../assets/character/default_character.png"));
 
     // 선택된 활동, 지능, 예술 이미지 반환
     const getImageSource = () => {
@@ -22,25 +23,6 @@ export default function HabitCategoryScreen({ navigation }) {
                 return imageSource
         }
     };
-
-    // 이미지 파일명을 매핑하는 객체
-    const imageMap = {
-        "image_0_0_0.png": require("../assets/0,0,0.png"),
-        "image_0_0_1.png": require("../assets/0,0,1.png"),
-        "image_0_1_0.png": require("../assets/0,1,0.png"),
-        "image_0_1_1.png": require("../assets/0,1,1.png"),
-        "image_1_0_0.png": require("../assets/1,0,0.png"),
-        "image_1_0_1.png": require("../assets/1,0,1.png"),
-        "image_1_1_0.png": require("../assets/1,1,0.png"),
-        "image_1_1_1.png": require("../assets/1,1,1.png"),
-        "image_2_0_1.png": require("../assets/2,0,1.png"),
-        "image_2_0_2.png": require("../assets/2,0,2.png"),
-        "image_2_0_3.png": require("../assets/2,0,3.png"),
-        "image_2_0_4.png": require("../assets/2,0,4.png"),
-        "image_2_0_5.png": require("../assets/2,0,5.png"),
-        //add more...
-    }
-
     // api 호출
     const fetchImage = async () => {
         try {
@@ -76,7 +58,7 @@ export default function HabitCategoryScreen({ navigation }) {
 
             if (response.ok) {
                 const data = await response.json();
-                setImageSource(imageMap[data.image]) || require("../assets/default_character.png");
+                setImageSource(characterImageMap[data.image]) || require("../assets/character/default_character.png");
                 console.log("습관 기록 화면, 이미지 호출: " + data.image);
             }
 
