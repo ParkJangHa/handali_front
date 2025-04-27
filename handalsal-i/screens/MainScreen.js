@@ -11,34 +11,15 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from "@env";
 import { useFocusEffect } from "@react-navigation/native";
-
+import { characterImageMap } from "../utils/characterImageMap";
+import { storeItemImageMap } from "../utils/storeItemImageMap";
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
-
-const imageMap = {
-  "푹신한_소파": require("../assets/storeItems/푹신한_소파.png"),
-  "철_창문": require("../assets/storeItems/철_창문.png"),
-  default: require("../assets/default.png"),
-  "image_0_0_0.png": require("../assets/0,0,0.png"),
-  "image_0_0_1.png": require("../assets/0,0,1.png"),
-  "image_0_1_0.png": require("../assets/0,1,0.png"),
-  "image_0_1_1.png": require("../assets/0,1,1.png"),
-  "image_1_0_0.png": require("../assets/1,0,0.png"),
-  "image_1_0_1.png": require("../assets/1,0,1.png"),
-  "image_1_1_0.png": require("../assets/1,1,0.png"),
-  "image_1_1_1.png": require("../assets/1,1,1.png"),
-  "image_2_0_1.png": require("../assets/2,0,1.png"),
-  "image_2_0_2.png": require("../assets/2,0,2.png"),
-  "image_2_0_3.png": require("../assets/2,0,3.png"),
-  "image_2_0_4.png": require("../assets/2,0,4.png"),
-  "image_2_0_5.png": require("../assets/2,0,5.png"),
-  "default_character.png": require("../assets/default_character.png"),
-};
 
 export default function MainScreen({ navigation }) {
   const [nickname, setNickname] = useState("");
   const [daysSinceCreated, setDaysSinceCreated] = useState(0);
   const [totalCoin, setTotalCoin] = useState(0);
-  const [handaliImage, setHandaliImage] = useState(imageMap["default_character.png"]);
+  const [handaliImage, setHandaliImage] = useState(characterImageMap["default_character.png"]);
   const [appliedItems, setAppliedItems] = useState({
     소파: null,
     배경: null,
@@ -73,14 +54,14 @@ const fetchHandaliStatus = async () => {
 
       // 🔍 이미지 값 확인
       console.log("🔍 서버에서 받은 이미지:", data.image);
-      console.log("🔍 현재 이미지 매핑 키 목록:", Object.keys(imageMap));
+      console.log("🔍 현재 이미지 매핑 키 목록:", Object.keys(characterImageMap));
       
-      if (data.image && imageMap[data.image]) {
+      if (data.image && characterImageMap[data.image]) {
         console.log("✅ 로컬 이미지 매칭 성공:", data.image);
-        setHandaliImage(imageMap[data.image]); // ✅ 로컬 이미지 적용
+        setHandaliImage(characterImageMap[data.image]); // ✅ 로컬 이미지 적용
       } else {
         console.log("🚨 로컬 이미지 매칭 실패, 기본 이미지 사용");
-        setHandaliImage(imageMap["default_character.png"]); // ✅ 기본 이미지 적용
+        setHandaliImage(characterImageMap["default_character.png"]); // ✅ 기본 이미지 적용
       }
     } else if (response.status === 404) {
       console.log("📌 한달이가 존재하지 않습니다. 마지막 한달이 조회 실행");
@@ -91,7 +72,7 @@ const fetchHandaliStatus = async () => {
   } catch (error) {
     console.error("🚨 한달이 상태 조회 오류:", error);
     Alert.alert("오류", "네트워크 오류가 발생했습니다.");
-    setHandaliImage(imageMap["default_character.png"]);
+    setHandaliImage(characterImageMap["default_character.png"]);
   }
 };
 
@@ -200,7 +181,7 @@ const checkLastHandali = async () => {
         {/* 벽장식 자리 */}
         {appliedItems["벽장식"] && (
           <Image
-            source={imageMap[appliedItems["벽장식"].replace(/ /g, "_")] || imageMap.default}
+            source={storeItemImageMap[appliedItems["벽장식"].replace(/ /g, "_")] || storeItemImageMap.default}
             style={styles.window}
           />
         )}
@@ -213,7 +194,7 @@ const checkLastHandali = async () => {
         {/* 소파 자리 */}
         {appliedItems["소파"] && (
           <Image
-            source={imageMap[appliedItems["소파"].replace(/ /g, "_")] || imageMap.default}
+            source={storeItemImageMap[appliedItems["소파"].replace(/ /g, "_")] || storeItemImageMap.default}
             style={styles.sofa}
           />
         )}
