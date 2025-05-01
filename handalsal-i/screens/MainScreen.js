@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import { API_BASE_URL } from "@env";
 import { useFocusEffect } from "@react-navigation/native";
 import { characterImageMap } from "../utils/characterImageMap";
 import { storeItemImageMap } from "../utils/storeItemImageMap";
+
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 export default function MainScreen({ navigation }) {
@@ -29,92 +30,71 @@ export default function MainScreen({ navigation }) {
 
   const intervalRef = useRef(null);
 
-  // ✅ 한달이 상태 조회 API 호출
-const fetchHandaliStatus = async () => {
-  try {
-    const token = await AsyncStorage.getItem("authToken");
-    if (!token) {
-      Alert.alert("세션 만료", "다시 로그인해주세요.");
-      navigation.navigate("Login");
-      return;
-    }
-
-    const response = await fetch(`${API_BASE_URL}/handalis/view`, {
-      method: "GET",
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      console.log("📌 한달이 상태 조회 응답:", data);
-
-      setNickname(data.nickname);
-      setDaysSinceCreated(data.days_since_created);
-      setTotalCoin(data.total_coin);
-
-      // 🔍 이미지 값 확인
-      console.log("🔍 서버에서 받은 이미지:", data.image);
-      console.log("🔍 현재 이미지 매핑 키 목록:", Object.keys(characterImageMap));
-      
-      if (data.image && characterImageMap[data.image]) {
-        console.log("✅ 로컬 이미지 매칭 성공:", data.image);
-        setHandaliImage(characterImageMap[data.image]); // ✅ 로컬 이미지 적용
-      } else {
-        console.log("🚨 로컬 이미지 매칭 실패, 기본 이미지 사용");
-        setHandaliImage(characterImageMap["default_character.png"]); // ✅ 기본 이미지 적용
-      }
-    } else if (response.status === 404) {
-      console.log("📌 한달이가 존재하지 않습니다. 마지막 한달이 조회 실행");
-      checkLastHandali(); // 🔍 마지막 생성된 한달이 조회
-    } else {
-      console.log("📌 예상치 못한 오류 발생:", response.status);
-    }
-  } catch (error) {
-    console.error("🚨 한달이 상태 조회 오류:", error);
-    Alert.alert("오류", "네트워크 오류가 발생했습니다.");
-    setHandaliImage(characterImageMap["default_character.png"]);
-  }
-};
-
-
-// ✅ 마지막 생성된 한달이 조회
-const checkLastHandali = async () => {
-  try {
-    const token = await AsyncStorage.getItem("authToken");
-    const response = await fetch(`${API_BASE_URL}/handalis/recent`, {
-      method: "GET",
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      console.log("📌 마지막 생성된 한달이 조회 응답:", data);
-      
-      // 🔍 마지막 생성된 한달이가 있으면 직업 화면으로 이동
-      navigation.navigate("JobScreen", { handaliId: data.handali_id });
-    } else if (response.status === 404) {
-      console.log("📌 마지막 생성된 한달이도 없음 → 습관 선택 화면으로 이동");
-      navigation.navigate("CategorySelectScreen");
-    } else {
-      console.error("🚨 서버 오류 발생:", response.status);
-      Alert.alert("오류", "서버 오류가 발생했습니다.");
-    }
-  } catch (error) {
-    console.error("🚨 마지막 생성된 한달이 조회 오류:", error);
-    navigation.navigate("CategorySelectScreen");
-  }
-};
-  const fetchAppliedItems = async () => {
+  const fetchHandaliStatus = async () => {
     try {
-      const categories = ["소파", "배경", "벽장식", "바닥장식"];
-      const result = {};
-      for (const cat of categories) {
-        const name = await AsyncStorage.getItem(`appliedItem-${cat}`);
-        result[cat] = name;
+      const token = await AsyncStorage.getItem("authToken");
+      if (!token) {
+        Alert.alert("세션 만료", "다시 로그인해주세요.");
+        navigation.navigate("Login");
+        return;
       }
-      setAppliedItems(result);
-    } catch (e) {
-      console.error("적용 아이템 불러오기 실패:", e);
+
+      const response = await fetch(`${API_BASE_URL}/handalis/view`, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+
+        setNickname(data.nickname);
+        setDaysSinceCreated(data.days_since_created);
+        setTotalCoin(data.total_coin);
+
+        if (data.image && characterImageMap[data.image]) {
+          setHandaliImage(characterImageMap[data.image]);
+        } else {
+          setHandaliImage(characterImageMap["default_character.png"]);
+        }
+
+        const applied = {
+          소파: data.sofa_img?.includes("none") ? null : data.sofa_img,
+          배경: data.background_img?.includes("none") ? null : data.background_img,
+          벽장식: data.wall_img?.includes("none") ? null : data.wall_img,
+          바닥장식: data.floor_img?.includes("none") ? null : data.floor_img,
+        };
+        setAppliedItems(applied);
+      } else if (response.status === 404) {
+        checkLastHandali();
+      } else {
+        Alert.alert("오류", `오류 코드: ${response.status}`);
+      }
+    } catch (error) {
+      console.error("한달이 상태 조회 오류:", error);
+      Alert.alert("오류", "네트워크 오류가 발생했습니다.");
+      setHandaliImage(characterImageMap["default_character.png"]);
+    }
+  };
+
+  const checkLastHandali = async () => {
+    try {
+      const token = await AsyncStorage.getItem("authToken");
+      const response = await fetch(`${API_BASE_URL}/handalis/recent`, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        navigation.navigate("JobScreen", { handaliId: data.handali_id });
+      } else if (response.status === 404) {
+        navigation.navigate("CategorySelectScreen");
+      } else {
+        Alert.alert("오류", "서버 오류가 발생했습니다.");
+      }
+    } catch (error) {
+      console.error("마지막 생성된 한달이 조회 오류:", error);
+      navigation.navigate("CategorySelectScreen");
     }
   };
 
@@ -143,7 +123,6 @@ const checkLastHandali = async () => {
   useFocusEffect(
     React.useCallback(() => {
       fetchHandaliStatus();
-      fetchAppliedItems();
       intervalRef.current = setInterval(fetchHandaliStatus, 60000);
       return () => clearInterval(intervalRef.current);
     }, [])
@@ -151,11 +130,10 @@ const checkLastHandali = async () => {
 
   return (
     <View style={styles.container}>
-      {/* 상단 바 */}
       <View style={styles.topBar}>
-        <TouchableOpacity onPress={() => navigation.navigate("JobScreen")}>
+        {/* <TouchableOpacity onPress={() => navigation.navigate("JobScreen")}>
           <Text>직업 획득</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         <View style={styles.coinContainer}>
           <Image source={require("../assets/coin.png")} style={styles.coinIcon} />
@@ -172,17 +150,23 @@ const checkLastHandali = async () => {
         </View>
       </View>
 
-      {/* 콘텐츠 */}
       <View style={styles.content}>
         <Text style={styles.dayText}>
           {daysSinceCreated}일차, {nickname || "별명 없음"}
         </Text>
 
-        {/* 벽장식 자리 */}
+        {/* 벽장식 */}
         {appliedItems["벽장식"] && (
           <Image
             source={storeItemImageMap[appliedItems["벽장식"].replace(/ /g, "_")] || storeItemImageMap.default}
             style={styles.window}
+          />
+        )}
+
+        {appliedItems["바닥장식"] && (
+          <Image
+            source={storeItemImageMap[appliedItems["바닥장식"].replace(/ /g, "_")] || storeItemImageMap.default}
+            style={styles.floor}
           />
         )}
 
@@ -191,37 +175,40 @@ const checkLastHandali = async () => {
           <Image source={handaliImage} style={styles.character} />
         </View>
 
-        {/* 소파 자리 */}
+        {/* 소파 */}
         {appliedItems["소파"] && (
           <Image
             source={storeItemImageMap[appliedItems["소파"].replace(/ /g, "_")] || storeItemImageMap.default}
-            style={styles.sofa}
+            style={
+              appliedItems["소파"].includes("의자")
+              ? styles.chair
+              : styles.sofa
+            }
           />
         )}
       </View>
 
-      {/* 하단 네비게이션 */}
-      <View style={styles.bottomBackground}>
-      </View>
+      <View style={styles.bottomBackground}></View>
+
       <View style={styles.bottomNav}>
-          <TouchableOpacity style={styles.navButton}>
-            <Image source={require("../assets/main.png")} style={styles.navIcon} />
-            <Text style={styles.navText}>메인</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.recordButton}
-            onPress={() => navigation.navigate("Record")}
-          >
-            <Image source={require("../assets/record.png")} style={styles.recordIcon} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.navButton}
-            onPress={() => navigation.navigate("ApartScreen")}
-          >
-            <Image source={require("../assets/apartment_nav.png")} style={styles.navIcon} />
-            <Text style={styles.navText}>아파트</Text>
-          </TouchableOpacity>
-        </View>
+        {/* <TouchableOpacity style={styles.navButton}>
+          <Image source={require("../assets/main.png")} style={styles.navIcon} />
+          <Text style={styles.navText}>메인</Text>
+        </TouchableOpacity> */}
+        <TouchableOpacity
+          style={styles.recordButton}
+          onPress={() => navigation.navigate("Record")}
+        >
+          <Image source={require("../assets/record.png")} style={styles.recordIcon} />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.navButton}
+          onPress={() => navigation.navigate("ApartScreen")}
+        >
+          <Image source={require("../assets/apartment_nav.png")} style={styles.navIcon} />
+          <Text style={styles.navText}>아파트</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -269,7 +256,7 @@ const styles = StyleSheet.create({
   },
   characterContainer: {
     position: "absolute",
-    top: "20%",
+    top: "42.5%",
     left: "10%",
     transform: [
       { translateX: SCREEN_WIDTH * 0.11 },
@@ -283,20 +270,40 @@ const styles = StyleSheet.create({
     resizeMode: "contain",
   },
   sofa: {
-    width: SCREEN_WIDTH * 0.8,
-    height: SCREEN_WIDTH * 0.4,
+    width: SCREEN_WIDTH * 1,
+    height: SCREEN_WIDTH * 0.6,
     position: "absolute",
-    top: "70%",
-    left: "20%",
+    top: "60%",
+    left: "26%",
     zIndex: -2,
+    resizeMode: "contain",
+  },
+  chair: {
+    width: SCREEN_WIDTH * 0.5,       
+    height: SCREEN_WIDTH * 0.4,     
+    position: "absolute",
+    top: "75%",                        
+    left: "60%",                       
+    zIndex: -2,
+    resizeMode: "contain",
   },
   window: {
     width: SCREEN_WIDTH * 0.4,
     height: SCREEN_WIDTH * 0.3,
     position: "absolute",
-    top: "40%",
-    left: "10%",
+    top: "20%",
+    left: "5%",
     zIndex: -2,
+    resizeMode: "contain",
+  },
+  floor: {
+    width: SCREEN_WIDTH * 0.5,
+    height: SCREEN_WIDTH * 0.5,
+    position: "absolute",
+    top: "60%",
+    left: "-10%",
+    zIndex: -2,
+    resizeMode: "contain",
   },
   bottomBackground: {
     flex: 0.8,
