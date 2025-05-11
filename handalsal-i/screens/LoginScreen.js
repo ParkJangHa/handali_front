@@ -59,12 +59,16 @@ const LoginScreen = ({ navigation }) => {
 
       if (handaliViewResponse.ok) {
         navigation.navigate("MainScreen");
+        console.log(API_BASE_URL);
       } else {
         navigation.navigate("Category");
+        console.log(API_BASE_URL);
       }
     } catch (error) {
+      console.log(API_BASE_URL);
       console.error("로그인 오류:", error);
       Alert.alert("오류", "네트워크 연결이 원활하지 않습니다.");
+      
     }
   };
 

@@ -3,7 +3,6 @@ import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Image, Alert } fr
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from '@env';
 import { characterImageMap } from "../utils/characterImageMap";
-import { storeItemImageMap } from "../utils/storeItemImageMap";
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 export default function HabitCategoryScreen({ navigation }) {
@@ -58,8 +57,10 @@ export default function HabitCategoryScreen({ navigation }) {
 
             if (response.ok) {
                 const data = await response.json();
-                setImageSource(characterImageMap[data.image]) || require("../assets/character/default_character.png");
-                console.log("습관 기록 화면, 이미지 호출: " + data.image);
+                setImageSource(
+                    characterImageMap[data.handali_img] ?? require("../assets/character/default_character.png")
+                  );
+                console.log("습관 기록 화면, 이미지 호출:", data.handali_img);
             }
 
         } catch (error) {
