@@ -174,9 +174,9 @@ export default function MainScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <View style={styles.topBar}>
-        {/* <TouchableOpacity onPress={() => navigation.navigate("JobScreen")}>
+        <TouchableOpacity onPress={() => navigation.navigate("JobScreen")}>
           <Text>직업 획득</Text>
-        </TouchableOpacity> */}
+        </TouchableOpacity>
 
         <View style={styles.coinContainer}>
           <Image source={require("../assets/coin.png")} style={styles.coinIcon} />
@@ -284,21 +284,23 @@ const styles = StyleSheet.create({
   },
   coinText: {
     fontSize: SCREEN_WIDTH * 0.045,
-    fontWeight: "bold",
+    // fontWeight: "bold",
     color: "#000",
     marginLeft: SCREEN_WIDTH * 0.02,
+    fontFamily: "Jua-Regular"
   },
   topIcons: { flexDirection: "row", gap: SCREEN_WIDTH * 0.05 },
   icon: { width: SCREEN_WIDTH * 0.076, height: SCREEN_WIDTH * 0.07 },
-  logoutText: { fontSize: SCREEN_WIDTH * 0.04, fontWeight: "bold", color: "red" },
+  logoutText: { fontSize: SCREEN_WIDTH * 0.04, color: "red", fontFamily: "Jua-Regular" },
   content: { flex: 1 },
   dayText: {
     fontSize: SCREEN_WIDTH * 0.05,
-    fontWeight: "bold",
+    // fontWeight: "bold",
     color: "#000",
     position: "absolute",
     right: SCREEN_WIDTH * 0.05,
     top: SCREEN_HEIGHT * 0.001,
+    fontFamily: "Jua-Regular"
   },
   characterContainer: {
     position: "absolute",

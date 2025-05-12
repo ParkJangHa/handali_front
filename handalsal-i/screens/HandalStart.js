@@ -81,7 +81,7 @@ const HandalStart = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-       <Image source={require("../assets/Category/Weve.png")} style={styles.img} resizeMode="stretch" />
+      <Image source={require("../assets/Category/Weve.png")} style={styles.img} resizeMode="stretch" />
       <Text style={styles.dateText}>{formattedDate}</Text>
       <Text style={styles.title}>이제 '한달이'가 태어나요</Text>
       <View style={styles.progressBar}>
@@ -107,23 +107,23 @@ const HandalStart = ({ navigation }) => {
       />
       <View style={styles.bottomCon}>
         <View style={styles.nicknameCon}>
-        <Text style={styles.nicknameText}>한달이에게 별명을 지어주세요!</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="   별명을 입력해 주세요."
-          placeholderTextColor= "#BFBDBD"
-          value={nicknameInput}
-          onChangeText={setNicknameInput}
-          maxLength={9} // 닉네임 최대 9자
-        />
-      </View>
-      {loading ? (
-        <ActivityIndicator size="large" color="#F8B66C" />
-      ) : (
-        <TouchableOpacity style={styles.startButton} onPress={createHandali}>
-          <Text style={styles.startButtonText}>시작할래요</Text>
-        </TouchableOpacity>
-      )}
+          <Text style={styles.nicknameText}>한달이에게 별명을 지어주세요!</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="   별명을 입력해 주세요."
+            placeholderTextColor="#BFBDBD"
+            value={nicknameInput}
+            onChangeText={setNicknameInput}
+            maxLength={9} // 닉네임 최대 9자
+          />
+        </View>
+        {loading ? (
+          <ActivityIndicator size="large" color="#F8B66C" />
+        ) : (
+          <TouchableOpacity style={styles.startButton} onPress={createHandali}>
+            <Text style={styles.startButtonText}>시작할래요</Text>
+          </TouchableOpacity>
+        )}
       </View>
       <Image source={require("../assets/Category/B_weve.png")} style={styles.background} resizeMode="stretch" />
     </View>
@@ -147,15 +147,17 @@ export const styles = StyleSheet.create({
   },
   dateText: {
     fontSize: SCREEN_WIDTH * 0.06,
-    fontWeight: "bold",
+    // fontWeight: "bold",
     color: "#2D5D6B",
     alignSelf: "flex-start",
+    fontFamily: "Jua-Regular"
   },
   title: {
     fontSize: SCREEN_WIDTH * 0.08,
-    fontWeight: "bold",
+    // fontWeight: "bold",
     color: "#2D5D6B",
     alignSelf: "flex-start",
+    fontFamily: "Jua-Regular"
   },
   progressBar: {
     width: "100%",
@@ -181,10 +183,11 @@ export const styles = StyleSheet.create({
   },
   subTitle: {
     fontSize: SCREEN_WIDTH * 0.05,
-    fontWeight: "bold",
+    // fontWeight: "bold",
     color: "rgba(0, 0, 0, 0.5)",
     alignSelf: "flex-start",
     marginBottom: SCREEN_WIDTH * 0.05,
+    fontFamily: "Jua-Regular"
   },
   handalImage: {
     top: SCREEN_HEIGHT * 0.28,
@@ -217,7 +220,8 @@ export const styles = StyleSheet.create({
     fontSize: SCREEN_WIDTH * 0.06, // 반응형 텍스트 크기
     marginBottom: SCREEN_HEIGHT * 0.02, // 반응형 아래 여백
     color: "#2D5D6B",
-    fontWeight: "bold",
+    // fontWeight: "bold",
+    fontFamily: "Jua-Regular"
   },
   input: {
     backgroundColor: "#FFF7F7",
@@ -240,9 +244,10 @@ export const styles = StyleSheet.create({
   },
   startButtonText: {
     fontSize: SCREEN_WIDTH * 0.045, // 반응형 폰트 크기
-    fontWeight: "bold",
+    // fontWeight: "bold",
     color: "#2D5D6B",
     textAlign: "center",
+    fontFamily: "Jua-Regular"
   },
   background: {
     position: "absolute",

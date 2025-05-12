@@ -251,9 +251,9 @@ const DetailSelect = ({ route, navigation }) => {
       </ScrollView>
 
       <View style={styles.habitAppendContainer}>
-        
+
         <TouchableOpacity style={styles.habitAppendButton} onPress={habitAppend}>
-        <Image
+          <Image
             source={require("../assets/Category/Plus.png")}
             style={styles.icon}
           />
@@ -285,15 +285,17 @@ const styles = StyleSheet.create({
   },
   dateText: {
     fontSize: SCREEN_WIDTH * 0.06,
-    fontWeight: "bold",
+    // fontWeight: "bold",
     color: "#2D5D6B",
     alignSelf: "flex-start",
+    fontFamily: "Jua-Regular"
   },
   title: {
     fontSize: SCREEN_WIDTH * 0.08,
-    fontWeight: "bold",
+    // fontWeight: "bold",
     color: "#2D5D6B",
     alignSelf: "flex-start",
+    fontFamily: "Jua-Regular"
   },
   progressBar: {
     width: "100%",
@@ -319,10 +321,11 @@ const styles = StyleSheet.create({
   },
   subTitle: {
     fontSize: SCREEN_WIDTH * 0.05,
-    fontWeight: "bold",
+    // fontWeight: "bold",
     color: "rgba(0, 0, 0, 0.5)",
     alignSelf: "flex-start",
     marginBottom: SCREEN_WIDTH * 0.06,
+    fontFamily: "Jua-Regular"
   },
   categoryCon: {
     flexDirection: "row",
@@ -342,8 +345,9 @@ const styles = StyleSheet.create({
   },
   categoryText: {
     fontSize: SCREEN_WIDTH * 0.09,
-    fontWeight: "bold",
+    // fontWeight: "bold",
     color: "#2D5D6B",
+    fontFamily: "Jua-Regular"
   },
   habitButton: {
     width: SCREEN_WIDTH * 0.9,
@@ -363,7 +367,8 @@ const styles = StyleSheet.create({
   habitButtonText: {
     fontSize: SCREEN_WIDTH * 0.045,
     color: "#2D5D6B",
-    fontWeight: "bold",
+    // fontWeight: "bold",
+    fontFamily: "Jua-Regular"
   },
   habitAppendContainer: {
     alignSelf: "flex-end",
@@ -381,9 +386,10 @@ const styles = StyleSheet.create({
   },
   habitAppendButtonText: {
     fontSize: SCREEN_WIDTH * 0.045,
-    fontWeight: "bold",
+    // fontWeight: "bold",
     color: "#0250E0",
     textAlign: "center",
+    fontFamily: "Jua-Regular"
   },
   nextButton: {
     width: SCREEN_WIDTH * 0.9,
@@ -396,8 +402,9 @@ const styles = StyleSheet.create({
   nextButtonText: {
     fontSize: SCREEN_WIDTH * 0.045,
     color: "#2D5D6B",
-    fontWeight: "bold",
+    // fontWeight: "bold",
     textAlign: "center",
+    fontFamily: "Jua-Regular"
   },
 });
 

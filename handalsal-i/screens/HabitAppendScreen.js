@@ -100,15 +100,17 @@ const styles = StyleSheet.create({
   },
   dateText: {
     fontSize: SCREEN_WIDTH * 0.06,
-    fontWeight: "bold",
+    // fontWeight: "bold",
     color: "#2D5D6B",
     alignSelf: "flex-start",
+    fontFamily: "Jua-Regular"
   },
   title: {
     fontSize: SCREEN_WIDTH * 0.08,
-    fontWeight: "bold",
+    // fontWeight: "bold",
     color: "#2D5D6B",
     alignSelf: "flex-start",
+    fontFamily: "Jua-Regular"
   },
   progressBar: {
     width: "100%",
@@ -140,9 +142,10 @@ const styles = StyleSheet.create({
   },
   categoryText: {
     fontSize: SCREEN_WIDTH * 0.04,
-    fontWeight: "bold",
+    // fontWeight: "bold",
     color: "#2D5D6B",
     marginBottom: SCREEN_HEIGHT * 0.08,
+    fontFamily: "Jua-Regular"
   },
   selectionContainer: {
     alignItems: "center",
@@ -158,10 +161,11 @@ const styles = StyleSheet.create({
   },
   habitText: {
     fontSize: SCREEN_WIDTH * 0.08,
-    fontWeight: "bold",
+    // fontWeight: "bold",
     color: "#2D5D6B",
     textAlign: "center",
     marginBottom: SCREEN_HEIGHT * 0.01,
+    fontFamily: "Jua-Regular"
   },
   rowContainer: {
     flexDirection: "row",
@@ -180,8 +184,9 @@ const styles = StyleSheet.create({
   },
   anotherButtonText: {
     fontSize: SCREEN_WIDTH * 0.035,
-    fontWeight: "bold",
+    // fontWeight: "bold",
     color: "rgba(45, 93, 107, 0.6)",
+    fontFamily: "Jua-Regular"
   },
   addButton: {
     width: SCREEN_WIDTH * 0.5,
@@ -194,8 +199,9 @@ const styles = StyleSheet.create({
   },
   addButtonText: {
     fontSize: SCREEN_WIDTH * 0.045,
-    fontWeight: "bold",
+    // fontWeight: "bold",
     color: "#2D5D6B",
+    fontFamily: "Jua-Regular"
   },
   background: {
     position: "absolute",

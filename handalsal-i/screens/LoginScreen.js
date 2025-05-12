@@ -127,7 +127,7 @@ const LoginScreen = ({ navigation }) => {
               <Text style={styles.signupText}>회원가입</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.button} onPress={handleLogin}>
-              <Text style={styles.buttonText}>로그인.</Text>
+              <Text style={styles.buttonText}>로그인</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -184,6 +184,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     color: "#2D5D6B",
+    fontFamily: "Jua-Regular"
   },
   rowContainer: {
     flexDirection: "row",
@@ -202,7 +203,8 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#000",
     fontSize: 20,
-    fontWeight: "bold",
+    // fontWeight: "bold",
+    fontFamily: "Jua-Regular"
   },
   signupButton: {
     backgroundColor: "#ECF7F7",
@@ -214,7 +216,8 @@ const styles = StyleSheet.create({
   signupText: {
     color: "#2D5D6B",
     fontSize: 17,
-    fontWeight: "bold",
+    // fontWeight: "bold",
+    fontFamily: "Jua-Regular"
   },
 });
 

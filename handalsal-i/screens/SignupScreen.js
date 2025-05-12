@@ -188,9 +188,10 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 35,
-    fontWeight: "bold",
+    // fontWeight: "bold",
     marginBottom: 20,
     color: "#333",
+    fontFamily: "Jua-Regular"
   },
   input: {
     width: SCREEN_WIDTH * 0.85,
@@ -201,6 +202,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     borderRadius: 15,
     backgroundColor: "#FFF",
+    fontFamily: "Jua-Regular"
   },
   button: {
     backgroundColor: "#FFF",
@@ -212,7 +214,8 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#000",
     fontSize: 16,
-    fontWeight: "bold",
+    // fontWeight: "bold",
+    fontFamily: "Jua-Regular"
   },
 });
 

@@ -59,7 +59,7 @@ export default function HabitCategoryScreen({ navigation }) {
                 const data = await response.json();
                 setImageSource(
                     characterImageMap[data.handali_img] ?? require("../assets/character/default_character.png")
-                  );
+                );
                 console.log("습관 기록 화면, 이미지 호출:", data.handali_img);
             }
 
@@ -95,14 +95,14 @@ export default function HabitCategoryScreen({ navigation }) {
                 <Image
                     source={getImageSource()} // 선택된 값이 있을 경우, 값(활동, 지능, 예술)에 따라 동적으로 이미지 변경
                     style={[styles.categoryImage,
-                        selectedType === null && { 
-                            width: SCREEN_HEIGHT * 0.3, 
-                            height: SCREEN_HEIGHT * 0.3,
-                            zIndex: -1,
-                            position: 'absolute',
-                            top: SCREEN_WIDTH * 0.25,
-                            left: SCREEN_WIDTH * 0.3,
-                        } // 선택 안 했을 때 키우기
+                    selectedType === null && {
+                        width: SCREEN_HEIGHT * 0.3,
+                        height: SCREEN_HEIGHT * 0.3,
+                        zIndex: -1,
+                        position: 'absolute',
+                        top: SCREEN_WIDTH * 0.25,
+                        left: SCREEN_WIDTH * 0.3,
+                    } // 선택 안 했을 때 키우기
                     ]}
                 />
             </View>
@@ -258,24 +258,29 @@ const styles = StyleSheet.create({
     //text
     recordTitle: {
         fontSize: SCREEN_WIDTH * 0.05,
-        fontWeight: 'bold'
+        // fontWeight: 'bold'
+        fontFamily: "Jua-Regular"
     },
     buttonText: {
         fontSize: SCREEN_WIDTH * 0.049,
         // fontWeight: 'bold'
+        fontFamily: "Jua-Regular"
     },
     selectButtonText: {
         fontSize: SCREEN_WIDTH * 0.049,
-        fontWeight: 'bold',
-        color: 'black'
+        // fontWeight: 'bold',
+        color: 'black',
+        fontFamily: "Jua-Regular"
     },
     speechText: {
         fontSize: SCREEN_WIDTH * 0.045,
-        fontWeight: 'bold',
+        // fontWeight: 'bold',
         color: 'black',
+        fontFamily: "Jua-Regular"
     },
     selectedText: {
-        fontWeight: 'bold'
+        // fontWeight: 'bold'
+        fontFamily: "Jua-Regular"
     }
 
 });

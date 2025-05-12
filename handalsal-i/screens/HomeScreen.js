@@ -94,6 +94,7 @@ const HomeScreen = ({ navigation }) => {
         resizeMode="stretch"
       />
 
+      {/**하단 버전 정보 */}
       <View style={styles.versionBox}>
         <Text style={styles.versionText}>v1.0.0</Text>
       </View>
@@ -137,7 +138,8 @@ const styles = StyleSheet.create({
   },
   titetext: {
     fontSize: 48,
-    fontWeight: "bold",
+    // fontWeight: "bold",
+    fontFamily: "Jua-Regular"
   },
   buttonlogin: {
     flexDirection: "row",
@@ -167,6 +169,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     color: "#2D5D6B",
+    fontFamily: "Jua-Regular"
   },
   catIcon: {
     position: "absolute",

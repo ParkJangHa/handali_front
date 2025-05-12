@@ -19,7 +19,7 @@ const JobScreen = ({ navigation }) => {
     const setImageSourceByName = (imageName) => {
         const mapped = characterImageMap[imageName] || require("../assets/character/0,0,0.png");
         setImageSource(mapped);
-      };
+    };
 
     //오늘 날짜
     const today = new Date();
@@ -237,39 +237,46 @@ const styles = StyleSheet.create({
 
     dateText: {
         fontSize: SCREEN_WIDTH * 0.06,
-        fontWeight: 'bold'
+        // fontWeight: 'bold'
+        fontFamily: "Jua-Regular"
     },
     titleText: {
         fontSize: SCREEN_WIDTH * 0.06,
-        fontWeight: 'bold'
+        // fontWeight: 'bold'
+        fontFamily: "Jua-Regular"
     },
     memoText: {
         fontSize: SCREEN_WIDTH * 0.05,
         color: '#ff8851',
-        fontWeight: 'bold'
+        // fontWeight: 'bold'
+        fontFamily: "Jua-Regular"
     },
     circleHeaderText: {
         color: "#5A3A29"
     },
     nicknameText: {
         fontSize: SCREEN_WIDTH * 0.06,
-        fontWeight: 'bold',
+        // fontWeight: 'bold',
         color: "#5A3A29",
         justifyContent: 'center',
+        fontFamily: "Jua-Regular"
     },
     nameText: {
         fontSize: SCREEN_WIDTH * 0.047,
-        color: 'white'
+        color: 'white',
+        fontFamily: "Jua-Regular"
     },
     valueText: {
         fontSize: SCREEN_WIDTH * 0.047,
-        fontWeight: 'bold',
-        color: "#5A3A29"
+        // fontWeight: 'bold',
+        color: "#5A3A29",
+        fontFamily: "Jua-Regular"
     },
     buttonText: {
         color: '#2D5D6B',
         fontSize: SCREEN_WIDTH * 0.05,
-        fontWeight: 'bold'
+        // fontWeight: 'bold',
+        fontFamily: "Jua-Regular"
     }
 
 });
