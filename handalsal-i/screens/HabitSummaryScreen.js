@@ -74,8 +74,8 @@ export default function HabitSummaryScreen() {
         <Text style={styles.cardTitle}>이번달 카테고리별 만족도 평균</Text>
         {summaryData.satisfaction_avg_by_category.map((item) => (
           <View key={item.category} style={styles.row}>
-            <Text>{categoryNameMap[item.category]}</Text>
-            <Text>{getEmoji(item.avg_satisfaction)} {item.avg_satisfaction}</Text>
+            <Text style={styles.innerText}>{categoryNameMap[item.category]}</Text>
+            <Text style={styles.innerText}>{getEmoji(item.avg_satisfaction)} {item.avg_satisfaction}</Text>
           </View>
         ))}
       </View>
@@ -124,9 +124,9 @@ export default function HabitSummaryScreen() {
         </View>
       </View>
       <View style={styles.card}>
-      <Text style={styles.cardTitle}>이번달 카테고리별 누적 시간</Text>
-      {summaryData.total_time_by_category.map(item => (
-          <Text key={item.category}>{categoryNameMap[item.category]}: {item.total_time}시간</Text>
+        <Text style={styles.cardTitle}>이번달 카테고리별 누적 시간</Text>
+        {summaryData.total_time_by_category.map(item => (
+          <Text style={styles.innerText} key={item.category}>{categoryNameMap[item.category]}: {item.total_time}시간</Text>
         ))}
       </View>
 
@@ -134,29 +134,29 @@ export default function HabitSummaryScreen() {
         <Text style={styles.cardTitle}>월별 기록 횟수 (1년)</Text>
 
         {summaryData?.monthly_record_count ? (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <LineChart
-                data={{
+              data={{
                 labels: summaryData.monthly_record_count.map((m) => `${m.month}월`),
                 datasets: [{
-                    data: summaryData.monthly_record_count.map((m) => m.totalRecords),
+                  data: summaryData.monthly_record_count.map((m) => m.totalRecords),
                 }],
-                }}
-                width={Math.max(SCREEN_WIDTH * 0.9, summaryData.monthly_record_count.length * 40)}
-                height={220}
-                chartConfig={chartConfig}
-                fromZero
+              }}
+              width={Math.max(SCREEN_WIDTH * 0.9, summaryData.monthly_record_count.length * 40)}
+              height={220}
+              chartConfig={chartConfig}
+              fromZero
             />
-            </ScrollView>
+          </ScrollView>
         ) : (
-            <Text>월별 데이터가 없습니다.</Text>
+          <Text style={styles.innerText}>월별 데이터가 없습니다.</Text>
         )}
       </View>
 
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>총 기록 횟수</Text>
-        <Text>{summaryData.total_records}회</Text>
+        <Text style={styles.innerText}>{summaryData.total_records}회</Text>
       </View>
     </ScrollView>
   );
@@ -188,8 +188,9 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 18,
-    fontWeight: "bold",
+    // fontWeight: "bold",
     marginBottom: 10,
+    fontFamily: "Jua-Regular"
   },
   row: {
     flexDirection: "row",
@@ -204,10 +205,10 @@ const styles = StyleSheet.create({
   pieChartContainer: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",      
+    justifyContent: "center",
   },
   customLegend: {
-    marginLeft: -150,                 
+    marginLeft: -150,
     justifyContent: "center",
   },
   legendItem: {
@@ -224,5 +225,9 @@ const styles = StyleSheet.create({
   legendText: {
     fontSize: 14,
     color: "#333",
+    fontFamily: "Jua-Regular"
+  },
+  innerText: {
+    fontFamily: "Jua-Regular"
   },
 });
