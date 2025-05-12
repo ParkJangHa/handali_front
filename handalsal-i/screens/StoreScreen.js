@@ -65,6 +65,7 @@ export default function StoreScreen({ navigation }) {
       });
       const text = await response.text();
       const data = JSON.parse(text);
+      console.log("서버에서 받은 아이템 리스트:", data);
       if (response.ok) setItems(data);
       else {
         setItems([]);
@@ -74,6 +75,7 @@ export default function StoreScreen({ navigation }) {
       console.error("fetchItems 오류:", error);
       Alert.alert("네트워크 오류", "인터넷 연결 또는 서버 응답을 확인해주세요.");
     }
+  
   };
 
   const fetchTotalCoin = async () => {
@@ -236,7 +238,6 @@ export default function StoreScreen({ navigation }) {
     ].includes(item.name);
     const imageName = item.name.replace(/ /g, "_");
     const imageSource = storeItemImageMap[imageName] || storeItemImageMap.default;
-  
     return (
       <TouchableOpacity
         style={[styles.itemBox, selectedItem === item.storeId && styles.itemBoxSelected]}
@@ -334,7 +335,7 @@ export default function StoreScreen({ navigation }) {
         <View style={{ position: "relative", width: 80, height: 80, marginBottom: 10 }}>
           <Image
             source={storeItemImageMap[currentItem.name.replace(/ /g, "_")] || storeItemImageMap.default}
-            style={{ width: 80, height: 80 }}
+            style={{ width: 80, height: 80, resizeMode: "contain"}}
           />
           {/* ✅ 현재 적용된 아이템이면 체크 이미지 띄우기 */}
           {currentAppliedName === currentItem.name && (
