@@ -68,70 +68,70 @@ const LoginScreen = ({ navigation }) => {
       console.log(API_BASE_URL);
       console.error("로그인 오류:", error);
       Alert.alert("오류", "네트워크 연결이 원활하지 않습니다.");
-      
+
     }
   };
 
   return (
     <>
-    <StatusBar hidden={true} />
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
-      <ScrollView
-        contentContainerStyle={styles.container}
-        keyboardShouldPersistTaps="handled"
+      <StatusBar hidden={true} />
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        <Image source={require("../assets/LoginScreen/Weve.png")} style={styles.img} resizeMode="stretch" />
-        
-        <Image
-                source={require("../assets/LoginScreen/Blue.png")}
-                style={styles.catIcon}
-        />
-        <View style={styles.bContainer}>
-        </View>
-        <View style={styles.inputWithIcon}>
-  <Image
-    source={require("../assets/LoginScreen/Email_icon.png")}
-    style={styles.icon}
-  />
-  <TextInput
-    style={styles.inputField}
-    placeholder="email"
-    keyboardType="email-address"
-    value={email}
-    onChangeText={setEmail}
-    placeholderTextColor="#2D5D6B"
-  />
-</View>
-<View style={styles.inputWithIcon}>
-  <Image
-    source={require("../assets/LoginScreen/Password_icon.png")}
-    style={styles.icon}
-  />
-  <TextInput
-    style={styles.inputField}
-    placeholder="password"
-    secureTextEntry
-    value={password}
-    onChangeText={setPassword}
-    placeholderTextColor="#2D5D6B"
-  />
-</View>
-      <View style={styles.rowContainer}>
-      <TouchableOpacity
-          style={styles.signupButton}
-          onPress={() => navigation.navigate("Signup")}
+        <ScrollView
+          contentContainerStyle={styles.container}
+          keyboardShouldPersistTaps="handled"
         >
-          <Text style={styles.signupText}>회원가입</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>로그인</Text>
-        </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+          <Image source={require("../assets/LoginScreen/Weve.png")} style={styles.img} resizeMode="stretch" />
+
+          <Image
+            source={require("../assets/LoginScreen/Blue.png")}
+            style={styles.catIcon}
+          />
+          <View style={styles.bContainer}>
+          </View>
+          <View style={styles.inputWithIcon}>
+            <Image
+              source={require("../assets/LoginScreen/Email_icon.png")}
+              style={styles.icon}
+            />
+            <TextInput
+              style={styles.inputField}
+              placeholder="email"
+              keyboardType="email-address"
+              value={email}
+              onChangeText={setEmail}
+              placeholderTextColor="#2D5D6B"
+            />
+          </View>
+          <View style={styles.inputWithIcon}>
+            <Image
+              source={require("../assets/LoginScreen/Password_icon.png")}
+              style={styles.icon}
+            />
+            <TextInput
+              style={styles.inputField}
+              placeholder="password"
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+              placeholderTextColor="#2D5D6B"
+            />
+          </View>
+          <View style={styles.rowContainer}>
+            <TouchableOpacity
+              style={styles.signupButton}
+              onPress={() => navigation.navigate("Signup")}
+            >
+              <Text style={styles.signupText}>회원가입</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={handleLogin}>
+              <Text style={styles.buttonText}>로그인.</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </>
   );
 };
@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#76D6F4",
   },
   bContainer: {
-    marginBottom: SCREEN_HEIGHT *0.4,
+    marginBottom: SCREEN_HEIGHT * 0.4,
   },
   img: {
     top: 0,

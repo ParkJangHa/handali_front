@@ -112,13 +112,56 @@ export default function MainScreen({ navigation }) {
                 headers: { Authorization: `Bearer ${token}` },
               });
             }
-          } catch (e) {}
+          } catch (e) { }
           await AsyncStorage.removeItem("authToken");
           navigation.reset({ index: 0, routes: [{ name: "Login" }] });
         },
       },
     ]);
   };
+
+  const handleDeleteAccount = async () => {
+    const confirm = await new Promise((resolve) => {
+      Alert.alert(
+        "회원 탈퇴",
+        "정말로 탈퇴하시겠습니까?",
+        [
+          { text: "취소", style: "cancel", onPress: () => resolve(false) },
+          { text: "탈퇴", style: "destructive", onPress: () => resolve(true) },
+        ],
+        { cancelable: true }
+      );
+    });
+
+    if (!confirm) return;
+
+    try {
+      const token = await AsyncStorage.getItem("authToken");
+      const response = await fetch(`${API_BASE_URL}/delete`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        Alert.alert("탈퇴 완료", "정상적으로 탈퇴되었습니다.");
+        await AsyncStorage.removeItem("authToken");
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "Login" }],
+        });
+      } else {
+        const text = await response.text();
+        Alert.alert("에러", `탈퇴 실패: ${text}`);
+      }
+    } catch (error) {
+      console.error(error);
+      Alert.alert("에러", "네트워크 오류가 발생했습니다.");
+    }
+  };
+
 
   useFocusEffect(
     React.useCallback(() => {
@@ -146,6 +189,9 @@ export default function MainScreen({ navigation }) {
           </TouchableOpacity>
           <TouchableOpacity onPress={handleLogout}>
             <Text style={styles.logoutText}>로그아웃</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleDeleteAccount}>
+            <Text style={styles.logoutText}>회원탈퇴</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -181,8 +227,8 @@ export default function MainScreen({ navigation }) {
             source={storeItemImageMap[appliedItems["소파"].replace(/ /g, "_")] || storeItemImageMap.default}
             style={
               appliedItems["소파"].includes("의자")
-              ? styles.chair
-              : styles.sofa
+                ? styles.chair
+                : styles.sofa
             }
           />
         )}
@@ -191,10 +237,10 @@ export default function MainScreen({ navigation }) {
       <View style={styles.bottomBackground}></View>
 
       <View style={styles.bottomNav}>
-        {/* <TouchableOpacity style={styles.navButton}>
-          <Image source={require("../assets/main.png")} style={styles.navIcon} />
-          <Text style={styles.navText}>메인</Text>
-        </TouchableOpacity> */}
+        <TouchableOpacity style={styles.navButton}  onPress={() => navigation.navigate("Summary")} >
+          <Image source={require("../assets/summary.png")} style={styles.navIcon} />
+          <Text style={styles.navText}>기록소</Text>
+        </TouchableOpacity>
         <TouchableOpacity
           style={styles.recordButton}
           onPress={() => navigation.navigate("Record")}
@@ -279,11 +325,11 @@ const styles = StyleSheet.create({
     resizeMode: "contain",
   },
   chair: {
-    width: SCREEN_WIDTH * 0.5,       
-    height: SCREEN_WIDTH * 0.4,     
+    width: SCREEN_WIDTH * 0.5,
+    height: SCREEN_WIDTH * 0.4,
     position: "absolute",
-    top: "75%",                        
-    left: "60%",                       
+    top: "75%",
+    left: "60%",
     zIndex: -2,
     resizeMode: "contain",
   },

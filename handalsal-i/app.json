@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "handalsal-i",
+    "name": "handali",
     "slug": "handalsal-i",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -25,6 +25,11 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "5757eefc-43c5-4697-bbcf-e95a1fffe556"
+      }
     }
   }
 }

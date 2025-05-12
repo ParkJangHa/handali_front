@@ -93,7 +93,13 @@ const HomeScreen = ({ navigation }) => {
         style={styles.background}
         resizeMode="stretch"
       />
+
+      <View style={styles.versionBox}>
+        <Text style={styles.versionText}>v1.0.0</Text>
+      </View>
+
     </View>
+
   );
 };
 
@@ -170,6 +176,16 @@ const styles = StyleSheet.create({
     resizeMode: "contain",
     alignSelf: "center",
     zIndex: 2,
+  },
+  versionBox: {
+    position: 'absolute',
+    bottom: 10,      // 화면 하단으로부터 10px
+    width: '100%',
+    alignItems: 'center',
+  },
+  versionText: {
+    color: '#999',
+    fontSize: 12,
   },
 });
 
