@@ -237,10 +237,10 @@ export default function MainScreen({ navigation }) {
       <View style={styles.bottomBackground}></View>
 
       <View style={styles.bottomNav}>
-        {/* <TouchableOpacity style={styles.navButton}>
-          <Image source={require("../assets/main.png")} style={styles.navIcon} />
-          <Text style={styles.navText}>메인</Text>
-        </TouchableOpacity> */}
+        <TouchableOpacity style={styles.navButton}  onPress={() => navigation.navigate("Summary")} >
+          <Image source={require("../assets/summary.png")} style={styles.navIcon} />
+          <Text style={styles.navText}>기록소</Text>
+        </TouchableOpacity>
         <TouchableOpacity
           style={styles.recordButton}
           onPress={() => navigation.navigate("Record")}

@@ -17,7 +17,7 @@ import HabitCheckScreen from "./screens/HabitCheckScreen";
 import ApartScreen from "./screens/ApartScreen";
 import JobScreen from "./screens/JobScreen";
 import StoreScreen from "./screens/StoreScreen";
-
+import HabitSummaryScreen from "./screens/HabitSummaryScreen";
 const Stack = createStackNavigator();
 
 const App = () => {
@@ -121,15 +121,19 @@ const App = () => {
             headerShown: false, gestureEnabled: true
           }}
         />
+        <Stack.Screen name="Summary" component={HabitSummaryScreen}
+        options={{
+          headerStyle: {
+            backgroundColor: "#FFE98A", // 헤더 배경색
+
+          },
+        }}
+        />
         <Stack.Screen name="JobScreen" component={JobScreen}
           options={{
             headerShown: false, gestureEnabled: true
           }}
         />
-        {/* <Stack.Screen name="ApartScreen" component={ApartScreen}
-          options={{ headerShown: false }}
-        /> */}
-
         <Stack.Screen name="Store" component={StoreScreen}
           options={{
             headerShown: false, gestureEnabled: true
