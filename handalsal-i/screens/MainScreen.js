@@ -150,7 +150,7 @@ export default function MainScreen({ navigation }) {
         await AsyncStorage.removeItem("authToken");
         navigation.reset({
           index: 0,
-          routes: [{ name: "Login" }], // → 앱에 맞게 로그인 화면 이름 수정
+          routes: [{ name: "Login" }],
         });
       } else {
         const text = await response.text();
