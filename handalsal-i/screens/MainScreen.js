@@ -174,9 +174,9 @@ export default function MainScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <View style={styles.topBar}>
-        <TouchableOpacity onPress={() => navigation.navigate("JobScreen")}>
+        {/* <TouchableOpacity onPress={() => navigation.navigate("JobScreen")}>
           <Text>직업 획득</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         <View style={styles.coinContainer}>
           <Image source={require("../assets/coin.png")} style={styles.coinIcon} />
@@ -237,7 +237,7 @@ export default function MainScreen({ navigation }) {
       <View style={styles.bottomBackground}></View>
 
       <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navButton}  onPress={() => navigation.navigate("Summary")} >
+        <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate("Summary")} >
           <Image source={require("../assets/summary.png")} style={styles.navIcon} />
           <Text style={styles.navText}>기록소</Text>
         </TouchableOpacity>
