@@ -47,8 +47,8 @@ export default function StoreScreen({ navigation }) {
     벽장식: null,
     바닥장식: null,
   });
-  
-  
+
+
 
   useEffect(() => {
     fetchItems();
@@ -109,7 +109,7 @@ export default function StoreScreen({ navigation }) {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json();
-  
+
       if (response.ok) {
         // ✅ 캐릭터 이미지 설정
         if (data.image && characterImageMap[data.image]) {
@@ -117,7 +117,7 @@ export default function StoreScreen({ navigation }) {
         } else {
           setCharacterImage(characterImageMap["default_character.png"]);
         }
-  
+
         // ✅ previewItems 상태 초기화
         setPreviewItems({
           소파: data.sofa_img?.includes("none") ? null : data.sofa_img,
@@ -125,7 +125,7 @@ export default function StoreScreen({ navigation }) {
           벽장식: data.wall_img?.includes("none") ? null : data.wall_img,
           바닥장식: data.floor_img?.includes("none") ? null : data.floor_img,
         });
-  
+
         // ✅ 현재 탭에 따라 적용된 이름 저장
         let appliedName = "";
         if (selectedTab === "소파") {
@@ -137,30 +137,30 @@ export default function StoreScreen({ navigation }) {
         } else if (selectedTab === "바닥장식") {
           appliedName = data.floor_img;
         }
-  
+
         setCurrentAppliedName(appliedName?.includes("none") ? "" : appliedName);
       }
     } catch (error) {
       console.error("적용 아이템 조회 실패:", error);
     }
   };
-  
+
   const handleBuyItem = async () => {
     try {
       const token = await AsyncStorage.getItem("authToken");
-  
+
       if (currentItem.buy) {
         handleApplyItem();
         return;
       }
-  
+
       // ✅ 여기 디버깅 로그 추가
       console.log("구매 요청 URL:", `${API_BASE_URL}/store/buy`);
       console.log("요청 body 데이터:", {
         item_type: itemTypeMap[selectedTab],
         name: currentItem.name,
       });
-  
+
       const response = await fetch(`${API_BASE_URL}/store/buy`, {
         method: "POST",
         headers: {
@@ -173,10 +173,10 @@ export default function StoreScreen({ navigation }) {
         }),
       });
       const text = await response.text();
-  
+
       // ✅ 응답 받은 결과 로그 추가
       console.log("서버 응답 결과:", text);
-  
+
       if (response.ok) {
         Alert.alert("구매 완료", "아이템을 구매했습니다!");
         setModalVisible(false);
@@ -217,7 +217,7 @@ export default function StoreScreen({ navigation }) {
         Alert.alert("적용 완료", "아이템이 적용되었습니다.");
         setModalVisible(false);
         fetchItems();
-        fetchItems();             
+        fetchItems();
         fetchAppliedItem();
       } else {
         Alert.alert("적용 실패", text || "서버 오류가 발생했습니다.");
@@ -236,7 +236,7 @@ export default function StoreScreen({ navigation }) {
     ].includes(item.name);
     const imageName = item.name.replace(/ /g, "_");
     const imageSource = storeItemImageMap[imageName] || storeItemImageMap.default;
-  
+
     return (
       <TouchableOpacity
         style={[styles.itemBox, selectedItem === item.storeId && styles.itemBoxSelected]}
@@ -247,7 +247,7 @@ export default function StoreScreen({ navigation }) {
           {isNoneItem ? (
             <Text style={styles.noneText}>없음</Text> // ← 글자 표시
           ) : (
-          <Image source={imageSource} style={styles.itemImage} />
+            <Image source={imageSource} style={styles.itemImage} />
           )}
           {/* ✅ 현재 적용된 아이템이면 체크 아이콘 표시 */}
           {currentAppliedName === item.name && (
@@ -263,7 +263,7 @@ export default function StoreScreen({ navigation }) {
             />
           )}
         </View>
-  
+
         {/* 구매 안했으면 가격 표시 */}
         {!item.buy && (
           <View style={styles.priceTag}>
@@ -288,7 +288,7 @@ export default function StoreScreen({ navigation }) {
       </View>
 
       <View style={styles.backgroundArea}>
-      <PreviewView characterImage={characterImage} appliedItems={previewItems} />
+        <PreviewView characterImage={characterImage} appliedItems={previewItems} />
         {/* <View style={styles.rightButtons}>
           <TouchableOpacity onPress={() => setSelectedTopButton("background")}>
             <Image source={require("../assets/bg_Icon.png")}
@@ -304,12 +304,12 @@ export default function StoreScreen({ navigation }) {
       <View style={styles.itemContainer}>
         <View style={styles.tabContainer}>
           {categories
-          .filter((cat) => cat !== "배경")
-          .map((cat) => (
-            <TouchableOpacity key={cat} onPress={() => setSelectedTab(cat)}>
-              <Image source={categoryIcons[cat]} style={[styles.tabIcon, selectedTab === cat && styles.selectedTabIcon]} />
-            </TouchableOpacity>
-          ))}
+            .filter((cat) => cat !== "배경")
+            .map((cat) => (
+              <TouchableOpacity key={cat} onPress={() => setSelectedTab(cat)}>
+                <Image source={categoryIcons[cat]} style={[styles.tabIcon, selectedTab === cat && styles.selectedTabIcon]} />
+              </TouchableOpacity>
+            ))}
         </View>
 
         <FlatList
@@ -322,58 +322,58 @@ export default function StoreScreen({ navigation }) {
       </View>
 
       {currentItem && (
-  <Modal
-    visible={modalVisible}
-    transparent
-    animationType="fade"
-    onRequestClose={() => setModalVisible(false)}
-  >
-    <View style={styles.modalOverlay}>
-      <View style={styles.modalBox}>
-        {/* ✅ 아이템 이미지 + 적용 체크 표시 */}
-        <View style={{ position: "relative", width: 80, height: 80, marginBottom: 10 }}>
-          <Image
-            source={storeItemImageMap[currentItem.name.replace(/ /g, "_")] || storeItemImageMap.default}
-            style={{ width: 80, height: 80 }}
-          />
-          {/* ✅ 현재 적용된 아이템이면 체크 이미지 띄우기 */}
-          {currentAppliedName === currentItem.name && (
-            <Image
-              source={require("../assets/storeItems/check.png")}
-              style={{
-                position: "absolute",
-                width: 24,
-                height: 24,
-                bottom: 0,
-                right: 0,
-              }}
-            />
-          )}
-        </View>
+        <Modal
+          visible={modalVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalBox}>
+              {/* ✅ 아이템 이미지 + 적용 체크 표시 */}
+              <View style={{ position: "relative", width: 80, height: 80, marginBottom: 10 }}>
+                <Image
+                  source={storeItemImageMap[currentItem.name.replace(/ /g, "_")] || storeItemImageMap.default}
+                  style={{ width: 80, height: 80 }}
+                />
+                {/* ✅ 현재 적용된 아이템이면 체크 이미지 띄우기 */}
+                {currentAppliedName === currentItem.name && (
+                  <Image
+                    source={require("../assets/storeItems/check.png")}
+                    style={{
+                      position: "absolute",
+                      width: 24,
+                      height: 24,
+                      bottom: 0,
+                      right: 0,
+                    }}
+                  />
+                )}
+              </View>
 
-        {/* 가격 표시 */}
-        {!currentItem.buy && (
-          <View style={[styles.priceTag, { marginBottom: 12 }]}> 
-            <Image source={require("../assets/coin.png")} style={styles.coinIcon} />
-            <Text style={styles.priceText}>{currentItem.price}</Text>
+              {/* 가격 표시 */}
+              {!currentItem.buy && (
+                <View style={[styles.priceTag, { marginBottom: 12 }]}>
+                  <Image source={require("../assets/coin.png")} style={styles.coinIcon} />
+                  <Text style={styles.priceText}>{currentItem.price}</Text>
+                </View>
+              )}
+
+              {/* 버튼들 */}
+              <View style={styles.modalButtonRow}>
+                <TouchableOpacity style={styles.modalButton} onPress={handleBuyItem}>
+                  <Text style={styles.modalButtonText}>
+                    {currentItem.buy ? "적용" : "구매"}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.modalButton} onPress={() => setModalVisible(false)}>
+                  <Text style={styles.modalButtonText}>닫기</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           </View>
-        )}
-
-        {/* 버튼들 */}
-        <View style={styles.modalButtonRow}>
-          <TouchableOpacity style={styles.modalButton} onPress={handleBuyItem}>
-            <Text style={styles.modalButtonText}>
-              {currentItem.buy ? "적용" : "구매"}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.modalButton} onPress={() => setModalVisible(false)}>
-            <Text style={styles.modalButtonText}>닫기</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </View>
-  </Modal>
-)}
+        </Modal>
+      )}
     </View>
   );
 }
@@ -395,7 +395,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   coinIcon: { width: 20, height: 20, marginRight: 5 },
-  coinText: { fontWeight: "bold", color: "#333" },
+  coinText: { fontFamily: "Jua-Regular", color: "#333" },
   backgroundArea: {
     height: SCREEN_HEIGHT * 0.4,
     backgroundColor: "#B9D7F1",
@@ -463,7 +463,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     paddingVertical: 2,
   },
-  priceText: { marginLeft: 4, fontSize: 12, fontWeight: "bold" },
+  priceText: { marginLeft: 4, fontSize: 12, fontFamily: "Jua-Regular" },
   modalOverlay: {
     flex: 1,
     justifyContent: "center",
@@ -491,14 +491,16 @@ const styles = StyleSheet.create({
   },
   modalButtonText: {
     color: "#fff",
-    fontWeight: "bold",
+    // fontWeight: "bold",
+    fontFamily: "Jua-Regular"
   },
   noneText: {
     fontSize: 18,
     color: "#000000",
-    fontWeight: "bold",
+    // fontWeight: "bold",
     position: "absolute",
-    bottom: 5, 
-    right: 0,  
+    bottom: 5,
+    right: 0,
+    fontFamily: "Jua-Regular"
   },
 });

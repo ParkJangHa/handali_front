@@ -24,7 +24,7 @@ const CategorySelect = ({ navigation }) => {
       navigation.navigate("DetailSelect", { category: selectedButton });
     }
   };
-  
+
 
   return (
     <View style={styles.container}>
@@ -97,15 +97,17 @@ const styles = StyleSheet.create({
   },
   dateText: {
     fontSize: SCREEN_WIDTH * 0.06,
-    fontWeight: "bold",
+    // fontWeight: "bold",
     color: "#2D5D6B",
     alignSelf: "flex-start",
+    fontFamily: "Jua-Regular"
   },
   title: {
     fontSize: SCREEN_WIDTH * 0.08,
-    fontWeight: "bold",
+    // fontWeight: "bold",
     color: "#2D5D6B",
     alignSelf: "flex-start",
+    fontFamily: "Jua-Regular"
   },
   progressBar: {
     width: "100%",
@@ -130,11 +132,12 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   subTitle: {
-    fontSize: SCREEN_WIDTH * 0.05,
-    fontWeight: "bold",
+    fontSize: SCREEN_WIDTH * 0.07,
+    // fontWeight: "bold",
     color: "rgba(0, 0, 0, 0.5)",
     alignSelf: "flex-start",
     marginBottom: SCREEN_WIDTH * 0.13,
+    fontFamily: "Jua-Regular"
   },
   rowContainer: {
     flexDirection: "row",
@@ -157,6 +160,7 @@ const styles = StyleSheet.create({
     fontSize: SCREEN_WIDTH * 0.04,
     fontWeight: "bold",
     color: "#2D5D6B",
+    fontFamily: "Jua-Regular"
   },
   nextButton: {
     width: "100%",
@@ -169,7 +173,8 @@ const styles = StyleSheet.create({
   nextButtonText: {
     color: "#2D5D6B",
     fontSize: SCREEN_WIDTH * 0.05,
-    fontWeight: "bold",
+    // fontWeight: "bold",
+    fontFamily: "Jua-Regular"
   },
 });
 

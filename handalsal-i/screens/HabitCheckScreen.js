@@ -279,30 +279,35 @@ const styles = StyleSheet.create({
     //text
     mainTitleText: {
         fontSize: SCREEN_WIDTH * 0.07,
-        fontWeight: 'bold',
-        color: 'black'
+        // fontWeight: 'bold',
+        color: 'black',
+        fontFamily: "Jua-Regular"
     },
     mainSubTitleText: {
         fontSize: SCREEN_WIDTH * 0.037,
         color: '#3076f7',
-        fontWeight: 'bold'
+        // fontWeight: 'bold',
+        fontFamily: "Jua-Regular"
     },
     labelsText: {
         fontSize: SCREEN_WIDTH * 0.04,
-        fontWeight: 'bold',
-        color: 'black'
+        // fontWeight: 'bold',
+        color: 'black',
+        fontFamily: "Jua-Regular"
     },
     contentText: {
         fontSize: SCREEN_WIDTH * 0.09,
         fontWeight: 400,
         alignSelf: 'center',
-        color: 'black'
+        color: 'black',
+        fontFamily: "Jua-Regular"
     },
     recordText: {
         color: 'white',
         fontSize: SCREEN_WIDTH * 0.05,
-        fontWeight: 'bold',
-        color: 'black'
+        // fontWeight: 'bold',
+        color: 'black',
+        fontFamily: "Jua-Regular"
     },
 
 });

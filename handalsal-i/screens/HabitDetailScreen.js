@@ -371,27 +371,33 @@ const styles = StyleSheet.create({
     //text
     categoryNameText: {
         fontSize: SCREEN_WIDTH * 0.075,
-        fontWeight: 'bold'
+        // fontWeight: 'bold'
+        fontFamily: "Jua-Regular"
     },
     labelsText: {
         fontSize: SCREEN_WIDTH * 0.05,
-        fontWeight: 'bold'
+        // fontWeight: 'bold'
+        fontFamily: "Jua-Regular"
     },
     recordText: {
         fontSize: SCREEN_WIDTH * 0.05,
-        fontWeight: 'bold',
-        color: 'black'
+        // fontWeight: 'bold',
+        color: 'black',
+        fontFamily: "Jua-Regular"
     },
     contentText: {
         fontSize: SCREEN_WIDTH * 0.05,
+        fontFamily: "Jua-Regular"
     },
     modalText: {
         fontSize: SCREEN_WIDTH * 0.05,
         color: 'white',
-        alignSelf: 'center'
+        alignSelf: 'center',
+        fontFamily: "Jua-Regular"
     },
     selectedText: {
-        fontWeight: 'bold'
+        // fontWeight: 'bold'
+        fontFamily: "Jua-Regular"
     },
 
 });

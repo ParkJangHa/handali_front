@@ -181,7 +181,7 @@ const ApartScreen = ({ navigation }) => {
 
   {/**한달이 이미지------------------------------------------ */ }
   // ✅ 이미지 파일명을 매핑하는 객체
- 
+
 
   // ✅ 동적으로 이미지 파일을 가져오는 함수
   const getImageSource = (imageName) => {
@@ -401,31 +401,37 @@ const styles = StyleSheet.create({
 
   apartTitle: {
     fontSize: 24,
-    fontWeight: "bold",
+    // fontWeight: "bold",
     alignSelf: "center",
-    color: "black"
+    color: "black",
+    fontFamily: "Jua-Regular"
   },
   title: {
     fontSize: 25,
-    fontWeight: "bold",
+    // fontWeight: "bold",
+    fontFamily: "Jua-Regular"
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: "bold",
+    // fontWeight: "bold",
     marginBottom: 10,
+    fontFamily: "Jua-Regular"
   },
   modalText: {
     fontSize: 18,
     marginBottom: 5,
+    fontFamily: "Jua-Regular"
   },
   closeButtonText: {
     color: "black",
-    fontWeight: "bold",
+    // fontWeight: "bold",
     alignSelf: "center",
+    fontFamily: "Jua-Regular"
   },
   navButtonText: {
     color: "black",
-    fontWeight: "bold",
+    // fontWeight: "bold",
+    fontFamily: "Jua-Regular"
   },
 
 });
