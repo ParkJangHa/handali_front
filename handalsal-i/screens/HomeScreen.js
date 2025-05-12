@@ -94,6 +94,7 @@ const HomeScreen = ({ navigation }) => {
         resizeMode="stretch"
       />
 
+      {/**하단 버전 정보 */}
       <View style={styles.versionBox}>
         <Text style={styles.versionText}>v1.0.0</Text>
       </View>
