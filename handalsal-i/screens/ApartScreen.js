@@ -403,7 +403,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     // fontWeight: "bold",
     alignSelf: "center",
-    color: "black",
+    color: "white",
     fontFamily: "Jua-Regular"
   },
   title: {

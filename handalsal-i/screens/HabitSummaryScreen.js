@@ -170,9 +170,10 @@ const styles = StyleSheet.create({
   },
   header: {
     fontSize: 24,
-    fontWeight: "bold",
+    // fontWeight: "bold",
     marginVertical: 15,
     marginTop: -10,
+    fontFamily: "Jua-Regular"
   },
   card: {
     backgroundColor: "#fff",
