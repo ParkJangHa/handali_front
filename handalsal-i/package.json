@@ -22,6 +22,7 @@
     "@react-navigation/stack": "^7.1.1",
     "expo": "^53.0.6",
     "expo-linear-gradient": "~14.1.4",
+    "expo-modules-core": "^2.3.13",
     "expo-status-bar": "~2.2.3",
     "react": "19.0.0",
     "react-native": "0.79.2",
