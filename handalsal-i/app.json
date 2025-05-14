@@ -1,5 +1,8 @@
 {
   "expo": {
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "name": "handali",
     "slug": "handalsal-i",
     "version": "1.0.0",
