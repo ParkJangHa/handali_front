@@ -11,7 +11,9 @@ import {
   Alert,
 } from "react-native";
 import { API_BASE_URL } from '@env';
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+// const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
+
 
 const categoryMap = {
   "활동": "ACTIVITY",
@@ -272,36 +274,34 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: "center",
-    padding: SCREEN_WIDTH * 0.05,
+    padding: wp('5%'),
     backgroundColor: "#FFE98A",
-    marginTop: -SCREEN_WIDTH * 0.06,
+    marginTop: -wp('6%'),
   },
   img: {
     top: 0,
     position: "absolute",
-    width: SCREEN_WIDTH * 1,
-    height: SCREEN_HEIGHT * 0.47,
+    width: wp('100%'),
+    height: hp('47%'),
     zIndex: 0,
   },
   dateText: {
-    fontSize: SCREEN_WIDTH * 0.06,
-    // fontWeight: "bold",
+    fontSize: wp('6%'),
     color: "#2D5D6B",
     alignSelf: "flex-start",
-    fontFamily: "Jua-Regular"
+    fontFamily: "Jua-Regular",
   },
   title: {
-    fontSize: SCREEN_WIDTH * 0.08,
-    // fontWeight: "bold",
+    fontSize: wp('8%'),
     color: "#2D5D6B",
     alignSelf: "flex-start",
-    fontFamily: "Jua-Regular"
+    fontFamily: "Jua-Regular",
   },
   progressBar: {
     width: "100%",
-    height: SCREEN_HEIGHT * 0.01,
+    height: hp('1%'),
     justifyContent: "center",
-    marginVertical: SCREEN_HEIGHT * 0.02,
+    marginVertical: hp('2%'),
   },
   backgroundBar: {
     width: "100%",
@@ -320,43 +320,41 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   subTitle: {
-    fontSize: SCREEN_WIDTH * 0.05,
-    // fontWeight: "bold",
+    fontSize: wp('7%'),
     color: "rgba(0, 0, 0, 0.5)",
     alignSelf: "flex-start",
-    marginBottom: SCREEN_WIDTH * 0.06,
-    fontFamily: "Jua-Regular"
+    marginBottom: wp('6%'),
+    fontFamily: "Jua-Regular",
   },
   categoryCon: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    width: SCREEN_WIDTH * 0.9,
-    height: SCREEN_HEIGHT * 0.15,
+    width: wp('90%'),
+    height: hp('15%'),
     backgroundColor: "#FFFFFF",
-    borderRadius: SCREEN_WIDTH * 0.05,
-    marginTop: SCREEN_HEIGHT * 0.03,
-    marginBottom: SCREEN_HEIGHT * 0.05,
+    borderRadius: wp('5%'),
+    marginTop: hp('3%'),
+    marginBottom: hp('5%'),
   },
   categoryImg: {
-    width: SCREEN_WIDTH * 0.4,
-    height: SCREEN_WIDTH * 0.4,
-    marginRight: SCREEN_WIDTH * 0.12,
+    width: wp('40%'),
+    height: wp('40%'),
+    marginRight: wp('12%'),
   },
   categoryText: {
-    fontSize: SCREEN_WIDTH * 0.09,
-    // fontWeight: "bold",
+    fontSize: wp('9%'),
     color: "#2D5D6B",
-    fontFamily: "Jua-Regular"
+    fontFamily: "Jua-Regular",
   },
   habitButton: {
-    width: SCREEN_WIDTH * 0.9,
-    height: SCREEN_HEIGHT * 0.08,
+    width: wp('90%'),
+    height: hp('8%'),
     borderWidth: 2,
     borderColor: "#000",
-    marginBottom: SCREEN_HEIGHT * 0.01,
-    paddingHorizontal: SCREEN_WIDTH * 0.03,
-    borderRadius: SCREEN_WIDTH * 0.03,
+    marginBottom: hp('1%'),
+    paddingHorizontal: wp('3%'),
+    borderRadius: wp('3%'),
     backgroundColor: "#FFFDF0",
     justifyContent: "center",
     alignItems: "center",
@@ -365,14 +363,13 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(2, 80, 224, 0.5)",
   },
   habitButtonText: {
-    fontSize: SCREEN_WIDTH * 0.045,
+    fontSize: wp('4.5%'),
     color: "#2D5D6B",
-    // fontWeight: "bold",
-    fontFamily: "Jua-Regular"
+    fontFamily: "Jua-Regular",
   },
   habitAppendContainer: {
     alignSelf: "flex-end",
-    marginBottom: SCREEN_HEIGHT * 0.03,
+    marginBottom: hp('3%'),
   },
   habitAppendButton: {
     flexDirection: "row",
@@ -380,31 +377,29 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   icon: {
-    width: 21,
-    height: 24,
-    marginRight: 8,
+    width: wp('5.5%'),
+    height: wp('6.5%'),
+    marginRight: wp('2%'),
   },
   habitAppendButtonText: {
-    fontSize: SCREEN_WIDTH * 0.045,
-    // fontWeight: "bold",
+    fontSize: wp('4.5%'),
     color: "#0250E0",
     textAlign: "center",
-    fontFamily: "Jua-Regular"
+    fontFamily: "Jua-Regular",
   },
   nextButton: {
-    width: SCREEN_WIDTH * 0.9,
+    width: wp('90%'),
     backgroundColor: "#76D6F4",
-    paddingVertical: SCREEN_HEIGHT * 0.02,
-    borderRadius: 30,
-    marginTop: SCREEN_HEIGHT * 0.01,
-    marginBottom: SCREEN_HEIGHT * 0.01
+    paddingVertical: hp('2%'),
+    borderRadius: wp('7%'),
+    marginTop: hp('1%'),
+    marginBottom: hp('1%'),
   },
   nextButtonText: {
-    fontSize: SCREEN_WIDTH * 0.045,
+    fontSize: wp('4.5%'),
     color: "#2D5D6B",
-    // fontWeight: "bold",
     textAlign: "center",
-    fontFamily: "Jua-Regular"
+    fontFamily: "Jua-Regular",
   },
 });
 

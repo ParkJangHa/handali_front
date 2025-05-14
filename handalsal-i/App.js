@@ -24,7 +24,8 @@ const App = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="Home"
+        // initialRouteName="Home"
+        initialRouteName="MainScreen"
         screenOptions={{
           headerStyle: {
             backgroundColor: "#FFD563", // 헤더 배경색
@@ -38,7 +39,7 @@ const App = () => {
         }}
       >
         <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="Login" component={LoginScreen} 
+        <Stack.Screen name="Login" component={LoginScreen}
           options={{
             headerStyle: {
               backgroundColor: "#FFE98A", // 헤더 배경색
@@ -122,12 +123,12 @@ const App = () => {
           }}
         />
         <Stack.Screen name="Summary" component={HabitSummaryScreen}
-        options={{
-          headerStyle: {
-            backgroundColor: "#FFE98A", // 헤더 배경색
+          options={{
+            headerStyle: {
+              backgroundColor: "#FFE98A", // 헤더 배경색
 
-          },
-        }}
+            },
+          }}
         />
         <Stack.Screen name="JobScreen" component={JobScreen}
           options={{
