@@ -1,7 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Image, Dimensions } from "react-native";
-
-// const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+import { View, Text, TouchableOpacity, StyleSheet, Image,} from "react-native";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 
 const CategorySelect = ({ navigation }) => {
@@ -87,7 +85,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: wp('5%'),
     backgroundColor: "#FFE98A",
-    marginTop: -wp('7%'),
   },
   img: {
     top: 0,

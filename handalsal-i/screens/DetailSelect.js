@@ -377,7 +377,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   icon: {
-    width: wp('5.5%'),
+    width: wp('5.8%'),
     height: wp('6.5%'),
     marginRight: wp('2%'),
   },
@@ -393,7 +393,7 @@ const styles = StyleSheet.create({
     paddingVertical: hp('2%'),
     borderRadius: wp('7%'),
     marginTop: hp('1%'),
-    marginBottom: hp('1%'),
+    marginBottom: hp('3%'),
   },
   nextButtonText: {
     fontSize: wp('4.5%'),

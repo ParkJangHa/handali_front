@@ -1,10 +1,13 @@
-import { StyleSheet, Text, View, TouchableOpacity, Image, Dimensions } from "react-native";
+import { StyleSheet, Text, View, TouchableOpacity, Image,} from "react-native";
 import React, { useState, useEffect } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from '@env';
 import { characterImageMap } from "../utils/characterImageMap";
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 
 const JobScreen = ({ navigation }) => {
     //가장 마지막에 생성한 한달이를 가져옴
@@ -136,149 +139,126 @@ const JobScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: SCREEN_HEIGHT * 0.02,
-        backgroundColor: '#FFE98A'
-    },
+  container: {
+    flex: 1,
+    padding: hp("2%"),
+    backgroundColor: "#FFE98A",
+  },
+  titleContainer: {
+    marginTop: hp("7%"),
+  },
+  memoContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: -hp("2%"),
+    marginBottom: hp("2%"),
+  },
+  handaliContainer: {
+    alignItems: "center",
+    marginBottom: hp("2%"),
+  },
+  circlerHeaderContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "90%",
+  },
+  nicknameContainer: {
+    padding: hp("1%"),
+  },
+  imageContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
+    height: "60%",
+  },
+  jobCoin: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "90%",
+    paddingVertical: hp("1.5%"),
+  },
+  buttonContainer: {
+    justifyContent: "center",
+    alignItems: "center", 
+  },
+  circle: {
+    width: wp("80%"),
+    height: hp("60%"),
+    backgroundColor: "#FDA44F",
+    borderRadius: 30,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: wp("3%"),
+  },
+  circleTitle: {
+    backgroundColor: "#fcddd3",
+    borderRadius: 10,
+    height: hp("3%"),
+    width: wp("20%"),
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  circleDate: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  handaliImage: {
+    width: "90%",
+    resizeMode: "contain",
+  },
+  line: {
+    backgroundColor: "white",
+    height: 1,
+    width: "100%",
+  },
+  button: {
+    backgroundColor: "#76D6F4",
+    width: wp("80%"),
+    paddingVertical: hp("2%"),
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 30,
+  },
 
-
-    titleContainer: {
-        marginTop: SCREEN_HEIGHT * 0.06,
-        //backgroundColor: 'blue'
-    },
-    memoContainer: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: SCREEN_HEIGHT * 0.01,
-        marginBottom: SCREEN_HEIGHT * 0.01,
-        //backgroundColor: 'red'
-    },
-
-
-    handaliContainer: {
-        alignItems: 'center',
-        marginBottom: SCREEN_HEIGHT * 0.02,
-        //backgroundColor: 'orange'
-    },
-    circlerHeaderContainer: {
-        flexDirection: "row",
-        justifyContent: 'space-between',
-        width: "90%",
-        // backgroundColor: 'green'
-    },
-    nicknameContainer: {
-        padding: SCREEN_HEIGHT * 0.01,
-        // backgroundColor: 'red'
-    },
-    imageContainer: {
-        alignItems: "center",
-        justifyContent: "center",
-        width: "100%",
-        height: "60%",
-        // backgroundColor: 'blue',
-    },
-    jobCoin: {
-        flexDirection: "row",
-        justifyContent: 'space-between',
-        width: "90%",
-        paddingVertical: 15,
-        // backgroundColor: 'red'
-    },
-
-
-    buttonContainer: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        //backgroundColor: "red",
-    },
-
-
-    circle: {
-        width: SCREEN_WIDTH * 0.8,
-        height: SCREEN_HEIGHT * 0.6,
-        backgroundColor: '#FDA44F',
-        borderRadius: 30,
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingHorizontal: SCREEN_WIDTH * 0.03
-    },
-    circleTitle: {
-        backgroundColor: "#fcddd3",
-        borderRadius: 10,
-        height: SCREEN_HEIGHT * 0.03,
-        width: SCREEN_WIDTH * 0.2,
-        alignItems: 'center',
-        justifyContent: 'center'
-    },
-    circleDate: {
-        alignItems: 'center',
-        justifyContent: 'center'
-    },
-    handaliImage: {
-        width: '90%',
-        resizeMode: "contain" //이미지 비율 유지
-    },
-    line: {
-        backgroundColor: 'white',
-        height: 1,
-        width: '100%',
-    },
-
-    button: {
-        backgroundColor: '#76D6F4',
-        width: SCREEN_WIDTH * 0.8,
-        paddingVertical: SCREEN_HEIGHT * 0.02,
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderRadius: 30
-    },
-
-
-    dateText: {
-        fontSize: SCREEN_WIDTH * 0.06,
-        // fontWeight: 'bold'
-        fontFamily: "Jua-Regular"
-    },
-    titleText: {
-        fontSize: SCREEN_WIDTH * 0.06,
-        // fontWeight: 'bold'
-        fontFamily: "Jua-Regular"
-    },
-    memoText: {
-        fontSize: SCREEN_WIDTH * 0.05,
-        color: '#ff8851',
-        // fontWeight: 'bold'
-        fontFamily: "Jua-Regular"
-    },
-    circleHeaderText: {
-        color: "#5A3A29"
-    },
-    nicknameText: {
-        fontSize: SCREEN_WIDTH * 0.06,
-        // fontWeight: 'bold',
-        color: "#5A3A29",
-        justifyContent: 'center',
-        fontFamily: "Jua-Regular"
-    },
-    nameText: {
-        fontSize: SCREEN_WIDTH * 0.047,
-        color: 'white',
-        fontFamily: "Jua-Regular"
-    },
-    valueText: {
-        fontSize: SCREEN_WIDTH * 0.047,
-        // fontWeight: 'bold',
-        color: "#5A3A29",
-        fontFamily: "Jua-Regular"
-    },
-    buttonText: {
-        color: '#2D5D6B',
-        fontSize: SCREEN_WIDTH * 0.05,
-        // fontWeight: 'bold',
-        fontFamily: "Jua-Regular"
-    }
-
+  // text styles
+  dateText: {
+    fontSize: wp("6%"),
+    fontFamily: "Jua-Regular",
+  },
+  titleText: {
+    fontSize: wp("6%"),
+    fontFamily: "Jua-Regular",
+  },
+  memoText: {
+    fontSize: wp("5%"),
+    color: "#ff8851",
+    fontFamily: "Jua-Regular",
+  },
+  circleHeaderText: {
+    color: "#5A3A29",
+  },
+  nicknameText: {
+    fontSize: wp("6%"),
+    color: "#5A3A29",
+    justifyContent: "center",
+    fontFamily: "Jua-Regular",
+  },
+  nameText: {
+    fontSize: wp("4.7%"),
+    color: "white",
+    fontFamily: "Jua-Regular",
+  },
+  valueText: {
+    fontSize: wp("4.7%"),
+    color: "#5A3A29",
+    fontFamily: "Jua-Regular",
+  },
+  buttonText: {
+    fontSize: wp("5%"),
+    color: "#2D5D6B",
+    fontFamily: "Jua-Regular",
+  },
 });
+
 
 export default JobScreen;

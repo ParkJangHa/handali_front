@@ -10,13 +10,14 @@ import {
   KeyboardAvoidingView,
   ScrollView,
   Platform,
-  Dimensions,
   StatusBar,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from "@env";
-
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
@@ -144,20 +145,20 @@ const styles = StyleSheet.create({
     backgroundColor: "#76D6F4",
   },
   bContainer: {
-    marginBottom: SCREEN_HEIGHT * 0.4,
+    marginBottom: hp("30%"),
   },
   img: {
     top: 0,
     position: "absolute",
-    width: SCREEN_WIDTH * 1,
-    height: 250,
+    width: wp("100%"),
+    height: hp("30%"),
     zIndex: 0,
   },
   catIcon: {
     position: "absolute",
-    top: SCREEN_HEIGHT * 0.01,
-    width: 209,
-    height: 197,
+    top: hp("1%"),
+    width: wp("55%"),
+    height: hp("25%"),
     resizeMode: "contain",
     alignSelf: "center",
     zIndex: 2,
@@ -165,14 +166,14 @@ const styles = StyleSheet.create({
   inputWithIcon: {
     flexDirection: "row",
     alignItems: "center",
-    width: SCREEN_WIDTH * 0.8,
-    height: SCREEN_HEIGHT * 0.07,
-    paddingVertical: 12,
-    paddingHorizontal: 60,
+    width: wp("80%"),
+    height: hp("7%"),
+    paddingVertical: hp("1.2%"),
+    paddingHorizontal: wp("15%"),
     borderRadius: 30,
     borderWidth: 1,
     borderColor: "#ddd",
-    marginBottom: 20,
+    marginBottom: hp("2.5%"),
     backgroundColor: "#FFE98A",
   },
   icon: {
@@ -186,12 +187,12 @@ const styles = StyleSheet.create({
     color: "#2D5D6B",
     fontFamily: "Jua-Regular"
   },
-  rowContainer: {
+   rowContainer: {
     flexDirection: "row",
     justifyContent: "space-evenly",
     alignItems: "center",
-    width: SCREEN_WIDTH * 0.8,
-    gap: 15,
+    width: wp("80%"),
+    gap: wp("4%"),
   },
   button: {
     backgroundColor: "#FFE98A",

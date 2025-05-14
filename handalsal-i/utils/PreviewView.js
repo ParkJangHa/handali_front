@@ -1,9 +1,9 @@
 import React from "react";
-import { View, Image, StyleSheet, Dimensions } from "react-native";
+import { View, Image, StyleSheet } from "react-native";
 import { storeItemImageMap } from "./storeItemImageMap";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
-const scaleRatio = 0.55; // 원하는 크기에 따라 조절 가능 (0.4 ~ 0.6 추천)
+const scaleRatio = 0.65; // 원하는 크기에 따라 조절 가능 (0.4 ~ 0.6 추천)
 
 export default function PreviewView({ characterImage, appliedItems }) {
   const getImage = (name) => {
@@ -16,8 +16,8 @@ export default function PreviewView({ characterImage, appliedItems }) {
   return (
     <View style={styles.previewContainer}>
       <Image
-      source={require("../assets/storeItems/room.png")}
-      style={styles.backgroundImage}
+        source={require("../assets/storeItems/배경없음.png")}
+        style={styles.backgroundImage}
       />
       {/* 벽장식 */}
       {appliedItems["벽장식"] && getImage(appliedItems["벽장식"]) && (
@@ -51,64 +51,66 @@ export default function PreviewView({ characterImage, appliedItems }) {
 
 const styles = StyleSheet.create({
   previewContainer: {
-    width: SCREEN_WIDTH * 1.2 * scaleRatio,
-    height: SCREEN_HEIGHT * 0.7 * scaleRatio,
+    width: wp(110 * scaleRatio),
+    height: hp(70 * scaleRatio),
     borderRadius: 20,
     overflow: "visible",
     position: "relative",
     alignSelf: "center",
+    overflow: "hidden"
   },
   backgroundImage: {
     position: "absolute",
-    width: "100%",
-    height: "100%",
+    width: wp(120 * scaleRatio),
+    height: hp(90 * scaleRatio),      // 이미지를 크게
     resizeMode: "cover",
     zIndex: -3,
+    transform: [{ translateY: -hp("22%") }],
   },
   characterContainer: {
     position: "absolute",
-    top: SCREEN_HEIGHT * 0.17,   // 🔧 TODO: 캐릭터 위치 조정
-    left: SCREEN_WIDTH * 0.14,   // 🔧 TODO: 캐릭터 좌우 위치 조정
+    top: hp(17),
+    left: wp(14),
     zIndex: -1,
   },
   character: {
-    width: SCREEN_WIDTH * 0.6 * scaleRatio,
-    height: SCREEN_HEIGHT * 0.25 * scaleRatio,
+    width: wp(60 * scaleRatio),
+    height: hp(25 * scaleRatio),
     resizeMode: "contain",
   },
   sofa: {
-    width: SCREEN_WIDTH * 1 * scaleRatio,
-    height: SCREEN_WIDTH * 0.6 * scaleRatio,
+    width: wp(100 * scaleRatio),
+    height: wp(50 * scaleRatio),
     position: "absolute",
-    top: SCREEN_HEIGHT * 0.13,    // 🔧 TODO: 소파 높이 조정
-    left: SCREEN_WIDTH * 0.15,     // 🔧 TODO: 소파 좌우 위치 조정
+    top: hp(15),
+    left: wp(15),
     zIndex: -2,
     resizeMode: "contain",
   },
   chair: {
-    width: SCREEN_WIDTH * 0.4 * scaleRatio,
-    height: SCREEN_WIDTH * 0.35 * scaleRatio,
+    width: wp(40 * scaleRatio),
+    height: wp(35 * scaleRatio),
     position: "absolute",
-    top: SCREEN_HEIGHT * 0.173,     // 🔧 TODO: 의자 높이 조정
-    left: SCREEN_WIDTH * 0.35,    // 🔧 TODO: 의자 좌우 위치 조정
+    top: hp(17.3),
+    left: wp(35),
     zIndex: -2,
     resizeMode: "contain",
   },
   window: {
-    width: SCREEN_WIDTH * 0.4 * scaleRatio,
-    height: SCREEN_WIDTH * 0.3 * scaleRatio,
+    width: wp(40 * scaleRatio),
+    height: wp(30 * scaleRatio),
     position: "absolute",
-    top: SCREEN_HEIGHT * 0.05,    // 🔧 TODO: 창문 높이 조정
-    left: SCREEN_WIDTH * 0.05,    // 🔧 TODO: 창문 좌우 위치 조정
+    top: hp(5),
+    left: wp(5),
     zIndex: -2,
     resizeMode: "contain",
   },
   floor: {
-    width: SCREEN_WIDTH * 0.4 * scaleRatio,
-    height: SCREEN_WIDTH * 0.4 * scaleRatio,
+    width: wp(40 * scaleRatio),
+    height: wp(40 * scaleRatio),
     position: "absolute",
-    top: SCREEN_HEIGHT * 0.15,    // 🔧 TODO: 바닥 위치 조정
-    left: SCREEN_WIDTH * 0.01,   // 🔧 TODO: 바닥 좌우 위치 조정
+    top: hp(15),
+    left: wp(1),
     zIndex: -2,
     resizeMode: "contain",
   },

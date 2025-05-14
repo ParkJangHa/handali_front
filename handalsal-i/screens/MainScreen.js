@@ -5,7 +5,6 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
-  Dimensions,
   Alert,
   Modal,
   ImageBackground
@@ -15,8 +14,6 @@ import { API_BASE_URL } from "@env";
 import { useFocusEffect } from "@react-navigation/native";
 import { characterImageMap } from "../utils/characterImageMap";
 import { storeItemImageMap } from "../utils/storeItemImageMap";
-
-// const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -51,6 +48,12 @@ export default function MainScreen({ navigation }) {
         method: "GET",
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (response.status === 401) {
+        await AsyncStorage.removeItem("authToken");
+        Alert.alert("세션 만료", "로그인이 만료되었습니다. 다시 로그인해주세요.");
+        navigation.navigate("Login");
+        return;
+      }
 
       if (response.ok) {
         const data = await response.json();
@@ -254,11 +257,6 @@ export default function MainScreen({ navigation }) {
             />
           )}
 
-          {/* 캐릭터 */}
-          <View style={styles.characterContainer}>
-            <Image source={handaliImage} style={styles.character} />
-          </View>
-
           {/* 소파 */}
           {appliedItems["소파"] && (
             <Image
@@ -270,6 +268,11 @@ export default function MainScreen({ navigation }) {
               }
             />
           )}
+          
+            {/* 캐릭터 */}
+          <View style={styles.characterContainer}>
+            <Image source={handaliImage} style={styles.character} />
+          </View>
         </View>
 
         {/* <View style={styles.bottomBackground}></View> */}
@@ -307,6 +310,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     position: 'relative',
+    marginBottom: hp("2%"),
   },
   topBar: {
     flexDirection: "row",
@@ -386,7 +390,7 @@ const styles = StyleSheet.create({
   },
   characterContainer: {
     position: "absolute",
-    top: "20.5%",
+    top: "27.5%",
     left: "10%",
     transform: [
       { translateX: wp('11%') },
@@ -403,7 +407,7 @@ const styles = StyleSheet.create({
     width: wp('100%'),
     height: wp('60%'),
     position: "absolute",
-    top: hp('40%'),
+    top: hp('38%'),
     left: wp('26%'),
     zIndex: 1,
     resizeMode: "contain",

@@ -6,14 +6,15 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
-  Dimensions,
   Alert,
   ActivityIndicator,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from '@env';
-
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 
 const UserHabitAppendScreen = ({ route, navigation }) => {
   const { category, categoryData } = route.params; // 전달된 데이터
@@ -143,36 +144,34 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: "center",
-    padding: SCREEN_WIDTH * 0.05,
+    padding: wp("5%"),
     backgroundColor: "#FFE98A",
-    marginTop: -SCREEN_WIDTH * 0.06,
+    marginTop: -wp("6%"),
   },
   img: {
     top: 0,
     position: "absolute",
-    width: SCREEN_WIDTH * 1,
-    height: SCREEN_HEIGHT * 0.7,
+    width: wp("100%"),
+    height: hp("70%"),
     zIndex: 0,
   },
   dateText: {
-    fontSize: SCREEN_WIDTH * 0.06,
-    // fontWeight: "bold",
+    fontSize: wp("6%"),
     color: "#2D5D6B",
     alignSelf: "flex-start",
-    fontFamily: "Jua-Regular"
+    fontFamily: "Jua-Regular",
   },
   title: {
-    fontSize: SCREEN_WIDTH * 0.08,
-    // fontWeight: "bold",
+    fontSize: wp("8%"),
     color: "#2D5D6B",
     alignSelf: "flex-start",
-    fontFamily: "Jua-Regular"
+    fontFamily: "Jua-Regular",
   },
   progressBar: {
     width: "100%",
-    height: SCREEN_HEIGHT * 0.01,
+    height: hp("1%"),
     justifyContent: "center",
-    marginVertical: SCREEN_HEIGHT * 0.02,
+    marginVertical: hp("2%"),
   },
   backgroundBar: {
     width: "100%",
@@ -191,64 +190,61 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   subTitle: {
-    fontSize: SCREEN_WIDTH * 0.05,
-    // fontWeight: "bold",
+    fontSize: wp("5%"),
     color: "rgba(0, 0, 0, 0.5)",
     alignSelf: "flex-start",
-    marginBottom: SCREEN_WIDTH * 0.06,
-    fontFamily: "Jua-Regular"
+    marginBottom: wp("6%"),
+    fontFamily: "Jua-Regular",
   },
   categoryCon: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    width: SCREEN_WIDTH * 0.9,
-    height: SCREEN_HEIGHT * 0.15,
+    width: wp("90%"),
+    height: hp("15%"),
     backgroundColor: "#FFFFFF",
-    borderRadius: SCREEN_WIDTH * 0.05,
-    marginTop: SCREEN_HEIGHT * 0.03,
-    marginBottom: SCREEN_HEIGHT * 0.05,
+    borderRadius: wp("5%"),
+    marginTop: hp("3%"),
+    marginBottom: hp("5%"),
   },
   categoryImg: {
-    width: SCREEN_WIDTH * 0.4,
-    height: SCREEN_WIDTH * 0.4,
-    marginRight: SCREEN_WIDTH * 0.12,
+    width: wp("40%"),
+    height: wp("40%"),
+    marginRight: wp("12%"),
   },
   categoryText: {
-    fontSize: SCREEN_WIDTH * 0.09,
-    // fontWeight: "bold",
+    fontSize: wp("9%"),
     color: "#2D5D6B",
-    fontFamily: "Jua-Regular"
+    fontFamily: "Jua-Regular",
   },
   input: {
     width: "100%",
-    height: SCREEN_HEIGHT * 0.07,
-    borderWidth: SCREEN_WIDTH * 0.003,
+    height: hp("7%"),
+    borderWidth: wp("0.3%"),
     borderColor: "#000",
-    borderRadius: SCREEN_WIDTH * 0.02,
-    paddingHorizontal: SCREEN_WIDTH * 0.03,
-    marginBottom: SCREEN_HEIGHT * 0.03,
+    borderRadius: wp("2%"),
+    paddingHorizontal: wp("3%"),
+    marginBottom: hp("3%"),
     backgroundColor: "#FFFDF0",
     alignSelf: "center",
     color: "#2D5D6B",
-    // fontWeight: "bold"
-    fontFamily: "Jua-Regular"
+    fontFamily: "Jua-Regular",
   },
   addButton: {
     width: "100%",
     backgroundColor: "#76D6F4",
-    paddingVertical: SCREEN_HEIGHT * 0.02,
+    paddingVertical: hp("2%"),
     borderRadius: 30,
-    marginTop: SCREEN_HEIGHT * 0.07,
-    fontFamily: "Jua-Regular"
+    marginTop: hp("7%"),
+    fontFamily: "Jua-Regular",
   },
   addButtonText: {
     color: "#2D5D6B",
-    fontSize: SCREEN_WIDTH * 0.045,
-    // fontWeight: "bold",
+    fontSize: wp("4.5%"),
     textAlign: "center",
-    fontFamily: "Jua-Regular"
+    fontFamily: "Jua-Regular",
   },
 });
+
 
 export default UserHabitAppendScreen;

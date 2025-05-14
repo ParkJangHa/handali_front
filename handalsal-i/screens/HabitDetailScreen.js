@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Image, FlatList, Modal, TouchableWithoutFeedback, ActivityIndicator, Alert } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Image, FlatList, Modal, TouchableWithoutFeedback, ActivityIndicator, Alert } from "react-native";
 import Slider from "@react-native-community/slider";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Platform } from "react-native";
 import { API_BASE_URL } from '@env';
-
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 
 export default function HabitDetailScreen({ route, navigation }) {
 
@@ -261,143 +263,118 @@ export default function HabitDetailScreen({ route, navigation }) {
 
 
 const styles = StyleSheet.create({
-    //container
-    container: {
-        flex: 1,
-        backgroundColor: "#FFE98A"
-    },
-    backButton: {
-        marginTop: SCREEN_HEIGHT * 0.06,
-        marginLeft: SCREEN_WIDTH * 0.06,
-        // backgroundColor: 'pink'
-    },
-    containerRecord: {
-        flex: 1,
-        backgroundColor: "#76D6F4",
-        borderTopLeftRadius: 50,
-        borderTopRightRadius: 50
-        , padding: SCREEN_HEIGHT * 0.04,
-        marginTop: SCREEN_HEIGHT * 0.03,
-    },
+  container: {
+    flex: 1,
+    backgroundColor: "#FFE98A",
+  },
+  backButton: {
+    marginTop: hp("6%"),
+    marginLeft: wp("6%"),
+  },
+  containerRecord: {
+    flex: 1,
+    backgroundColor: "#76D6F4",
+    borderTopLeftRadius: 50,
+    borderTopRightRadius: 50,
+    padding: hp("4%"),
+    marginTop: hp("3%"),
+  },
+  categoryName: {
+    flex: 0.1,
+    marginBottom: hp("3%"),
+  },
+  detailHabitCon: {
+    flex: 0.5,
+    marginBottom: hp("3%"),
+  },
+  habitTimeCon: {
+    flex: 0.3,
+    marginBottom: hp("3%"),
+  },
+  satisfactionCon: {
+    flex: 0.3,
+    marginBottom: hp("3%"),
+  },
+  recordCon: {
+    flex: 0.2,
+    justifyContent: "center",
+  },
 
+  scrollView: {
+    maxHeight: hp("20%"),
+  },
 
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  pickerContainer: {
+    width: wp("80%"),
+    backgroundColor: "#fdfaeb",
+    borderRadius: 20,
+    padding: 20,
+    alignItems: "center",
+  },
 
+  detailHabitButton: {
+    backgroundColor: "white",
+    opacity: 0.8,
+    padding: hp("2%"),
+    marginVertical: hp("1%"),
+    borderRadius: 20,
+    alignItems: "center",
+  },
+  selectedButton: {
+    backgroundColor: "#3076f7",
+  },
+  recordButton: {
+    backgroundColor: "#FFE98A",
+    padding: hp("2%"),
+    borderRadius: 30,
+    alignItems: "center",
+  },
+  timeButton: {
+    backgroundColor: "white",
+    opacity: 0.8,
+    padding: hp("2%"),
+    marginVertical: hp("1%"),
+    borderRadius: 20,
+    alignItems: "center",
+  },
+  timeModalButton: {
+    backgroundColor: "black",
+    width: "100%",
+    borderRadius: 20,
+    padding: 12,
+  },
 
-
-    //in containerRecord
-    categoryName: {
-        flex: 0.1,
-        marginBottom: SCREEN_HEIGHT * 0.03,
-        // backgroundColor: 'yellow',
-    },
-    // labels: {
-    //     // backgroundColor: 'green',
-
-    // },
-    detailHabitCon: {
-        flex: 0.5,
-        marginBottom: SCREEN_HEIGHT * 0.03,
-    },
-    habitTimeCon: {
-        flex: 0.3,
-        marginBottom: SCREEN_HEIGHT * 0.03,
-        // backgroundColor: 'skyblue'
-    },
-    satisfactionCon: {
-        flex: 0.3,
-        marginBottom: SCREEN_HEIGHT * 0.03,
-        // backgroundColor: 'orange'
-    },
-    recordCon: {
-        flex: 0.2,
-        justifyContent: 'center',
-        // backgroundColor: 'skyblue'
-    },
-
-    //in detailHabitCon
-    scrollView: {
-        maxHeight: SCREEN_HEIGHT * 0.15
-    },
-
-
-    //in habitTimeCon
-    modalContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)', // 반투명 배경
-    },
-    pickerContainer: {
-        width: SCREEN_WIDTH * 0.8,
-        backgroundColor: '#fdfaeb',
-        borderRadius: 20,
-        padding: 20,
-        alignItems: 'center',
-    },
-
-    //button
-    detailHabitButton: {
-        backgroundColor: "white",
-        opacity: 0.8,
-        padding: SCREEN_HEIGHT * 0.02,
-        marginVertical: SCREEN_HEIGHT * 0.01,
-        borderRadius: 20,
-        alignItems: "center",
-    },
-    selectedButton: {
-        backgroundColor: "#3076f7", // 선택된 버튼 스타일
-    },
-    recordButton: {
-        backgroundColor: "#FFE98A",
-        padding: SCREEN_HEIGHT * 0.02,
-        borderRadius: 30,
-        alignItems: "center",
-    },
-    timeButton: {
-        backgroundColor: "white",
-        opacity: 0.8,
-        padding: SCREEN_HEIGHT * 0.02,
-        marginVertical: SCREEN_HEIGHT * 0.01,
-        borderRadius: 20,
-        alignItems: "center",
-    },
-    timeModalButton: {
-        backgroundColor: "black",
-        width: "100%",
-        borderRadius: 20,
-        padding: 12,
-    },
-
-    //text
-    categoryNameText: {
-        fontSize: SCREEN_WIDTH * 0.075,
-        // fontWeight: 'bold'
-        fontFamily: "Jua-Regular"
-    },
-    labelsText: {
-        fontSize: SCREEN_WIDTH * 0.05,
-        // fontWeight: 'bold'
-        fontFamily: "Jua-Regular"
-    },
-    recordText: {
-        fontSize: SCREEN_WIDTH * 0.05,
-        // fontWeight: 'bold',
-        color: 'black',
-        fontFamily: "Jua-Regular"
-    },
-    contentText: {
-        fontSize: SCREEN_WIDTH * 0.05,
-        fontFamily: "Jua-Regular"
-    },
-    modalText: {
-        fontSize: SCREEN_WIDTH * 0.05,
-        color: 'white',
-        alignSelf: 'center',
-        fontFamily: "Jua-Regular"
-    },
-    selectedText: {
-        // fontWeight: 'bold'
-        fontFamily: "Jua-Regular"
-    },
-
+  categoryNameText: {
+    fontSize: wp("7.5%"),
+    fontFamily: "Jua-Regular",
+  },
+  labelsText: {
+    fontSize: wp("5%"),
+    fontFamily: "Jua-Regular",
+  },
+  recordText: {
+    fontSize: wp("5%"),
+    color: "black",
+    fontFamily: "Jua-Regular",
+  },
+  contentText: {
+    fontSize: wp("5%"),
+    fontFamily: "Jua-Regular",
+  },
+  modalText: {
+    fontSize: wp("5%"),
+    color: "white",
+    alignSelf: "center",
+    fontFamily: "Jua-Regular",
+  },
+  selectedText: {
+    fontFamily: "Jua-Regular",
+  },
 });
+

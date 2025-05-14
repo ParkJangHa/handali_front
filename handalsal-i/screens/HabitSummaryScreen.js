@@ -4,14 +4,15 @@ import {
   Text,
   View,
   ScrollView,
-  Dimensions,
   ActivityIndicator,
 } from "react-native";
 import { LineChart, PieChart } from "react-native-chart-kit";
 import { API_BASE_URL } from "@env";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 
 const categoryNameMap = {
   ACTIVITY: "활동",
@@ -65,7 +66,7 @@ export default function HabitSummaryScreen() {
     );
   }
   const numMonths = summaryData.monthly_record_count.length;
-  const chartWidth = Math.max(SCREEN_WIDTH * 0.9, numMonths * 40); // 1개당 40~50 정도 너비
+  const chartWidth = Math.max(Number(wp("90%")), numMonths * 40);
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.header}>습관 요약</Text>
@@ -92,8 +93,8 @@ export default function HabitSummaryScreen() {
               legendFontColor: "#333",
               legendFontSize: 14,
             }))}
-            width={SCREEN_WIDTH * 0.9}
-            height={220}
+            width={Number(wp("90%"))}
+            height={hp("25%")}
             chartConfig={chartConfig}
             accessor="value"
             backgroundColor="transparent"
@@ -142,8 +143,8 @@ export default function HabitSummaryScreen() {
                   data: summaryData.monthly_record_count.map((m) => m.totalRecords),
                 }],
               }}
-              width={Math.max(SCREEN_WIDTH * 0.9, summaryData.monthly_record_count.length * 40)}
-              height={220}
+              width={chartWidth}
+              height={hp("25%")}
               chartConfig={chartConfig}
               fromZero
             />
@@ -164,23 +165,22 @@ export default function HabitSummaryScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
+    padding: wp("5%"),
     alignItems: "center",
     backgroundColor: "#FFE98A",
   },
   header: {
-    fontSize: 24,
-    // fontWeight: "bold",
-    marginVertical: 15,
-    marginTop: -10,
-    fontFamily: "Jua-Regular"
+    fontSize: wp("6%"),
+    marginVertical: hp("2%"),
+    marginTop: -hp("1%"),
+    fontFamily: "Jua-Regular",
   },
   card: {
     backgroundColor: "#fff",
     borderRadius: 10,
-    padding: 15,
-    marginBottom: 20,
-    width: SCREEN_WIDTH * 0.9,
+    padding: wp("4%"),
+    marginBottom: hp("2.5%"),
+    width: wp("90%"),
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -188,15 +188,14 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   cardTitle: {
-    fontSize: 18,
-    // fontWeight: "bold",
-    marginBottom: 10,
-    fontFamily: "Jua-Regular"
+    fontSize: wp("4.5%"),
+    marginBottom: hp("1%"),
+    fontFamily: "Jua-Regular",
   },
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 5,
+    marginBottom: hp("0.8%"),
   },
   centered: {
     flex: 1,
@@ -209,26 +208,26 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   customLegend: {
-    marginLeft: -150,
+    marginLeft: -wp("40%"),
     justifyContent: "center",
   },
   legendItem: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 8,
+    marginBottom: hp("1%"),
   },
   legendColor: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: 6,
+    width: wp("3%"),
+    height: wp("3%"),
+    borderRadius: wp("1.5%"),
+    marginRight: wp("1.5%"),
   },
   legendText: {
-    fontSize: 14,
+    fontSize: wp("3.5%"),
     color: "#333",
-    fontFamily: "Jua-Regular"
+    fontFamily: "Jua-Regular",
   },
   innerText: {
-    fontFamily: "Jua-Regular"
+    fontFamily: "Jua-Regular",
   },
 });
