@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
   Dimensions,
   Alert,
+  Modal,
+  ImageBackground
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from "@env";
@@ -29,6 +31,7 @@ export default function MainScreen({ navigation }) {
   });
 
   const intervalRef = useRef(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
   const fetchHandaliStatus = async () => {
     try {
@@ -172,95 +175,131 @@ export default function MainScreen({ navigation }) {
   );
 
   return (
-    <View style={styles.container}>
-      <View style={styles.topBar}>
-        <TouchableOpacity onPress={() => navigation.navigate("JobScreen")}>
-          <Text>직업 획득</Text>
-        </TouchableOpacity>
+    <ImageBackground
+      source={require("../assets/storeItems/배경없음.png")} // 배경 이미지 경로
+      style={styles.background}
+      resizeMode="cover" // 또는 "stretch" 또는 "contain" 등 상황에 맞게
+    >
+      <View style={styles.container}>
+        <View style={styles.topBar}>
+          <TouchableOpacity onPress={() => navigation.navigate("JobScreen")}>
+            <Text>직업 획득</Text>
+          </TouchableOpacity>
 
-        <View style={styles.coinContainer}>
-          <Image source={require("../assets/coin.png")} style={styles.coinIcon} />
-          <Text style={styles.coinText}>{totalCoin}</Text>
+          <View style={styles.coinContainer}>
+            <Image source={require("../assets/coin.png")} style={styles.coinIcon} />
+            <Text style={styles.coinText}>{totalCoin}</Text>
+          </View>
+
+          <View style={styles.topIcons}>
+            <TouchableOpacity onPress={() => navigation.navigate("Store")}>
+              <Image source={require("../assets/store_v2.png")} style={styles.icon} />
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => setModalVisible(true)}>
+              <Image source={require("../assets/settings.png")} style={styles.icon} />
+            </TouchableOpacity>
+
+          </View>
         </View>
 
-        <View style={styles.topIcons}>
-          <TouchableOpacity onPress={() => navigation.navigate("Store")}>
-            <Image source={require("../assets/store.png")} style={styles.icon} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleLogout}>
-            <Text style={styles.logoutText}>로그아웃</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleDeleteAccount}>
-            <Text style={styles.logoutText}>회원탈퇴</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <View style={styles.content}>
-        <Text style={styles.dayText}>
-          {daysSinceCreated}일차, {nickname || "별명 없음"}
-        </Text>
-
-        {/* 벽장식 */}
-        {appliedItems["벽장식"] && (
-          <Image
-            source={storeItemImageMap[appliedItems["벽장식"].replace(/ /g, "_")] || storeItemImageMap.default}
-            style={styles.window}
-          />
-        )}
-
-        {appliedItems["바닥장식"] && (
-          <Image
-            source={storeItemImageMap[appliedItems["바닥장식"].replace(/ /g, "_")] || storeItemImageMap.default}
-            style={styles.floor}
-          />
-        )}
-
-        {/* 캐릭터 */}
-        <View style={styles.characterContainer}>
-          <Image source={handaliImage} style={styles.character} />
-        </View>
-
-        {/* 소파 */}
-        {appliedItems["소파"] && (
-          <Image
-            source={storeItemImageMap[appliedItems["소파"].replace(/ /g, "_")] || storeItemImageMap.default}
-            style={
-              appliedItems["소파"].includes("의자")
-                ? styles.chair
-                : styles.sofa
-            }
-          />
-        )}
-      </View>
-
-      <View style={styles.bottomBackground}></View>
-
-      <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navButton}  onPress={() => navigation.navigate("Summary")} >
-          <Image source={require("../assets/summary.png")} style={styles.navIcon} />
-          <Text style={styles.navText}>기록소</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.recordButton}
-          onPress={() => navigation.navigate("Record")}
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => setModalVisible(false)}
         >
-          <Image source={require("../assets/record.png")} style={styles.recordIcon} />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.navButton}
-          onPress={() => navigation.navigate("ApartScreen")}
-        >
-          <Image source={require("../assets/apartment_nav.png")} style={styles.navIcon} />
-          <Text style={styles.navText}>아파트</Text>
-        </TouchableOpacity>
+          <View
+            style={styles.modalOverlay}
+          >
+            <View style={styles.modalContent}>
+              <TouchableOpacity onPress={handleLogout} style={styles.button}>
+                <Text style={styles.buttonText}>로그아웃</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleDeleteAccount} style={styles.button}>
+                <Text style={styles.buttonText}>회원탈퇴</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setModalVisible(false)} // 모달 닫기
+                style={styles.modalCloseButton}
+              >
+                <Text style={styles.modalCloseButtonText}>닫기</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+
+        <View style={styles.content}>
+          <Text style={styles.dayText}>
+            {daysSinceCreated}일차, {nickname || "별명 없음"}
+          </Text>
+
+          {/* 벽장식 */}
+          {appliedItems["벽장식"] && (
+            <Image
+              source={storeItemImageMap[appliedItems["벽장식"].replace(/ /g, "_")] || storeItemImageMap.default}
+              style={styles.window}
+            />
+          )}
+
+          {appliedItems["바닥장식"] && (
+            <Image
+              source={storeItemImageMap[appliedItems["바닥장식"].replace(/ /g, "_")] || storeItemImageMap.default}
+              style={styles.floor}
+            />
+          )}
+
+          {/* 캐릭터 */}
+          <View style={styles.characterContainer}>
+            <Image source={handaliImage} style={styles.character} />
+          </View>
+
+          {/* 소파 */}
+          {appliedItems["소파"] && (
+            <Image
+              source={storeItemImageMap[appliedItems["소파"].replace(/ /g, "_")] || storeItemImageMap.default}
+              style={
+                appliedItems["소파"].includes("의자")
+                  ? styles.chair
+                  : styles.sofa
+              }
+            />
+          )}
+        </View>
+
+        {/* <View style={styles.bottomBackground}></View> */}
+
+        <View style={styles.bottomNav}>
+          <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate("Summary")} >
+            <Image source={require("../assets/summary.png")} style={styles.navIcon} />
+            <Text style={styles.navText}>기록소</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.recordButton}
+            onPress={() => navigation.navigate("Record")}
+          >
+            <Image source={require("../assets/record.png")} style={styles.recordIcon} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.navButton}
+            onPress={() => navigation.navigate("ApartScreen")}
+          >
+            <Image source={require("../assets/apartment_nav.png")} style={styles.navIcon} />
+            <Text style={styles.navText}>아파트</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F1F1F1" },
+  background: {
+    flex: 1,
+    width: SCREEN_WIDTH,
+    height: SCREEN_HEIGHT,
+  },
+  container: { flex: 1, position: 'relative', },
   topBar: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -289,9 +328,44 @@ const styles = StyleSheet.create({
     marginLeft: SCREEN_WIDTH * 0.02,
     fontFamily: "Jua-Regular"
   },
-  topIcons: { flexDirection: "row", gap: SCREEN_WIDTH * 0.05 },
-  icon: { width: SCREEN_WIDTH * 0.076, height: SCREEN_WIDTH * 0.07 },
-  logoutText: { fontSize: SCREEN_WIDTH * 0.04, color: "red", fontFamily: "Jua-Regular" },
+  topIcons: {
+    flexDirection: "row", gap: SCREEN_WIDTH * 0.05,
+    // backgroundColor: 'red',
+  },
+  icon: { width: SCREEN_WIDTH * 0.1, height: SCREEN_WIDTH * 0.1 },
+  buttonText: { fontSize: SCREEN_WIDTH * 0.04, color: "red", fontFamily: "Jua-Regular" },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.4)",
+  },
+  modalContent: {
+    width: 250,
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 20,
+    alignItems: "center",
+  },
+  modalCloseButtonText: {
+    color: "black",
+    // fontWeight: "bold",
+    alignSelf: "center",
+    fontFamily: "Jua-Regular"
+  },
+  modalCloseButton: {
+    marginTop: 20,
+    backgroundColor: "#FFE98A",
+    width: "100%",
+    padding: 10,
+    borderRadius: 30,
+  },
+  modalCloseButtonText: {
+    color: "black",
+    // fontWeight: "bold",
+    alignSelf: "center",
+    fontFamily: "Jua-Regular",
+  },
   content: { flex: 1 },
   dayText: {
     fontSize: SCREEN_WIDTH * 0.05,
@@ -304,13 +378,13 @@ const styles = StyleSheet.create({
   },
   characterContainer: {
     position: "absolute",
-    top: "42.5%",
+    top: "20.5%",
     left: "10%",
     transform: [
       { translateX: SCREEN_WIDTH * 0.11 },
       { translateY: SCREEN_WIDTH * 0.35 },
     ],
-    zIndex: -1,
+    zIndex: 2,
   },
   character: {
     width: SCREEN_WIDTH * 0.6,
@@ -321,18 +395,18 @@ const styles = StyleSheet.create({
     width: SCREEN_WIDTH * 1,
     height: SCREEN_WIDTH * 0.6,
     position: "absolute",
-    top: "60%",
+    top: "40%",
     left: "26%",
-    zIndex: -2,
+    zIndex: 1,
     resizeMode: "contain",
   },
   chair: {
     width: SCREEN_WIDTH * 0.5,
     height: SCREEN_WIDTH * 0.4,
     position: "absolute",
-    top: "75%",
+    top: "40%",
     left: "60%",
-    zIndex: -2,
+    zIndex: 1,
     resizeMode: "contain",
   },
   window: {
@@ -341,35 +415,35 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: "20%",
     left: "5%",
-    zIndex: -2,
+    // zIndex: 2,
     resizeMode: "contain",
   },
   floor: {
     width: SCREEN_WIDTH * 0.5,
     height: SCREEN_WIDTH * 0.5,
     position: "absolute",
-    top: "60%",
+    top: "40%",
     left: "-10%",
-    zIndex: -2,
+    // zIndex: 2,
     resizeMode: "contain",
   },
-  bottomBackground: {
-    flex: 0.8,
-    backgroundColor: "#DFAA76",
-    zIndex: -3,
-  },
+  // bottomBackground: {
+  //   flex: 0.8,
+  //   backgroundColor: "#DFAA76",
+  //   zIndex: 0,
+  // },
   bottomNav: {
     position: "absolute",
-    bottom: 0,
+    bottom: SCREEN_HEIGHT * 0.015,
     width: "100%",
     height: SCREEN_HEIGHT * 0.08,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: "#DFAA76",
+    // backgroundColor: "#DFAA76",
     paddingHorizontal: SCREEN_WIDTH * 0.15,
     paddingVertical: SCREEN_HEIGHT * 0.02,
-    zIndex: 1,
+    zIndex: 4,
   },
   navButton: { alignItems: "center" },
   navIcon: {
@@ -379,6 +453,7 @@ const styles = StyleSheet.create({
   navText: {
     fontSize: SCREEN_WIDTH * 0.03,
     color: "#2D5D6B",
+    fontFamily: "Jua-Regular"
   },
   recordButton: { alignItems: "center" },
   recordIcon: {
