@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Image, Alert } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Image, Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from '@env';
 import { characterImageMap } from "../utils/characterImageMap";
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 
 export default function HabitCategoryScreen({ navigation }) {
     const [selectedType, setSelectedType] = useState(null); // 활동, 지능, 예술
@@ -94,16 +97,17 @@ export default function HabitCategoryScreen({ navigation }) {
 
                 <Image
                     source={getImageSource()} // 선택된 값이 있을 경우, 값(활동, 지능, 예술)에 따라 동적으로 이미지 변경
-                    style={[styles.categoryImage,
-                    selectedType === null && {
-                        width: SCREEN_HEIGHT * 0.3,
-                        height: SCREEN_HEIGHT * 0.3,
-                        zIndex: -1,
-                        position: 'absolute',
-                        top: SCREEN_WIDTH * 0.25,
-                        left: SCREEN_WIDTH * 0.3,
-                    } // 선택 안 했을 때 키우기
-                    ]}
+                        style={[
+                            styles.categoryImage,
+                            selectedType === null && {
+                                width: hp("30%"),
+                                height: hp("30%"),
+                                zIndex: -1,
+                                position: "absolute",
+                                top: wp("25%"),
+                                left: wp("30%"),
+                            },
+                        ]}
                 />
             </View>
 
@@ -156,131 +160,116 @@ export default function HabitCategoryScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-    //container
-    container: {
-        flex: 1,
-        backgroundColor: "#FFE98A"
-    },
-    backButton: {
-        marginTop: SCREEN_HEIGHT * 0.06,
-        marginLeft: SCREEN_WIDTH * 0.06,
-        // backgroundColor: 'pink'
-    },
-    containerTop: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        // backgroundColor: 'blue'
-    },
-    containerBottom: {
-        flex: 1.3,
-        backgroundColor: "#76D6F4",
-        borderTopLeftRadius: 50,
-        borderTopRightRadius: 50,
-        paddingTop: SCREEN_HEIGHT * 0.04,
-        paddingLeft: SCREEN_HEIGHT * 0.05,
-        paddingRight: SCREEN_HEIGHT * 0.05,
-    },
+  container: {
+    flex: 1,
+    backgroundColor: "#FFE98A",
+  },
+  backButton: {
+    marginTop: hp("6%"),
+    marginLeft: wp("6%"),
+  },
+  containerTop: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  containerBottom: {
+    flex: 1.3,
+    backgroundColor: "#76D6F4",
+    borderTopLeftRadius: 50,
+    borderTopRightRadius: 50,
+    paddingTop: hp("4%"),
+    paddingLeft: hp("5%"),
+    paddingRight: hp("5%"),
+  },
 
-    // in containerTop
-    speechBubble: {
-        position: 'absolute',
-        top: SCREEN_HEIGHT * 0.08,
-        left: SCREEN_WIDTH * 0.3,
-        backgroundColor: 'white',
-        borderRadius: 15,
-        padding: SCREEN_WIDTH * 0.02,
-        width: SCREEN_WIDTH * 0.6,
-        alignItems: 'center'
-    },
-    speechTriangle: {
-        position: 'absolute',
-        bottom: -15,
-        left: '50%',
-        marginLeft: -5,
-        width: 0,
-        height: 0,
-        borderLeftWidth: 10,
-        borderRightWidth: 10,
-        borderTopWidth: 15,
-        borderLeftColor: 'transparent',
-        borderRightColor: 'transparent',
-        borderTopColor: 'white',
-    },
-    categoryImage: {
-        width: SCREEN_HEIGHT * 0.25,
-        height: SCREEN_HEIGHT * 0.25,
-        resizeMode: 'contain',
-    },
+  // in containerTop
+  speechBubble: {
+    position: "absolute",
+    top: hp("8%"),
+    left: wp("30%"),
+    backgroundColor: "white",
+    borderRadius: 15,
+    padding: wp("2%"),
+    width: wp("60%"),
+    alignItems: "center",
+  },
+  speechTriangle: {
+    position: "absolute",
+    bottom: -15,
+    left: "50%",
+    marginLeft: -5,
+    width: 0,
+    height: 0,
+    borderLeftWidth: 10,
+    borderRightWidth: 10,
+    borderTopWidth: 15,
+    borderLeftColor: "transparent",
+    borderRightColor: "transparent",
+    borderTopColor: "white",
+  },
+  categoryImage: {
+    width: hp("25%"),
+    height: hp("25%"),
+    resizeMode: "contain",
+  },
 
-    //in containerBottom
-    todayHabitRecord: {
-        flex: 0.4,
-        // marginTop: SCREEN_HEIGHT * 0.05,
-        // marginLeft: SCREEN_WIDTH * 0.1,
-        // backgroundColor: 'skyblue'
-    },
-    habitCategories: {
-        flex: 3,
-        alignItems: "center",
-        justifyContent: 'center',
-        // backgroundColor: 'pink'
-    },
-    selectView: {
-        flex: 1.5,
-        alignItems: "center",
-        justifyContent: 'center',
-        // backgroundColor: 'yellow'
-    },
+  // in containerBottom
+  todayHabitRecord: {
+    flex: 0.4,
+  },
+  habitCategories: {
+    flex: 3,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  selectView: {
+    flex: 1.5,
+    alignItems: "center",
+    justifyContent: "center",
+  },
 
-    //buttons
-    button: {
-        backgroundColor: "white",
-        opacity: 0.8,
-        padding: SCREEN_HEIGHT * 0.02,
-        marginVertical: SCREEN_HEIGHT * 0.01,
-        borderRadius: 20,
-        width: "100%",
-        alignItems: "center",
-    },
-    selectedButton: {
-        backgroundColor: "#3076f7", // 선택된 버튼 스타일
-    },
-    selectButton: {
-        backgroundColor: "#FFE98A",
-        padding: SCREEN_HEIGHT * 0.023,
-        borderRadius: 30,
-        width: "100%",
-        alignItems: "center",
-    },
+  // buttons
+  button: {
+    backgroundColor: "white",
+    opacity: 0.8,
+    padding: hp("2%"),
+    marginVertical: hp("1%"),
+    borderRadius: 20,
+    width: "100%",
+    alignItems: "center",
+  },
+  selectedButton: {
+    backgroundColor: "#3076f7",
+  },
+  selectButton: {
+    backgroundColor: "#FFE98A",
+    padding: hp("2.3%"),
+    borderRadius: 30,
+    width: "100%",
+    alignItems: "center",
+  },
 
-
-    //text
-    recordTitle: {
-        fontSize: SCREEN_WIDTH * 0.05,
-        // fontWeight: 'bold'
-        fontFamily: "Jua-Regular"
-    },
-    buttonText: {
-        fontSize: SCREEN_WIDTH * 0.049,
-        // fontWeight: 'bold'
-        fontFamily: "Jua-Regular"
-    },
-    selectButtonText: {
-        fontSize: SCREEN_WIDTH * 0.049,
-        // fontWeight: 'bold',
-        color: 'black',
-        fontFamily: "Jua-Regular"
-    },
-    speechText: {
-        fontSize: SCREEN_WIDTH * 0.045,
-        // fontWeight: 'bold',
-        color: 'black',
-        fontFamily: "Jua-Regular"
-    },
-    selectedText: {
-        // fontWeight: 'bold'
-        fontFamily: "Jua-Regular"
-    }
-
+  // text
+  recordTitle: {
+    fontSize: wp("5%"),
+    fontFamily: "Jua-Regular",
+  },
+  buttonText: {
+    fontSize: wp("4.9%"),
+    fontFamily: "Jua-Regular",
+  },
+  selectButtonText: {
+    fontSize: wp("4.9%"),
+    color: "black",
+    fontFamily: "Jua-Regular",
+  },
+  speechText: {
+    fontSize: wp("4.5%"),
+    color: "black",
+    fontFamily: "Jua-Regular",
+  },
+  selectedText: {
+    fontFamily: "Jua-Regular",
+  },
 });

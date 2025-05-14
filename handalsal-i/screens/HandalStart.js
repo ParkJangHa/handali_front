@@ -1,9 +1,11 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, StyleSheet, Image, TouchableOpacity, Dimensions, Alert, ActivityIndicator } from "react-native";
+import { View, Text, TextInput, StyleSheet, Image, TouchableOpacity, Alert, ActivityIndicator } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from '@env';
-
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 
 const HandalStart = ({ navigation }) => {
   const today = new Date();
@@ -134,36 +136,34 @@ export const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: "center",
-    padding: SCREEN_WIDTH * 0.05,
+    padding: wp("5%"),
     backgroundColor: "#FFF",
-    marginTop: -SCREEN_WIDTH * 0.06,
+    marginTop: -wp("6%"),
   },
   img: {
     top: 0,
     position: "absolute",
-    width: SCREEN_WIDTH,
-    height: SCREEN_HEIGHT * 0.25,
+    width: wp("100%"),
+    height: hp("25%"),
     zIndex: 0,
   },
   dateText: {
-    fontSize: SCREEN_WIDTH * 0.06,
-    // fontWeight: "bold",
+    fontSize: wp("6%"),
     color: "#2D5D6B",
     alignSelf: "flex-start",
-    fontFamily: "Jua-Regular"
+    fontFamily: "Jua-Regular",
   },
   title: {
-    fontSize: SCREEN_WIDTH * 0.08,
-    // fontWeight: "bold",
+    fontSize: wp("8%"),
     color: "#2D5D6B",
     alignSelf: "flex-start",
-    fontFamily: "Jua-Regular"
+    fontFamily: "Jua-Regular",
   },
   progressBar: {
     width: "100%",
-    height: SCREEN_HEIGHT * 0.01,
+    height: hp("1%"),
     justifyContent: "center",
-    marginVertical: SCREEN_HEIGHT * 0.02,
+    marginVertical: hp("2%"),
   },
   backgroundBar: {
     width: "100%",
@@ -182,80 +182,79 @@ export const styles = StyleSheet.create({
     borderRadius: 10,
   },
   subTitle: {
-    fontSize: SCREEN_WIDTH * 0.05,
-    // fontWeight: "bold",
+    fontSize: wp("5%"),
     color: "rgba(0, 0, 0, 0.5)",
     alignSelf: "flex-start",
-    marginBottom: SCREEN_WIDTH * 0.05,
-    fontFamily: "Jua-Regular"
+    marginBottom: wp("5%"),
+    fontFamily: "Jua-Regular",
   },
   handalImage: {
-    top: SCREEN_HEIGHT * 0.28,
+    top: hp("28%"),
     position: "absolute",
-    width: SCREEN_WIDTH * 0.35, // 반응형 너비
-    height: SCREEN_HEIGHT * 0.3, // 반응형 높이
+    width: wp("35%"),
+    height: hp("30%"),
   },
   handalbackImage: {
-    top: SCREEN_HEIGHT * 0.2,
+    top: hp("20%"),
     position: "absolute",
-    width: SCREEN_WIDTH * 0.63, // 반응형 너비
-    height: SCREEN_HEIGHT * 0.35, // 반응형 높이
-    marginTop: SCREEN_HEIGHT * 0.06,
+    width: wp("66%"),
+    height: hp("35%"),
+    marginTop: hp("6%"),
     zIndex: -1,
   },
   bottomCon: {
     bottom: 0,
     position: "absolute",
+    marginBottom: hp("5%")
   },
   nicknameCon: {
-    width: SCREEN_WIDTH * 0.9, // 반응형 너비
-    height: SCREEN_HEIGHT * 0.15,
+    width: wp("90%"),
+    height: hp("15%"),
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: SCREEN_WIDTH * 0.05, // 둥근 테두리 반응형
+    borderRadius: wp("5%"),
     backgroundColor: "#76D6F4",
-    marginBottom: SCREEN_HEIGHT * 0.02, // 반응형 아래 여백
+    marginBottom: hp("2%"),
   },
   nicknameText: {
-    fontSize: SCREEN_WIDTH * 0.06, // 반응형 텍스트 크기
-    marginBottom: SCREEN_HEIGHT * 0.02, // 반응형 아래 여백
+    fontSize: wp("6%"),
+    marginBottom: hp("2%"),
     color: "#2D5D6B",
-    // fontWeight: "bold",
-    fontFamily: "Jua-Regular"
+    fontFamily: "Jua-Regular",
   },
   input: {
     backgroundColor: "#FFF7F7",
     width: "80%",
-    height: SCREEN_HEIGHT * 0.06, // 반응형 높이
-    borderRadius: SCREEN_WIDTH * 0.08, // 둥근 테두리 반응형
+    height: hp("6%"),
+    borderRadius: wp("8%"),
     textAlign: "center",
-    fontSize: SCREEN_WIDTH * 0.05, // 반응형 폰트 크기
+    fontSize: wp("5%"),
     color: "#000",
     fontWeight: "bold",
   },
   startButton: {
-    width: SCREEN_WIDTH * 0.6,
+    width: wp("60%"),
     backgroundColor: "#FFD5B7",
-    paddingVertical: SCREEN_HEIGHT * 0.015, // 반응형 세로 여백
-    paddingHorizontal: SCREEN_WIDTH * 0.1, // 반응형 가로 여백
-    borderRadius: SCREEN_WIDTH * 0.05, // 둥근 테두리 반응형
+    paddingVertical: hp("1.5%"),
+    paddingHorizontal: wp("10%"),
+    borderRadius: wp("5%"),
     alignSelf: "center",
-    marginBottom: SCREEN_HEIGHT * 0.01,
+    marginBottom: hp("1%"),
   },
   startButtonText: {
-    fontSize: SCREEN_WIDTH * 0.045, // 반응형 폰트 크기
-    // fontWeight: "bold",
+    fontSize: wp("4.5%"),
     color: "#2D5D6B",
     textAlign: "center",
-    fontFamily: "Jua-Regular"
+    fontFamily: "Jua-Regular",
   },
   background: {
     position: "absolute",
     bottom: 0,
-    width: SCREEN_WIDTH,
-    height: SCREEN_HEIGHT * 0.3,
+    width: wp("100%"),
+    height: hp("35%"),
     zIndex: -1,
   },
 });
+
 
 export default HandalStart;

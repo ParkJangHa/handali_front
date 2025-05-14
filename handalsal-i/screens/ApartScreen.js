@@ -4,7 +4,9 @@ import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from '@env';
 import { characterImageMap } from "../utils/characterImageMap";
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+// const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
+
 
 const ApartScreen = ({ navigation }) => {
   const [modalVisible, setModalVisible] = useState(false); // 모달 상태
@@ -142,8 +144,8 @@ const ApartScreen = ({ navigation }) => {
 
   // FlatList가 각 항목의 높이를 미리 알도록 설정
   const getItemLayout = (_, index) => ({
-    length: SCREEN_HEIGHT * 0.3, // ✅ 각 아이템의 높이
-    offset: SCREEN_HEIGHT * 0.3 * index, // ✅ 각 아이템의 위치
+    length: hp('30%'),
+    offset: hp('30%') * index,
     index,
   });
 
@@ -310,26 +312,23 @@ const ApartScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // backgroundColor: "black"
   },
-
   navContainer: {
     justifyContent: "space-around",
     flexDirection: "row",
     backgroundColor: "#4f291b",
-    padding: SCREEN_HEIGHT * 0.01,
-    paddingTop: SCREEN_HEIGHT * 0.06,
+    padding: hp('1%'),
+    paddingTop: hp('6%'),
   },
   navContainer2: {
     justifyContent: "space-around",
     flexDirection: "row",
     backgroundColor: "#4f291b",
-    padding: SCREEN_HEIGHT * 0.04,
+    padding: hp('4%'),
   },
-
   rooftopImage: {
     width: '100%',
-    height: SCREEN_HEIGHT * 0.5,
+    height: hp('50%'),
   },
   rooftopColor: {
     backgroundColor: '#A66E38'
@@ -338,102 +337,91 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFE98A',
   },
   floors: {
-    height: SCREEN_HEIGHT * 0.3,
+    height: hp('30%'),
   },
   lockIcon: {
     width: "100%",
-    height: SCREEN_HEIGHT * 0.3,
+    height: hp('30%'),
   },
   lockLine: {
     backgroundColor: "#684626",
-    height: SCREEN_HEIGHT * 0.01,
+    height: hp('1%'),
   },
   handaliTextCon: {
-    paddingLeft: SCREEN_WIDTH * 0.04,
-    paddingTop: SCREEN_WIDTH * 0.04,
-    // backgroundColor: 'red'
+    paddingLeft: wp('4%'),
+    paddingTop: wp('4%'),
   },
   handaliImage: {
-    width: SCREEN_WIDTH * 0.4,
-    height: SCREEN_HEIGHT * 0.3,
-    transform: [
-      { translateY: -SCREEN_WIDTH * 0.1 },
-    ],
+    width: wp('40%'),
+    height: hp('25%'),
+    // transform: [
+    //   { translateY: -wp('10%') },
+    // ],
     alignSelf: 'center',
   },
-
   backButton: {
-    position: 'absolute', // 절대 위치 설정
-    left: SCREEN_WIDTH * 0.06, // 왼쪽 끝에 배치
-    top: SCREEN_HEIGHT * 0.04,
-    zIndex: 1, // 다른 요소 위에 위치하도록 설정
+    position: 'absolute',
+    left: wp('6%'),
+    top: hp('4%'),
+    zIndex: 1,
   },
   navButton: {
-    padding: 10,
+    padding: hp('1.2%'),
     backgroundColor: "#FFE98A",
-    borderRadius: 20,
+    borderRadius: wp('5%'),
   },
   disabledButton: {
     backgroundColor: "white",
   },
   closeButton: {
-    marginTop: 20,
+    marginTop: hp('2%'),
     backgroundColor: "#FFE98A",
     width: "100%",
-    padding: 10,
-    borderRadius: 30,
+    padding: hp('1.5%'),
+    borderRadius: wp('10%'),
   },
-
   modalContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)", // 배경 어둡게
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   detailContainer: {
     width: "80%",
-    padding: 20,
+    padding: wp('5%'),
     backgroundColor: "#fff",
-    borderRadius: 10,
-    alignItems: "left",
+    borderRadius: wp('2%'),
+    alignItems: "flex-start",
   },
-
-
   apartTitle: {
-    fontSize: 24,
-    // fontWeight: "bold",
+    fontSize: wp('6%'),
     alignSelf: "center",
     color: "white",
     fontFamily: "Jua-Regular"
   },
   title: {
-    fontSize: 25,
-    // fontWeight: "bold",
+    fontSize: wp('6.5%'),
     fontFamily: "Jua-Regular"
   },
   modalTitle: {
-    fontSize: 20,
-    // fontWeight: "bold",
-    marginBottom: 10,
+    fontSize: wp('5.5%'),
+    marginBottom: hp('1.5%'),
     fontFamily: "Jua-Regular"
   },
   modalText: {
-    fontSize: 18,
-    marginBottom: 5,
+    fontSize: wp('4.5%'),
+    marginBottom: hp('0.8%'),
     fontFamily: "Jua-Regular"
   },
   closeButtonText: {
     color: "black",
-    // fontWeight: "bold",
     alignSelf: "center",
     fontFamily: "Jua-Regular"
   },
   navButtonText: {
     color: "black",
-    // fontWeight: "bold",
     fontFamily: "Jua-Regular"
   },
-
 });
 
 export default ApartScreen;

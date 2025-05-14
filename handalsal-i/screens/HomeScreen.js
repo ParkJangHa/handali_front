@@ -5,14 +5,16 @@ import {
   View,
   TouchableOpacity,
   Image,
-  Dimensions,
   ImageBackground,
 } from "react-native";
 import React, { useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from "@env";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 const HomeScreen = ({ navigation }) => {
   useEffect(() => {
@@ -113,76 +115,75 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "space-between",
     alignItems: "center",
-    paddingTop: SCREEN_HEIGHT * 0.05,
+    paddingTop: hp("5%"),
     zIndex: 1,
   },
   background: {
     position: "absolute",
     bottom: 0,
-    width: SCREEN_WIDTH,
-    height: SCREEN_HEIGHT * 0.38,
+    width: wp("100%"),
+    height: hp("38%"),
     zIndex: 0,
   },
   imgCon: {
-    flex: SCREEN_HEIGHT * 0.2
+    height: hp("20%"),
+    marginTop: hp("5%"),
   },
   img: {
-    width: 215,
-    height: 226,
+    width: wp("55%"),
+    height: hp("25%"),
     resizeMode: "contain",
   },
   titeCon: {
-    flex: SCREEN_HEIGHT * 0.5,
+    height: hp("66%"),
     alignItems: "center",
-    gap: 20,
+    gap: hp("2%"),
   },
   titetext: {
     fontSize: 48,
-    // fontWeight: "bold",
-    fontFamily: "Jua-Regular"
+    fontFamily: "Jua-Regular",
   },
   buttonlogin: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#76D6F4",
-    paddingVertical: 12,
-    paddingHorizontal: 60,
+    paddingVertical: hp("1.5%"),
+    paddingHorizontal: wp("15%"),
     borderRadius: 30,
-    width: SCREEN_WIDTH * 0.5,
-    gap: 10,
+    width: wp("50%"),
+    gap: wp("2.5%"),
   },
   button: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#76D6F4",
-    paddingVertical: 12,
-    paddingHorizontal: 60,
+    paddingVertical: hp("1.5%"),
+    paddingHorizontal: wp("15%"),
     borderRadius: 30,
-    width: SCREEN_WIDTH * 0.5,
-    gap: 10,
+    width: wp("50%"),
+    gap: wp("2.5%"),
   },
   icon: {
-    width: 13.42,
-    height: 20,
+    width: wp("4%"),
+    height: hp("2.5%"),
   },
   buttonText: {
     fontSize: 20,
-    // fontWeight: "bold",
     color: "#2D5D6B",
-    fontFamily: "Jua-Regular"
+    fontFamily: "Jua-Regular",
   },
   catIcon: {
     position: "absolute",
-    bottom: SCREEN_HEIGHT * 0.05,
-    width: 209,
-    height: 197,
+    bottom: hp("5%"),
+    width: wp("55%"),
+    height: hp("25%"),
     resizeMode: "contain",
     alignSelf: "center",
     zIndex: 2,
   },
   versionBox: {
     position: 'absolute',
-    bottom: 10,      // 화면 하단으로부터 10px
+    bottom: hp("1.5%"),
     width: '100%',
     alignItems: 'center',
   },

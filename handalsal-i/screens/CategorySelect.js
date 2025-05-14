@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Image, Dimensions } from "react-native";
-
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+import { View, Text, TouchableOpacity, StyleSheet, Image,} from "react-native";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 
 const CategorySelect = ({ navigation }) => {
   const today = new Date();
@@ -84,36 +83,33 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: "center",
-    padding: SCREEN_WIDTH * 0.05,
+    padding: wp('5%'),
     backgroundColor: "#FFE98A",
-    marginTop: -SCREEN_WIDTH * 0.07,
   },
   img: {
     top: 0,
     position: "absolute",
-    width: SCREEN_WIDTH * 1,
-    height: SCREEN_HEIGHT * 0.3,
+    width: wp('100%'),
+    height: hp('30%'),
     zIndex: 0,
   },
   dateText: {
-    fontSize: SCREEN_WIDTH * 0.06,
-    // fontWeight: "bold",
+    fontSize: wp('6%'),
     color: "#2D5D6B",
     alignSelf: "flex-start",
-    fontFamily: "Jua-Regular"
+    fontFamily: "Jua-Regular",
   },
   title: {
-    fontSize: SCREEN_WIDTH * 0.08,
-    // fontWeight: "bold",
+    fontSize: wp('8%'),
     color: "#2D5D6B",
     alignSelf: "flex-start",
-    fontFamily: "Jua-Regular"
+    fontFamily: "Jua-Regular",
   },
   progressBar: {
     width: "100%",
-    height: SCREEN_HEIGHT * 0.01,
+    height: hp('1%'),
     justifyContent: "center",
-    marginVertical: SCREEN_HEIGHT * 0.04,
+    marginVertical: hp('4%'),
   },
   backgroundBar: {
     width: "100%",
@@ -132,24 +128,23 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   subTitle: {
-    fontSize: SCREEN_WIDTH * 0.07,
-    // fontWeight: "bold",
+    fontSize: wp('7%'),
     color: "rgba(0, 0, 0, 0.5)",
     alignSelf: "flex-start",
-    marginBottom: SCREEN_WIDTH * 0.13,
-    fontFamily: "Jua-Regular"
+    marginBottom: wp('13%'),
+    fontFamily: "Jua-Regular",
   },
   rowContainer: {
     flexDirection: "row",
     justifyContent: "space-evenly",
     width: "100%",
-    marginBottom: SCREEN_WIDTH * 0.75,
+    marginBottom: wp('75%'),
   },
   habitButton: {
     backgroundColor: "rgba(255, 255, 255, 1)",
-    width: SCREEN_WIDTH * 0.25,
-    height: SCREEN_HEIGHT * 0.1,
-    borderRadius: 20,
+    width: wp('25%'),
+    height: hp('10%'),
+    borderRadius: wp('5%'),
     justifyContent: "center",
     alignItems: "center",
   },
@@ -157,24 +152,23 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(2, 80, 224, 0.5)",
   },
   habitButtonText: {
-    fontSize: SCREEN_WIDTH * 0.04,
+    fontSize: wp('4%'),
     fontWeight: "bold",
     color: "#2D5D6B",
-    fontFamily: "Jua-Regular"
+    fontFamily: "Jua-Regular",
   },
   nextButton: {
     width: "100%",
     backgroundColor: "#76D6F4",
-    paddingVertical: SCREEN_HEIGHT * 0.02,
-    borderRadius: 20,
+    paddingVertical: hp('2%'),
+    borderRadius: wp('5%'),
     alignItems: "center",
-    marginVertical: SCREEN_HEIGHT * 0.02,
+    marginVertical: hp('2%'),
   },
   nextButtonText: {
     color: "#2D5D6B",
-    fontSize: SCREEN_WIDTH * 0.05,
-    // fontWeight: "bold",
-    fontFamily: "Jua-Regular"
+    fontSize: wp('5%'),
+    fontFamily: "Jua-Regular",
   },
 });
 

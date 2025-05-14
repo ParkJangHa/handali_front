@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   FlatList,
   Text,
-  Dimensions,
   Alert,
   Modal,
 } from "react-native";
@@ -15,7 +14,10 @@ import { API_BASE_URL } from "@env";
 import { characterImageMap } from "../utils/characterImageMap";
 import { storeItemImageMap } from "../utils/storeItemImageMap";
 import PreviewView from "../utils/PreviewView";
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 
 const categories = ["소파", "배경", "벽장식", "바닥장식"];
 const categoryIcons = {
@@ -63,11 +65,20 @@ export default function StoreScreen({ navigation }) {
       const response = await fetch(`${API_BASE_URL}/store/view?itemType=${mappedType}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (response.status === 401) {
+        await AsyncStorage.removeItem("authToken");
+        Alert.alert("세션 만료", "로그인이 만료되었습니다. 다시 로그인해주세요.");
+        navigation.navigate("Login");
+        return;
+      }
+
       const text = await response.text();
       const data = JSON.parse(text);
       console.log("서버에서 받은 아이템 리스트:", data);
-      if (response.ok) setItems(data);
-      else {
+
+      if (response.ok) {
+        setItems(data);
+      } else {
         setItems([]);
         Alert.alert("조회 실패", data.message || "아이템을 불러올 수 없습니다.");
       }
@@ -75,8 +86,8 @@ export default function StoreScreen({ navigation }) {
       console.error("fetchItems 오류:", error);
       Alert.alert("네트워크 오류", "인터넷 연결 또는 서버 응답을 확인해주세요.");
     }
-  
   };
+
 
   const fetchTotalCoin = async () => {
     try {
@@ -385,66 +396,66 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
-    padding: 16,
-    marginTop: SCREEN_HEIGHT * 0.06,
+    padding: wp("4%"),
+    marginTop: hp("6%"),
   },
-  closeIcon: { width: 24, height: 24 },
+  closeIcon: { width: wp("6%"), height: wp("6%") },
   coinWrapper: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#EAF1FA",
-    padding: 8,
-    borderRadius: 20,
+    padding: wp("2.5%"),
+    borderRadius: wp("6%"),
   },
-  coinIcon: { width: 20, height: 20, marginRight: 5 },
+  coinIcon: { width: wp("5%"), height: wp("5%"), marginRight: wp("1.5%") },
   coinText: { fontFamily: "Jua-Regular", color: "#333" },
   backgroundArea: {
-    height: SCREEN_HEIGHT * 0.4,
+    height: hp("40%"),
     backgroundColor: "#B9D7F1",
-    marginHorizontal: 16,
-    borderRadius: 20,
+    marginHorizontal: wp("4%"),
+    borderRadius: wp("5%"),
     position: "relative",
   },
   rightButtons: {
     backgroundColor: "#fff",
     position: "absolute",
-    bottom: 12,
-    right: 12,
+    bottom: wp("3%"),
+    right: wp("3%"),
     flexDirection: "row",
-    gap: 8,
-    padding: 6,
-    borderRadius: 10,
+    gap: wp("2%"),
+    padding: wp("1.5%"),
+    borderRadius: wp("3%"),
   },
   smallIcon: {
-    width: 25,
-    height: 25,
+    width: wp("6.5%"),
+    height: wp("6.5%"),
     tintColor: "#ccc",
-    marginHorizontal: 5,
+    marginHorizontal: wp("1.5%"),
   },
   selectedSmallIcon: { tintColor: "#002D73" },
   itemContainer: {
-    height: SCREEN_HEIGHT * 0.5,
+    height: hp("50%"),
     backgroundColor: "#fff",
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    paddingTop: 16,
-    paddingHorizontal: 24,
+    borderTopLeftRadius: wp("8%"),
+    borderTopRightRadius: wp("8%"),
+    paddingTop: wp("4%"),
+    paddingHorizontal: wp("6%"),
   },
   tabContainer: {
     flexDirection: "row",
     justifyContent: "space-around",
-    marginBottom: 16,
+    marginBottom: wp("4%"),
   },
-  tabIcon: { width: 30, height: 30, tintColor: "#ccc" },
+  tabIcon: { width: wp("8%"), height: wp("8%"), tintColor: "#ccc" },
   selectedTabIcon: { tintColor: "#3258A5" },
-  itemList: { paddingBottom: 30 },
+  itemList: { paddingBottom: wp("8%") },
   itemBox: {
-    width: SCREEN_WIDTH / 3.9,
-    height: SCREEN_WIDTH / 3.9,
-    margin: 8,
+    width: wp("22%"),
+    height: wp("22%"),
+    margin: wp("2%"),
     borderWidth: 1,
     borderColor: "#ccc",
-    borderRadius: 10,
+    borderRadius: wp("3%"),
     justifyContent: "center",
     alignItems: "center",
   },
@@ -453,19 +464,19 @@ const styles = StyleSheet.create({
     borderWidth: 2,
   },
   itemImage: {
-    width: "100%",          // 박스 내에서 자동 맞춤
+    width: "100%",
     height: "100%",
-    resizeMode: "contain",  // 비율 유지하며 잘림 없이 보여줌
+    resizeMode: "contain",
   },
   priceTag: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#fff",
-    borderRadius: 10,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+    borderRadius: wp("3%"),
+    paddingHorizontal: wp("2%"),
+    paddingVertical: hp("0.3%"),
   },
-  priceText: { marginLeft: 4, fontSize: 12, fontFamily: "Jua-Regular" },
+  priceText: { marginLeft: wp("1%"), fontSize: wp("3%"), fontFamily: "Jua-Regular" },
   modalOverlay: {
     flex: 1,
     justifyContent: "center",
@@ -474,34 +485,32 @@ const styles = StyleSheet.create({
   },
   modalBox: {
     backgroundColor: "white",
-    padding: 20,
-    height: SCREEN_HEIGHT * 0.28,
-    width: SCREEN_WIDTH * 0.6,
-    borderRadius: 15,
+    padding: wp("5%"),
+    height: hp("28%"),
+    width: wp("60%"),
+    borderRadius: wp("4%"),
     alignItems: "center",
   },
   modalButtonRow: {
     flexDirection: "row",
-    marginTop: 15,
-    gap: 10,
+    marginTop: wp("4%"),
+    gap: wp("2.5%"),
   },
   modalButton: {
     backgroundColor: "#3258A5",
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 10,
+    paddingVertical: wp("2%"),
+    paddingHorizontal: wp("4%"),
+    borderRadius: wp("2.5%"),
   },
   modalButtonText: {
     color: "#fff",
-    // fontWeight: "bold",
     fontFamily: "Jua-Regular"
   },
   noneText: {
-    fontSize: 18,
+    fontSize: wp("4.5%"),
     color: "#000000",
-    // fontWeight: "bold",
     position: "absolute",
-    bottom: 5,
+    bottom: wp("1%"),
     right: 0,
     fontFamily: "Jua-Regular"
   },

@@ -5,10 +5,11 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
-  Dimensions
 } from "react-native";
-
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 
 const HabitAppendScreen = ({ route, navigation }) => {
   const { category, habits = [] } = route.params;
@@ -87,36 +88,33 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: "center",
-    padding: SCREEN_WIDTH * 0.05,
+    padding: wp("5%"),
     backgroundColor: "#FFBF80",
-    marginTop: -SCREEN_WIDTH * 0.07,
   },
   img: {
     top: 0,
     position: "absolute",
-    width: SCREEN_WIDTH,
-    height: SCREEN_HEIGHT * 0.25,
+    width: wp("100%"),
+    height: hp("25%"),
     zIndex: 0,
   },
   dateText: {
-    fontSize: SCREEN_WIDTH * 0.06,
-    // fontWeight: "bold",
+    fontSize: wp("6%"),
     color: "#2D5D6B",
     alignSelf: "flex-start",
-    fontFamily: "Jua-Regular"
+    fontFamily: "Jua-Regular",
   },
   title: {
-    fontSize: SCREEN_WIDTH * 0.08,
-    // fontWeight: "bold",
+    fontSize: wp("8%"),
     color: "#2D5D6B",
     alignSelf: "flex-start",
-    fontFamily: "Jua-Regular"
+    fontFamily: "Jua-Regular",
   },
   progressBar: {
     width: "100%",
-    height: SCREEN_HEIGHT * 0.01,
+    height: hp("1%"),
     justifyContent: "center",
-    marginVertical: SCREEN_HEIGHT * 0.03,
+    marginVertical: hp("3%"),
   },
   backgroundBar: {
     width: "100%",
@@ -135,17 +133,16 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   categoryImage: {
-    marginTop: SCREEN_HEIGHT * 0.07,
-    width: SCREEN_WIDTH * 0.3,
-    height: SCREEN_WIDTH * 0.3,
-    marginBottom: SCREEN_HEIGHT * 0.02,
+    marginTop: hp("7%"),
+    width: wp("30%"),
+    height: wp("30%"),
+    marginBottom: hp("2%"),
   },
   categoryText: {
-    fontSize: SCREEN_WIDTH * 0.04,
-    // fontWeight: "bold",
+    fontSize: wp("4%"),
     color: "#2D5D6B",
-    marginBottom: SCREEN_HEIGHT * 0.08,
-    fontFamily: "Jua-Regular"
+    marginBottom: hp("8%"),
+    fontFamily: "Jua-Regular",
   },
   selectionContainer: {
     alignItems: "center",
@@ -153,63 +150,61 @@ const styles = StyleSheet.create({
   },
   habitContainer: {
     width: "100%",
-    height: SCREEN_HEIGHT * 0.25,
+    height: hp("25%"),
     justifyContent: "center",
     alignItems: "center",
-    padding: SCREEN_WIDTH * 0.05,
-    marginBottom: SCREEN_HEIGHT * 0.03,
+    padding: wp("5%"),
+    marginBottom: hp("3%"),
   },
   habitText: {
-    fontSize: SCREEN_WIDTH * 0.08,
-    // fontWeight: "bold",
+    fontSize: wp("8%"),
     color: "#2D5D6B",
     textAlign: "center",
-    marginBottom: SCREEN_HEIGHT * 0.01,
-    fontFamily: "Jua-Regular"
+    marginBottom: hp("1%"),
+    fontFamily: "Jua-Regular",
   },
   rowContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    gap: SCREEN_WIDTH * 0.05,
+    gap: wp("5%"),
   },
   anotherButton: {
     backgroundColor: "#ECF7F7",
-    width: SCREEN_WIDTH * 0.3,
-    height: SCREEN_HEIGHT * 0.07,
-    borderRadius: SCREEN_WIDTH * 0.05,
+    width: wp("30%"),
+    height: hp("7%"),
+    borderRadius: wp("5%"),
     justifyContent: "center",
     alignItems: "center",
-    marginLeft: SCREEN_WIDTH * 0.03,
+    marginLeft: wp("3%"),
   },
   anotherButtonText: {
-    fontSize: SCREEN_WIDTH * 0.035,
-    // fontWeight: "bold",
+    fontSize: wp("3.5%"),
     color: "rgba(45, 93, 107, 0.6)",
-    fontFamily: "Jua-Regular"
+    fontFamily: "Jua-Regular",
   },
   addButton: {
-    width: SCREEN_WIDTH * 0.5,
+    width: wp("50%"),
     backgroundColor: "#76D6F4",
-    height: SCREEN_HEIGHT * 0.07,
-    borderRadius: SCREEN_WIDTH * 0.05,
+    height: hp("7%"),
+    borderRadius: wp("5%"),
     justifyContent: "center",
     alignItems: "center",
-    marginRight: SCREEN_WIDTH * 0.03,
+    marginRight: wp("3%"),
   },
   addButtonText: {
-    fontSize: SCREEN_WIDTH * 0.045,
-    // fontWeight: "bold",
+    fontSize: wp("4.5%"),
     color: "#2D5D6B",
-    fontFamily: "Jua-Regular"
+    fontFamily: "Jua-Regular",
   },
   background: {
     position: "absolute",
     bottom: 0,
-    width: SCREEN_WIDTH,
-    height: SCREEN_HEIGHT * 0.45,
+    width: wp("100%"),
+    height: hp("45%"),
     zIndex: -1,
   },
 });
+
 
 export default HabitAppendScreen;

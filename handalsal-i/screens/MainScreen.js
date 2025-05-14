@@ -5,7 +5,6 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
-  Dimensions,
   Alert,
   Modal,
   ImageBackground
@@ -15,8 +14,11 @@ import { API_BASE_URL } from "@env";
 import { useFocusEffect } from "@react-navigation/native";
 import { characterImageMap } from "../utils/characterImageMap";
 import { storeItemImageMap } from "../utils/storeItemImageMap";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 export default function MainScreen({ navigation }) {
   const [nickname, setNickname] = useState("");
@@ -46,6 +48,12 @@ export default function MainScreen({ navigation }) {
         method: "GET",
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (response.status === 401) {
+        await AsyncStorage.removeItem("authToken");
+        Alert.alert("세션 만료", "로그인이 만료되었습니다. 다시 로그인해주세요.");
+        navigation.navigate("Login");
+        return;
+      }
 
       if (response.ok) {
         const data = await response.json();
@@ -249,11 +257,6 @@ export default function MainScreen({ navigation }) {
             />
           )}
 
-          {/* 캐릭터 */}
-          <View style={styles.characterContainer}>
-            <Image source={handaliImage} style={styles.character} />
-          </View>
-
           {/* 소파 */}
           {appliedItems["소파"] && (
             <Image
@@ -265,6 +268,11 @@ export default function MainScreen({ navigation }) {
               }
             />
           )}
+          
+            {/* 캐릭터 */}
+          <View style={styles.characterContainer}>
+            <Image source={handaliImage} style={styles.character} />
+          </View>
         </View>
 
         {/* <View style={styles.bottomBackground}></View> */}
@@ -296,44 +304,54 @@ export default function MainScreen({ navigation }) {
 const styles = StyleSheet.create({
   background: {
     flex: 1,
-    width: SCREEN_WIDTH,
-    height: SCREEN_HEIGHT,
+    width: wp('100%'),
+    height: hp('100%'),
   },
-  container: { flex: 1, position: 'relative', },
+  container: {
+    flex: 1,
+    position: 'relative',
+    marginBottom: hp("2%"),
+  },
   topBar: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: SCREEN_WIDTH * 0.05,
-    marginTop: SCREEN_HEIGHT * 0.05,
+    padding: wp('5%'),
+    marginTop: hp('5%'),
   },
   coinContainer: {
-    width: SCREEN_WIDTH * 0.35,
-    height: SCREEN_WIDTH * 0.1,
-    borderRadius: SCREEN_WIDTH * 0.03,
+    width: wp('35%'),
+    height: wp('10%'),
+    borderRadius: wp('3%'),
     backgroundColor: "rgba(217, 217, 217, 0.48)",
     flexDirection: "row",
     alignItems: "center",
   },
   coinIcon: {
-    width: SCREEN_WIDTH * 0.07,
-    height: SCREEN_WIDTH * 0.07,
-    marginLeft: SCREEN_WIDTH * 0.02,
-    marginRight: SCREEN_WIDTH * 0.02,
+    width: wp('7%'),
+    height: wp('7%'),
+    marginLeft: wp('2%'),
+    marginRight: wp('2%'),
   },
   coinText: {
-    fontSize: SCREEN_WIDTH * 0.045,
-    // fontWeight: "bold",
+    fontSize: hp('2.2%'),
     color: "#000",
-    marginLeft: SCREEN_WIDTH * 0.02,
-    fontFamily: "Jua-Regular"
+    marginLeft: wp('2%'),
+    fontFamily: "Jua-Regular",
   },
   topIcons: {
-    flexDirection: "row", gap: SCREEN_WIDTH * 0.05,
-    // backgroundColor: 'red',
+    flexDirection: "row",
+    gap: wp('5%'),
   },
-  icon: { width: SCREEN_WIDTH * 0.1, height: SCREEN_WIDTH * 0.1 },
-  buttonText: { fontSize: SCREEN_WIDTH * 0.04, color: "red", fontFamily: "Jua-Regular" },
+  icon: {
+    width: wp('10%'),
+    height: wp('10%'),
+  },
+  buttonText: {
+    fontSize: wp('4%'),
+    color: "red",
+    fontFamily: "Jua-Regular",
+  },
   modalOverlay: {
     flex: 1,
     justifyContent: "center",
@@ -341,124 +359,114 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.4)",
   },
   modalContent: {
-    width: 250,
+    width: wp('70%'),
     backgroundColor: "#fff",
-    borderRadius: 10,
-    padding: 20,
+    borderRadius: wp('2%'),
+    padding: wp('5%'),
     alignItems: "center",
   },
   modalCloseButtonText: {
     color: "black",
-    // fontWeight: "bold",
-    alignSelf: "center",
-    fontFamily: "Jua-Regular"
-  },
-  modalCloseButton: {
-    marginTop: 20,
-    backgroundColor: "#FFE98A",
-    width: "100%",
-    padding: 10,
-    borderRadius: 30,
-  },
-  modalCloseButtonText: {
-    color: "black",
-    // fontWeight: "bold",
     alignSelf: "center",
     fontFamily: "Jua-Regular",
   },
-  content: { flex: 1 },
+  modalCloseButton: {
+    marginTop: hp('2%'),
+    backgroundColor: "#FFE98A",
+    width: "100%",
+    padding: hp('1.5%'),
+    borderRadius: wp('10%'),
+  },
+  content: {
+    flex: 1,
+  },
   dayText: {
-    fontSize: SCREEN_WIDTH * 0.05,
-    // fontWeight: "bold",
+    fontSize: wp('5%'),
     color: "#000",
     position: "absolute",
-    right: SCREEN_WIDTH * 0.05,
-    top: SCREEN_HEIGHT * 0.001,
-    fontFamily: "Jua-Regular"
+    right: wp('5%'),
+    top: hp('1%'),
+    fontFamily: "Jua-Regular",
   },
   characterContainer: {
     position: "absolute",
-    top: "20.5%",
+    top: "27.5%",
     left: "10%",
     transform: [
-      { translateX: SCREEN_WIDTH * 0.11 },
-      { translateY: SCREEN_WIDTH * 0.35 },
+      { translateX: wp('11%') },
+      { translateY: wp('35%') },
     ],
     zIndex: 2,
   },
   character: {
-    width: SCREEN_WIDTH * 0.6,
-    height: SCREEN_HEIGHT * 0.3,
+    width: wp('60%'),
+    height: hp('30%'),
     resizeMode: "contain",
   },
   sofa: {
-    width: SCREEN_WIDTH * 1,
-    height: SCREEN_WIDTH * 0.6,
+    width: wp('100%'),
+    height: wp('60%'),
     position: "absolute",
-    top: "40%",
-    left: "26%",
+    top: hp('38%'),
+    left: wp('26%'),
     zIndex: 1,
     resizeMode: "contain",
   },
   chair: {
-    width: SCREEN_WIDTH * 0.5,
-    height: SCREEN_WIDTH * 0.4,
+    width: wp('50%'),
+    height: wp('40%'),
     position: "absolute",
-    top: "40%",
-    left: "60%",
+    top: hp('40%'),
+    left: wp('60%'),
     zIndex: 1,
     resizeMode: "contain",
   },
   window: {
-    width: SCREEN_WIDTH * 0.4,
-    height: SCREEN_WIDTH * 0.3,
+    width: wp('40%'),
+    height: wp('30%'),
     position: "absolute",
-    top: "20%",
-    left: "5%",
-    // zIndex: 2,
+    top: hp('20%'),
+    left: wp('5%'),
     resizeMode: "contain",
   },
   floor: {
-    width: SCREEN_WIDTH * 0.5,
-    height: SCREEN_WIDTH * 0.5,
+    width: wp('50%'),
+    height: wp('50%'),
     position: "absolute",
-    top: "40%",
-    left: "-10%",
-    // zIndex: 2,
+    top: hp('40%'),
+    left: wp('-10%'),
     resizeMode: "contain",
   },
-  // bottomBackground: {
-  //   flex: 0.8,
-  //   backgroundColor: "#DFAA76",
-  //   zIndex: 0,
-  // },
   bottomNav: {
     position: "absolute",
-    bottom: SCREEN_HEIGHT * 0.015,
+    bottom: hp('1.5%'),
     width: "100%",
-    height: SCREEN_HEIGHT * 0.08,
+    height: hp('8%'),
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    // backgroundColor: "#DFAA76",
-    paddingHorizontal: SCREEN_WIDTH * 0.15,
-    paddingVertical: SCREEN_HEIGHT * 0.02,
+    paddingHorizontal: wp('15%'),
+    paddingVertical: hp('2%'),
     zIndex: 4,
   },
-  navButton: { alignItems: "center" },
+  navButton: {
+    alignItems: "center",
+  },
   navIcon: {
-    width: SCREEN_WIDTH * 0.08,
-    height: SCREEN_WIDTH * 0.08,
+    width: wp('8%'),
+    height: wp('8%'),
   },
   navText: {
-    fontSize: SCREEN_WIDTH * 0.03,
+    fontSize: wp('3%'),
     color: "#2D5D6B",
-    fontFamily: "Jua-Regular"
+    fontFamily: "Jua-Regular",
   },
-  recordButton: { alignItems: "center" },
+  recordButton: {
+    alignItems: "center",
+  },
   recordIcon: {
-    width: SCREEN_WIDTH * 0.19,
-    height: SCREEN_WIDTH * 0.17,
-    marginBottom: SCREEN_HEIGHT * 0.02,
+    width: wp('19%'),
+    height: wp('17%'),
+    marginBottom: hp('2%'),
   },
 });

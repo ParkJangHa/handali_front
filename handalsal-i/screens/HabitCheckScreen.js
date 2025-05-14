@@ -1,9 +1,11 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Alert } from 'react-native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from '@env';
-
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 
 export default function HabitCheckScreen({ route, navigation }) {
     const { categoryName, detailedHabit, habitTime, satisfaction } = route.params;
@@ -206,108 +208,87 @@ export default function HabitCheckScreen({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-
-    //container
-    container: {
-        flex: 1,
-        backgroundColor: '#76D6F4',
-    },
-    backButton: {
-        marginTop: SCREEN_HEIGHT * 0.06,
-        marginLeft: SCREEN_WIDTH * 0.06,
-        // backgroundColor: 'pink'
-    },
-    mainContainer: {
-        flex: 1,
-        paddingTop: SCREEN_WIDTH * 0.03,
-        paddingLeft: SCREEN_WIDTH * 0.07,
-        paddingRight: SCREEN_WIDTH * 0.07,
-        paddingBottom: SCREEN_WIDTH * 0.07,
-    },
-    mainTitleCon: {
-        flex: 0.8,
-        justifyContent: 'center',
-        alignItems: 'center',
-        //backgroundColor: 'yellow',
-    },
-    categoryNameCon: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        // backgroundColor: 'red',
-    },
-
-    detailedHabitNameCon: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        // backgroundColor: 'yellow'
-    },
-    timeCon: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        // backgroundColor: 'green'
-    },
-    satisfactionCon: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        // backgroundColor: 'blue'
-    },
-    recordCon: {
-        flex: 0.6,
-        justifyContent: 'center',
-    },
-
-    //in view
-    card: {
-        backgroundColor: 'white',
-        width: '100%',
-        padding: SCREEN_WIDTH * 0.05,
-        borderRadius: 20,
-    },
-
-    //button
-    recordButton: {
-        backgroundColor: "#FFE98A",
-        padding: SCREEN_HEIGHT * 0.02,
-        borderRadius: 30,
-        alignItems: "center",
-    },
-
-    //text
-    mainTitleText: {
-        fontSize: SCREEN_WIDTH * 0.07,
-        // fontWeight: 'bold',
-        color: 'black',
-        fontFamily: "Jua-Regular"
-    },
-    mainSubTitleText: {
-        fontSize: SCREEN_WIDTH * 0.037,
-        color: '#3076f7',
-        // fontWeight: 'bold',
-        fontFamily: "Jua-Regular"
-    },
-    labelsText: {
-        fontSize: SCREEN_WIDTH * 0.04,
-        // fontWeight: 'bold',
-        color: 'black',
-        fontFamily: "Jua-Regular"
-    },
-    contentText: {
-        fontSize: SCREEN_WIDTH * 0.09,
-        fontWeight: 400,
-        alignSelf: 'center',
-        color: 'black',
-        fontFamily: "Jua-Regular"
-    },
-    recordText: {
-        color: 'white',
-        fontSize: SCREEN_WIDTH * 0.05,
-        // fontWeight: 'bold',
-        color: 'black',
-        fontFamily: "Jua-Regular"
-    },
-
+  container: {
+    flex: 1,
+    backgroundColor: "#76D6F4",
+  },
+  backButton: {
+    marginTop: hp("6%"),
+    marginLeft: wp("6%"),
+  },
+  mainContainer: {
+    flex: 1,
+    paddingTop: wp("3%"),
+    paddingLeft: wp("7%"),
+    paddingRight: wp("7%"),
+    paddingBottom: wp("7%"),
+  },
+  mainTitleCon: {
+    flex: 0.8,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  categoryNameCon: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  detailedHabitNameCon: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  timeCon: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  satisfactionCon: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  recordCon: {
+    flex: 0.6,
+    justifyContent: "center",
+  },
+  card: {
+    backgroundColor: "white",
+    width: "100%",
+    padding: wp("5%"),
+    borderRadius: 20,
+  },
+  recordButton: {
+    backgroundColor: "#FFE98A",
+    padding: hp("2%"),
+    borderRadius: 30,
+    alignItems: "center",
+  },
+  mainTitleText: {
+    fontSize: wp("7%"),
+    color: "black",
+    fontFamily: "Jua-Regular",
+  },
+  mainSubTitleText: {
+    fontSize: wp("3.7%"),
+    color: "#3076f7",
+    fontFamily: "Jua-Regular",
+  },
+  labelsText: {
+    fontSize: wp("4%"),
+    color: "black",
+    fontFamily: "Jua-Regular",
+  },
+  contentText: {
+    fontSize: wp("9%"),
+    fontWeight: "400",
+    alignSelf: "center",
+    color: "black",
+    fontFamily: "Jua-Regular",
+  },
+  recordText: {
+    fontSize: wp("5%"),
+    color: "black",
+    fontFamily: "Jua-Regular",
+  },
 });
