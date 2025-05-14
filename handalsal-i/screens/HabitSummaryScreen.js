@@ -75,7 +75,7 @@ export default function HabitSummaryScreen() {
         {summaryData.satisfaction_avg_by_category.map((item) => (
           <View key={item.category} style={styles.row}>
             <Text style={styles.innerText}>{categoryNameMap[item.category]}</Text>
-            <Text style={styles.innerText}>{getEmoji(item.avg_satisfaction)} {item.avg_satisfaction}</Text>
+            <Text style={styles.innerText}>{getEmoji(item.avg_satisfaction)} {Math.round(item.avg_satisfaction)}</Text>
           </View>
         ))}
       </View>
