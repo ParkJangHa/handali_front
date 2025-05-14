@@ -7,6 +7,7 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": false,
+    "owner": "minol",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -28,7 +29,7 @@
     },
     "extra": {
       "eas": {
-        "projectId": "5757eefc-43c5-4697-bbcf-e95a1fffe556"
+        "projectId": "71dbc4ca-2c3c-4b22-9233-f3ba95d7076b"
       }
     }
   }
