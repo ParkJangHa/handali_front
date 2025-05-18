@@ -1,11 +1,16 @@
-import React from "react";
-import { View, Image, StyleSheet } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Image, StyleSheet, Alert } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_BASE_URL } from "@env";
 import { storeItemImageMap } from "./storeItemImageMap";
+import { characterImageMap } from "./characterImageMap";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 
-const scaleRatio = 0.65; // 원하는 크기에 따라 조절 가능 (0.4 ~ 0.6 추천)
+const scaleRatio = 0.65;
 
-export default function PreviewView({ characterImage, appliedItems }) {
+export default function PreviewView({ characterImage, appliedItems, navigation }) {
+  const [handaliImage, setHandaliImage] = useState(characterImageMap["default_character.png"]);
+
   const getImage = (name) => {
     if (!name) return null;
     const key = name.replace(/ /g, "_");
@@ -13,28 +18,56 @@ export default function PreviewView({ characterImage, appliedItems }) {
     return typeof image === "number" ? image : null;
   };
 
+  useEffect(() => {
+    const fetchHandaliImage = async () => {
+      const token = await AsyncStorage.getItem("authToken");
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/handalis/view`, {
+          method: "GET",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (response.status === 401) {
+          await AsyncStorage.removeItem("authToken");
+          Alert.alert("세션 만료", "로그인이 만료되었습니다. 다시 로그인해주세요.");
+          navigation?.navigate("Login");
+          return;
+        }
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log("✅ 캐릭터 이미지 응답:", data.handali_img);
+          if (data.handali_img && characterImageMap[data.handali_img]) {
+            setHandaliImage(characterImageMap[data.handali_img]);
+          } else {
+            setHandaliImage(characterImageMap["default_character.png"]);
+          }
+        }
+      } catch (error) {
+        console.log("❌ 캐릭터 이미지 불러오기 오류:", error);
+      }
+    };
+
+    fetchHandaliImage();
+  }, []);
+
   return (
     <View style={styles.previewContainer}>
-      <Image
-        source={require("../assets/storeItems/배경없음.png")}
-        style={styles.backgroundImage}
-      />
-      {/* 벽장식 */}
+      <Image source={require("../assets/storeItems/배경없음.png")} style={styles.backgroundImage} />
+
       {appliedItems["벽장식"] && getImage(appliedItems["벽장식"]) && (
         <Image source={getImage(appliedItems["벽장식"])} style={styles.window} />
       )}
 
-      {/* 바닥장식 */}
       {appliedItems["바닥장식"] && getImage(appliedItems["바닥장식"]) && (
         <Image source={getImage(appliedItems["바닥장식"])} style={styles.floor} />
       )}
 
-      {/* 캐릭터 */}
       <View style={styles.characterContainer}>
-        <Image source={characterImage} style={styles.character} />
+        <Image source={handaliImage} style={styles.character} />
       </View>
 
-      {/* 소파 또는 의자 */}
       {appliedItems["소파"] && getImage(appliedItems["소파"]) && (
         <Image
           source={getImage(appliedItems["소파"])}
@@ -48,6 +81,7 @@ export default function PreviewView({ characterImage, appliedItems }) {
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   previewContainer: {

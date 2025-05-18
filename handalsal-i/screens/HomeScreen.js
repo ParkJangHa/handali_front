@@ -57,8 +57,6 @@ const HomeScreen = ({ navigation }) => {
 
         {/* 타이틀 및 버튼 */}
         <View style={styles.titeCon}>
-          <Text style={styles.titetext}>한달이</Text>
-
           <TouchableOpacity
             style={styles.buttonlogin}
             onPress={() => navigation.navigate("Login")}
@@ -131,44 +129,45 @@ const styles = StyleSheet.create({
   },
   img: {
     width: wp("55%"),
-    height: hp("25%"),
+    height: hp("30%"),
     resizeMode: "contain",
   },
   titeCon: {
     height: hp("66%"),
     alignItems: "center",
     gap: hp("2%"),
-  },
-  titetext: {
-    fontSize: 48,
-    fontFamily: "Jua-Regular",
+    marginTop: hp("15%"),
   },
   buttonlogin: {
+    borderWidth: 2,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#76D6F4",
-    paddingVertical: hp("1.5%"),
-    paddingHorizontal: wp("15%"),
+    backgroundColor: "#FFFFFF",
+    borderColor: "#76D6F4",
+    paddingVertical: hp("0.8%"),
+    paddingHorizontal: wp("20%"),
     borderRadius: 30,
-    width: wp("50%"),
+    width: wp("60%"),
     gap: wp("2.5%"),
   },
   button: {
+    borderWidth: 2,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#76D6F4",
-    paddingVertical: hp("1.5%"),
-    paddingHorizontal: wp("15%"),
+    backgroundColor: "#FFFFFF",
+    borderColor: "#76D6F4",
+    paddingVertical: hp("0.8%"),
+    paddingHorizontal: wp("20%"),
     borderRadius: 30,
-    width: wp("50%"),
+    width: wp("60%"),
     gap: wp("2.5%"),
   },
   icon: {
     width: wp("4%"),
-    height: hp("2.5%"),
+    height: hp("2.8%"),
   },
   buttonText: {
-    fontSize: 20,
+    fontSize: 15,
     color: "#2D5D6B",
     fontFamily: "Jua-Regular",
   },

@@ -74,7 +74,13 @@ export default function StoreScreen({ navigation }) {
 
       const text = await response.text();
       const data = JSON.parse(text);
-      console.log("서버에서 받은 아이템 리스트:", data);
+      console.log("📌 selectedTab:", selectedTab);
+      console.log("📌 itemTypeMap[selectedTab]:", itemTypeMap[selectedTab]);
+      console.log("📌 응답받은 전체 아이템 목록:", data.map((item, idx) => `${idx}: ${item.name}`));
+      console.log("📌 imageSource 확인:", data.map((item) => {
+        const key = item.name.replace(/ /g, "_");
+        return { name: item.name, key, imageExists: !!storeItemImageMap[key] };
+      }));
 
       if (response.ok) {
         setItems(data);

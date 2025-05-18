@@ -62,8 +62,8 @@ export default function MainScreen({ navigation }) {
         setDaysSinceCreated(data.days_since_created);
         setTotalCoin(data.total_coin);
 
-        if (data.image && characterImageMap[data.image]) {
-          setHandaliImage(characterImageMap[data.image]);
+        if (data.handali_img && characterImageMap[data.handali_img]) {
+          setHandaliImage(characterImageMap[data.handali_img]);
         } else {
           setHandaliImage(characterImageMap["default_character.png"]);
         }
