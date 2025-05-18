@@ -190,9 +190,9 @@ export default function MainScreen({ navigation }) {
     >
       <View style={styles.container}>
         <View style={styles.topBar}>
-          <TouchableOpacity onPress={() => navigation.navigate("JobScreen")}>
+          {/* <TouchableOpacity onPress={() => navigation.navigate("JobScreen")}>
             <Text>직업 획득</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           <View style={styles.coinContainer}>
             <Image source={require("../assets/coin.png")} style={styles.coinIcon} />
@@ -268,8 +268,8 @@ export default function MainScreen({ navigation }) {
               }
             />
           )}
-          
-            {/* 캐릭터 */}
+
+          {/* 캐릭터 */}
           <View style={styles.characterContainer}>
             <Image source={handaliImage} style={styles.character} />
           </View>
