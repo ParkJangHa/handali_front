@@ -28,7 +28,7 @@ export const storeItemImageMap = {
   "Book_Stack": require("../assets/storeItems/Book_Stack.png"),
   "Mini_Fireplace": require("../assets/storeItems/Mini_Fireplace.png"),
   "Full-length_Mirror": require("../assets/storeItems/Full-length_Mirror.png"),
-  "Antique_Jewelry_Box ": require("../assets/storeItems/Antique_Jewelry_Box.png"),
+  "Antique_Jewelry_Box": require("../assets/storeItems/Antique_Jewelry_Box.png"),
   default: require("../assets/storeItems/empty_space.png"),
     /* "원룸": require("./assets/storeItems/원룸.png"),
   "빌라": require("./assets/storeItems/빌라.png"),

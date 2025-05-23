@@ -193,7 +193,13 @@ export default function MainScreen({ navigation }) {
           <TouchableOpacity onPress={() => navigation.navigate("JobScreen")}>
             <Text>직업 획득</Text>
           </TouchableOpacity>
-
+          {/* <TouchableOpacity onPress={() => navigation.navigate("DexScreen")}>
+            <Text 
+            style={{ color: "#3258A5", fontFamily: "Jua-Regular", marginTop: 20 }}>
+            도감 보기
+            </Text>
+          </TouchableOpacity> */}
+         
           <View style={styles.coinContainer}>
             <Image source={require("../assets/coin.png")} style={styles.coinIcon} />
             <Text style={styles.coinText}>{totalCoin}</Text>

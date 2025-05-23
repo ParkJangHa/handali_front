@@ -50,8 +50,12 @@ const HomeScreen = ({ navigation }) => {
         {/* 상단 이미지 */}
         <View style={styles.imgCon}>
           <Image
-            source={require("../assets/HomeScreen/달력 그림.png")}
-            style={styles.img}
+            source={require("../assets/HomeScreen/calendarImg.png")}
+            style={styles.calendarImg}
+          />
+          <Image
+            source={require("../assets/HomeScreen/turtle.png")}
+            style={styles.turtleImg}
           />
         </View>
 
@@ -107,7 +111,7 @@ const HomeScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    backgroundColor: "#FFE98A",
+    backgroundColor: "#FFF5CB",
   },
   container: {
     flex: 1,
@@ -127,10 +131,17 @@ const styles = StyleSheet.create({
     height: hp("20%"),
     marginTop: hp("5%"),
   },
-  img: {
-    width: wp("55%"),
-    height: hp("30%"),
+  calendarImg: {
+    width: wp("50%"),
+    height: hp("25%"),
     resizeMode: "contain",
+  },
+  turtleImg: {
+    width: wp("14%"),
+    height: hp("9%"),
+    resizeMode: "contain",
+    top: hp("-4%"),
+    left: wp("-15%"),
   },
   titeCon: {
     height: hp("66%"),
