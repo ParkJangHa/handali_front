@@ -211,9 +211,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
   },
   icon: {
-    width: 13.42,
-    height: 20,
-    marginRight: 8,
+    width: wp("3.8%"),
+    height: hp("2.5%"),
+    marginRight: wp("2%"),
   },
   inputField: {
     flex: 1,

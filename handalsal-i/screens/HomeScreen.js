@@ -5,7 +5,6 @@ import {
   View,
   TouchableOpacity,
   Image,
-  ImageBackground,
 } from "react-native";
 import React, { useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -174,8 +173,8 @@ const styles = StyleSheet.create({
     gap: wp("2.5%"),
   },
   icon: {
-    width: wp("4%"),
-    height: hp("2.8%"),
+    width: wp("3.8%"),
+    height: hp("2.5%"),
   },
   buttonText: {
     fontSize: 15,
