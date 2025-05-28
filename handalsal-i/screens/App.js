@@ -18,6 +18,7 @@ import ApartScreen from "./screens/ApartScreen";
 import JobScreen from "./screens/JobScreen";
 import StoreScreen from "./screens/StoreScreen";
 import HabitSummaryScreen from "./screens/HabitSummaryScreen";
+import DexScreen from "./screens/dogam";
 const Stack = createStackNavigator();
 
 const App = () => {
@@ -25,6 +26,7 @@ const App = () => {
     <NavigationContainer>
       <Stack.Navigator
         initialRouteName="Home"
+        //initialRouteName="MainScreen"
         screenOptions={{
           headerStyle: {
             backgroundColor: "#FFD563", // 헤더 배경색
@@ -38,7 +40,7 @@ const App = () => {
         }}
       >
         <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="Login" component={LoginScreen} 
+        <Stack.Screen name="Login" component={LoginScreen}
           options={{
             headerStyle: {
               backgroundColor: "#FFE98A", // 헤더 배경색
@@ -122,12 +124,12 @@ const App = () => {
           }}
         />
         <Stack.Screen name="Summary" component={HabitSummaryScreen}
-        options={{
-          headerStyle: {
-            backgroundColor: "#FFE98A", // 헤더 배경색
+          options={{
+            headerStyle: {
+              backgroundColor: "#FFE98A", // 헤더 배경색
 
-          },
-        }}
+            },
+          }}
         />
         <Stack.Screen name="JobScreen" component={JobScreen}
           options={{
@@ -135,6 +137,11 @@ const App = () => {
           }}
         />
         <Stack.Screen name="Store" component={StoreScreen}
+          options={{
+            headerShown: false, gestureEnabled: true
+          }}
+        />
+        <Stack.Screen name="DexScreen" component={DexScreen}
           options={{
             headerShown: false, gestureEnabled: true
           }}

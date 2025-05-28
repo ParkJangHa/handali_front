@@ -18,6 +18,7 @@ import ApartScreen from "./screens/ApartScreen";
 import JobScreen from "./screens/JobScreen";
 import StoreScreen from "./screens/StoreScreen";
 import HabitSummaryScreen from "./screens/HabitSummaryScreen";
+import DexScreen from "./screens/dogam";
 const Stack = createStackNavigator();
 
 const App = () => {
@@ -42,7 +43,7 @@ const App = () => {
         <Stack.Screen name="Login" component={LoginScreen}
           options={{
             headerStyle: {
-              backgroundColor: "#FFE98A", // 헤더 배경색
+              backgroundColor: "#FFF5CB", // 헤더 배경색
 
             },
           }}
@@ -50,7 +51,7 @@ const App = () => {
         <Stack.Screen name="Signup" component={SignupScreen}
           options={{
             headerStyle: {
-              backgroundColor: "#FFE98A", // 헤더 배경색
+              backgroundColor: "#FFF5CB", // 헤더 배경색
 
             },
           }}
@@ -136,6 +137,11 @@ const App = () => {
           }}
         />
         <Stack.Screen name="Store" component={StoreScreen}
+          options={{
+            headerShown: false, gestureEnabled: true
+          }}
+        />
+        <Stack.Screen name="DexScreen" component={DexScreen}
           options={{
             headerShown: false, gestureEnabled: true
           }}

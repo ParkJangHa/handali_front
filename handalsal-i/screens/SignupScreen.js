@@ -117,7 +117,7 @@ const SignupScreen = ({ navigation }) => {
 
   return (
     <ImageBackground
-      source={require("../assets/Vector.png")}
+      source={require("../assets/Weve.png")}
       style={styles.background}
       resizeMode="stretch"
     >
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
     flex: 1,
     width: wp("100%"),
     height: hp("80%"),
-    backgroundColor: "#76D6F4",
+    backgroundColor: "#8BE1FC",
   },
   scrollContainer: {
     justifyContent: "center",

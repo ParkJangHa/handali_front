@@ -7,11 +7,10 @@ import {
   StyleSheet,
   Alert,
   Image,
-  KeyboardAvoidingView,
-  ScrollView,
   Platform,
   StatusBar,
 } from "react-native";
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from "@env";
 import {
@@ -76,23 +75,31 @@ const LoginScreen = ({ navigation }) => {
   return (
     <>
       <StatusBar hidden={true} />
-      <KeyboardAvoidingView
+      <KeyboardAwareScrollView
         style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        contentContainerStyle={styles.container}
+        enableOnAndroid={true}
+        keyboardShouldPersistTaps="handled"
+        extraScrollHeight={hp("15%")}
       >
-        <ScrollView
-          contentContainerStyle={styles.container}
-          keyboardShouldPersistTaps="handled"
-        >
-          <Image source={require("../assets/LoginScreen/Weve.png")} style={styles.img} resizeMode="stretch" />
+          <View style={styles.container}>
+            <Image source={require("../assets/LoginScreen/Weve.png")} style={styles.img} resizeMode="stretch" />
 
           <Image
             source={require("../assets/LoginScreen/Blue.png")}
             style={styles.catIcon}
           />
+          <Image
+            source={require("../assets/LoginScreen/turtle.png")}
+            style={styles.turuleImg}
+          />
+          <Image
+            source={require("../assets/LoginScreen/crab.png")}
+            style={styles.crabImg}
+          />
           <View style={styles.bContainer}>
           </View>
-          <View style={styles.inputWithIcon}>
+          <View style={styles.inputWithIconEmail}>
             <Image
               source={require("../assets/LoginScreen/Email_icon.png")}
               style={styles.icon}
@@ -103,10 +110,10 @@ const LoginScreen = ({ navigation }) => {
               keyboardType="email-address"
               value={email}
               onChangeText={setEmail}
-              placeholderTextColor="#2D5D6B"
+              placeholderTextColor="#000000"
             />
           </View>
-          <View style={styles.inputWithIcon}>
+          <View style={styles.inputWithIconPassword}>
             <Image
               source={require("../assets/LoginScreen/Password_icon.png")}
               style={styles.icon}
@@ -117,7 +124,7 @@ const LoginScreen = ({ navigation }) => {
               secureTextEntry
               value={password}
               onChangeText={setPassword}
-              placeholderTextColor="#2D5D6B"
+              placeholderTextColor="#000000"
             />
           </View>
           <View style={styles.rowContainer}>
@@ -131,18 +138,18 @@ const LoginScreen = ({ navigation }) => {
               <Text style={styles.buttonText}>로그인</Text>
             </TouchableOpacity>
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+          </View>
+      </KeyboardAwareScrollView>
     </>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
+    flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#76D6F4",
+    backgroundColor: "#8BE1FC",
   },
   bContainer: {
     marginBottom: hp("30%"),
@@ -151,40 +158,67 @@ const styles = StyleSheet.create({
     top: 0,
     position: "absolute",
     width: wp("100%"),
-    height: hp("30%"),
+    height: hp("45%"),
     zIndex: 0,
   },
   catIcon: {
     position: "absolute",
-    top: hp("1%"),
+    top: hp("3%"),
     width: wp("55%"),
     height: hp("25%"),
     resizeMode: "contain",
     alignSelf: "center",
-    zIndex: 2,
   },
-  inputWithIcon: {
+    turuleImg: {
+    position: "absolute",
+    width: wp("14%"),
+    height: hp("9%"),
+    resizeMode: "contain",
+    top: hp("0%"),
+    left: wp("0%"), 
+  },
+    crabImg: {
+    position: "absolute",
+    width: wp("14%"),
+    height: hp("9%"),
+    resizeMode: "contain",
+    top: hp("25%"),
+    left: wp("60%"),
+  },
+  inputWithIconEmail: {
     flexDirection: "row",
     alignItems: "center",
-    width: wp("80%"),
-    height: hp("7%"),
-    paddingVertical: hp("1.2%"),
-    paddingHorizontal: wp("15%"),
+    width: wp("65%"),
+    paddingVertical: hp("0.8%"),
+    paddingHorizontal: wp("20%"),
     borderRadius: 30,
-    borderWidth: 1,
-    borderColor: "#ddd",
+    borderWidth: 3,
+    borderColor: "#76D6F4",
     marginBottom: hp("2.5%"),
-    backgroundColor: "#FFE98A",
+    marginTop: hp("5%"),
+    backgroundColor: "#FFFFFF",
+  },
+   inputWithIconPassword: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: wp("65%"),
+    paddingVertical: hp("0.8%"),
+    paddingHorizontal: wp("20%"),
+    borderRadius: 30,
+    borderWidth: 3,
+    borderColor: "#76D6F4",
+    marginBottom: hp("2.5%"),
+    backgroundColor: "#FFFFFF",
   },
   icon: {
-    width: 13.42,
-    height: 20,
-    marginRight: 8,
+    width: wp("3.8%"),
+    height: hp("2.5%"),
+    marginRight: wp("2%"),
   },
   inputField: {
     flex: 1,
     fontSize: 14,
-    color: "#2D5D6B",
+    color: "#000000",
     fontFamily: "Jua-Regular"
   },
    rowContainer: {
@@ -193,12 +227,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: wp("80%"),
     gap: wp("4%"),
+    marginTop: hp("3%")
   },
   button: {
-    backgroundColor: "#FFE98A",
-    paddingVertical: 15,
-    paddingHorizontal: 60,
+    backgroundColor: "#FFF5CB",
+    paddingVertical: 12,
+    paddingHorizontal: 65,
     borderRadius: 30,
+    borderWidth: 3,
+    borderColor: "#76D6F4",
     marginTop: 10,
   },
   buttonText: {
@@ -208,10 +245,12 @@ const styles = StyleSheet.create({
     fontFamily: "Jua-Regular"
   },
   signupButton: {
-    backgroundColor: "#ECF7F7",
-    paddingVertical: 15,
+    backgroundColor: "#FFFFFF",
+    paddingVertical: 12,
     paddingHorizontal: 30,
     borderRadius: 30,
+    borderWidth: 3,
+    borderColor: "#76D6F4",
     marginTop: 10,
   },
   signupText: {
