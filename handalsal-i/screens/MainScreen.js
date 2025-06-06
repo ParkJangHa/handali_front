@@ -234,6 +234,15 @@ export default function MainScreen({ navigation }) {
                 <Text style={styles.buttonText}>회원탈퇴</Text>
               </TouchableOpacity>
               <TouchableOpacity
+                onPress={async () => {
+                  await AsyncStorage.removeItem("tutorial_seen");
+                  navigation.replace("TutorialScreen"); // 튜토리얼로 이동
+                }}
+                style={styles.button}
+              >
+                <Text style={styles.buttonText}>튜토리얼 보기</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
                 onPress={() => setModalVisible(false)} // 모달 닫기
                 style={styles.modalCloseButton}
               >

@@ -19,6 +19,7 @@ import JobScreen from "./screens/JobScreen";
 import StoreScreen from "./screens/StoreScreen";
 import HabitSummaryScreen from "./screens/HabitSummaryScreen";
 import DexScreen from "./screens/dogam";
+import TutorialScreen from "./screens/TutorialScreen";
 const Stack = createStackNavigator();
 
 const App = () => {
@@ -26,7 +27,7 @@ const App = () => {
     <NavigationContainer>
       <Stack.Navigator
         initialRouteName="Home"
-        //initialRouteName="MainScreen"
+        //initialRouteName="TutorialScreen"
         screenOptions={{
           headerStyle: {
             backgroundColor: "#FFD563", // 헤더 배경색
@@ -39,6 +40,11 @@ const App = () => {
           headerBackTitleVisible: false, // 뒤로가기 버튼 옆 텍스트 숨김
         }}
       >
+        <Stack.Screen
+        name="TutorialScreen"
+        component={TutorialScreen}
+        options={{ headerShown: false }} // 헤더 숨기기
+      />
         <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Login" component={LoginScreen}
           options={{
