@@ -61,7 +61,14 @@ const LoginScreen = ({ navigation }) => {
         navigation.navigate("MainScreen");
         console.log(API_BASE_URL);
       } else {
-        navigation.navigate("Category");
+        const seenTutorial = await AsyncStorage.getItem("tutorial_seen");
+        if (seenTutorial === "true") {
+          // 튜토리얼 본 적 있음 → 바로 Category 이동
+          navigation.navigate("Category");
+        } else {
+          // 튜토리얼 본 적 없음 → Tutorial 화면으로 이동
+          navigation.navigate("TutorialScreen");
+        }
         console.log(API_BASE_URL);
       }
     } catch (error) {
@@ -138,6 +145,15 @@ const LoginScreen = ({ navigation }) => {
               <Text style={styles.buttonText}>로그인</Text>
             </TouchableOpacity>
           </View>
+          <TouchableOpacity
+            style={styles.resetTutorialButton}
+            onPress={async () => {
+              await AsyncStorage.removeItem("tutorial_seen");
+              Alert.alert("튜토리얼 기록 삭제됨", "앱 재실행 시 튜토리얼이 다시 표시됩니다.");
+            }}
+          >
+            <Text style={styles.resetTutorialText}>튜토리얼 다시 보기 (개발용)</Text>
+          </TouchableOpacity>
           </View>
       </KeyboardAwareScrollView>
     </>
@@ -258,6 +274,21 @@ const styles = StyleSheet.create({
     fontSize: 17,
     // fontWeight: "bold",
     fontFamily: "Jua-Regular"
+  },
+  resetTutorialButton: {
+    backgroundColor: "#FFDDDD",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: "#FF8888",
+    marginTop: hp("2%"),
+  },
+  resetTutorialText: {
+    color: "#990000",
+    fontSize: 14,
+    textAlign: "center",
+    fontFamily: "Jua-Regular",
   },
 });
 
