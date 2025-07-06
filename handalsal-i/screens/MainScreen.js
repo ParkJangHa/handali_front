@@ -19,7 +19,6 @@ import {
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
 
-
 export default function MainScreen({ navigation }) {
   const [nickname, setNickname] = useState("");
   const [daysSinceCreated, setDaysSinceCreated] = useState(0);
@@ -34,6 +33,33 @@ export default function MainScreen({ navigation }) {
 
   const intervalRef = useRef(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [quoteVisible, setQuoteVisible] = useState(false);
+
+  const quotes = [
+    "오늘도 수고했어!",
+    "한 걸음 한 걸음이 모여~",
+    "성장하고 있어, 나도 너도!",
+    "잠깐 쉬는 것도 괜찮아",
+    "기록은 곧 힘이야!",
+    "늦었다고 생각할 때가 진짜 너무 늦었다..",
+    "오늘도 스스로를 위해 \n노력한 당신, 정말 멋져요!",
+    "한 달 뒤 멋진 나를 기대해요!",
+    "하루하루 쌓인 당신의 습관이,\n한달이의 날개가 되고 있어요!",
+    "잠깐 쉬어도 괜찮아요. 중요한 건 \n다시 일어나는 당신의 마음이에요.",
+    "오늘의 작은 실천이 내일의\n 큰 변화를 만들어요.",
+    "포기하지 않는 당신을 한달이는\n 누구보다 자랑스러워해요!",
+    "지금 이 순간도 당신은 성장하고 있어요.\n 느껴지지 않아도 괜찮아요.",
+    "완벽하지 않아도 괜찮아요.\n 꾸준함이 당신을 빛나게 해요.",
+    "오늘도 자기 자신을 위해 \n시간을 낸 당신, 정말 대단해요!",
+    "슬픈 날도, 기쁜 날도 당신의 기록은\n 한달이에게 소중해요.",
+    "한 걸음 느려도 괜찮아요. 멈추지 않는\n 당신이 최고예요.",
+    "내일도 함께해요. 한달이는\n 항상 당신 편이에요.",
+  ];
+
+  const getRandomQuote = () => {
+    const index = Math.floor(Math.random() * quotes.length);
+    return quotes[index];
+  };
 
   const fetchHandaliStatus = async () => {
     try {
@@ -184,9 +210,9 @@ export default function MainScreen({ navigation }) {
 
   return (
     <ImageBackground
-      source={require("../assets/storeItems/배경없음.png")} // 배경 이미지 경로
+      source={require("../assets/storeItems/배경없음.png")}
       style={styles.background}
-      resizeMode="cover" // 또는 "stretch" 또는 "contain" 등 상황에 맞게
+      resizeMode="cover"
     >
       <View style={styles.container}>
         <View style={styles.topBar}>
@@ -285,9 +311,20 @@ export default function MainScreen({ navigation }) {
           )}
           
             {/* 캐릭터 */}
-          <View style={styles.characterContainer}>
+          <TouchableOpacity
+            style={styles.characterContainer}
+            onPress={() => {
+              setQuoteVisible(true);
+              setTimeout(() => setQuoteVisible(false), 3000);
+            }}
+          >
+            {quoteVisible && (
+              <View style={styles.speechBubble}>
+                <Text style={styles.speechText}>{getRandomQuote()}</Text>
+              </View>
+            )}
             <Image source={handaliImage} style={styles.character} />
-          </View>
+          </TouchableOpacity>
         </View>
 
         {/* <View style={styles.bottomBackground}></View> */}
@@ -483,5 +520,24 @@ const styles = StyleSheet.create({
     width: wp('19%'),
     height: wp('17%'),
     marginBottom: hp('2%'),
+  },
+  speechBubble: {
+    position: "absolute",
+    bottom: "100%",
+    left: "50%",
+    transform: [{ translateX: -wp("30%") }],
+    width: wp("60%"),
+    backgroundColor: "white",
+    borderRadius: 10,
+    padding: wp("3%"),
+    borderWidth: 1,
+    borderColor: "#aaa",
+    zIndex: 5,
+  },
+  speechText: {
+    fontSize: wp("3.5%"),
+    textAlign: "center",
+    color: "#333",
+    fontFamily: "Jua-Regular",
   },
 });

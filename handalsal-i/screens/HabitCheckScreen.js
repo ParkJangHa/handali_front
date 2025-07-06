@@ -98,8 +98,8 @@ export default function HabitCheckScreen({ route, navigation }) {
                         "한달이의 외형이 변화하였습니다.",
                         [
                             {
-                                text: "메인 화면으로 돌아가기",
-                                onPress: () => navigation.navigate("MainScreen"),
+                                text: "성장 화면 바로 가기",
+                                onPress: () => navigation.navigate("GrowthScreen"),
                             },
                         ],
                         { cancelable: false }
