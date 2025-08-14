@@ -10,6 +10,29 @@ import {
 export default function HabitCheckScreen({ route, navigation }) {
     const { categoryName, detailedHabit, habitTime, satisfaction } = route.params;
 
+    // ✅ 기록 성공 시: 오늘 퀘스트가 ANY_RECORD + ACCEPTED 이면 COMPLETABLE로 전환
+    const markDailyQuestCompletable = async () => {
+    try {
+        const todayStr = new Date().toISOString().slice(0,10);
+        const raw = await AsyncStorage.getItem("daily_quest");
+        if (!raw) return;
+        const q = JSON.parse(raw);
+
+        // 오늘 + 수락 상태 + ANY_RECORD 타입만 처리
+        if (q.date !== todayStr) return;
+        if (q.status !== "ACCEPTED") return;
+        if (q.match?.type !== "ANY_RECORD") return;
+
+        const token = `${Date.now()}-${Math.random().toString(36).slice(2,10)}`;
+        const next = {
+        ...q,
+        status: "COMPLETABLE",
+        localToken: token,
+        recordedAt: Date.now(),
+        };
+        await AsyncStorage.setItem("daily_quest", JSON.stringify(next));
+    } catch {}
+    };
     // 기록하기 버튼이 눌렸을 때, 습관 기록 데이터 서버로 전송
     const handleRecord = async () => {
 
@@ -78,7 +101,7 @@ export default function HabitCheckScreen({ route, navigation }) {
 
             if (response.ok) {
                 const data = await response.json();
-
+                await markDailyQuestCompletable();
                 // 외형 변화가 있을 때
                 if (data.appearance_change) {
                     const response = await fetch(`${API_BASE_URL}/handalis/change`, {

@@ -30,10 +30,49 @@ export default function MainScreen({ navigation }) {
     벽장식: null,
     바닥장식: null,
   });
+  const [miniStats, setMiniStats] = useState({
+    activity: 0, intelligence: 0, art: 0,
+    max_activity: 100, max_intelligence: 100, max_art: 100,
+  });
+  const THRESHOLDS = [100, 250, 450, 700, 1000];
+
+  const getInLevelProgress = (valueRaw, maxOfThisLevelRaw) => {
+    const value = Number(valueRaw ?? 0);
+    const maxOfThisLevel = Number(maxOfThisLevelRaw ?? 100);
+
+    const idx = THRESHOLDS.findIndex((t) => t === maxOfThisLevel);
+    const level = idx >= 0 ? idx + 1 : 1;
+    const prev = idx > 0 ? THRESHOLDS[idx - 1] : 0;
+
+    const span = Math.max(1, maxOfThisLevel - prev);
+    const gained = Math.min(Math.max(0, value - prev), span);
+    const percent = Math.min(100, Math.max(0, (gained / span) * 100));
+
+    return { level, percent };
+  };
+
+
+  const resetTodayQuest = async () => {
+    await AsyncStorage.removeItem("daily_quest");
+    const newQuest = pickRandomQuest();
+    setQuest(newQuest);
+    await AsyncStorage.setItem("daily_quest", JSON.stringify(newQuest));
+    Alert.alert("리셋", "오늘 퀘스트가 초기화되었습니다.");
+    setQuestPanelOpen(true); // 바로 열어주면 상태 확인 쉬움
+  };
 
   const intervalRef = useRef(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [quoteVisible, setQuoteVisible] = useState(false);
+
+  // === 일일 퀘스트 상태 ===
+  // 구조: { id, title, coin, match: {category, detail|null}, date, status, localToken|null, recordedAt|null }
+  const [quest, setQuest] = useState(null);
+  const [questPanelOpen, setQuestPanelOpen] = useState(false);
+  const [questLoading, setQuestLoading] = useState(false);
+  const todayStr = new Date().toISOString().slice(0,10); // YYYY-MM-DD
+  const isToday = (d) => d === todayStr;
+  const shouldHideQuestUI = quest && isToday(quest.date) && quest.status === "COMPLETED";
 
   const quotes = [
     "오늘도 수고했어!",
@@ -61,6 +100,7 @@ export default function MainScreen({ navigation }) {
     return quotes[index];
   };
 
+  // ====== 서버 연동 ======
   const fetchHandaliStatus = async () => {
     try {
       const token = await AsyncStorage.getItem("authToken");
@@ -84,6 +124,14 @@ export default function MainScreen({ navigation }) {
       if (response.ok) {
         const data = await response.json();
 
+        setMiniStats({
+          activity: Number(data.activity_value ?? 0),
+          intelligence: Number(data.intelligence_value ?? 0),
+          art: Number(data.art_value ?? 0),
+          max_activity: Number(data.max_stat_activity ?? 100),
+          max_intelligence: Number(data.max_stat_intelligence ?? 100),
+          max_art: Number(data.max_stat_art ?? 100),
+        });
         setNickname(data.nickname);
         setDaysSinceCreated(data.days_since_created);
         setTotalCoin(data.total_coin);
@@ -149,7 +197,7 @@ export default function MainScreen({ navigation }) {
                 headers: { Authorization: `Bearer ${token}` },
               });
             }
-          } catch (e) { }
+          } catch (e) {}
           await AsyncStorage.removeItem("authToken");
           navigation.reset({ index: 0, routes: [{ name: "Login" }] });
         },
@@ -199,15 +247,150 @@ export default function MainScreen({ navigation }) {
     }
   };
 
+  // ====== 일일 퀘스트 (시간 조건 제거 버전) ======
+  const debounce = (fn, delay=600) => {
+    let timer;
+    return (...args) => {
+      if (timer) return;
+      fn(...args);
+      timer = setTimeout(() => { timer = null; }, delay);
+    };
+  };
 
+  // 오늘 퀘스트 후보(카테고리 매칭 전용)
+const QUEST_POOL = [
+  { id: "q_any_record", title: "오늘의 습관 기록하기", coin: 15, match: { type: "ANY_RECORD" } },
+  { id: "q_water_5",   title: "물 5잔 마시기",       coin: 10, match: { type: "MANUAL" } },
+  { id: "q_diary_5",   title: "일기 5줄 쓰기",       coin: 10, match: { type: "MANUAL" } },
+];
+  const pickRandomQuest = () => {
+    const q = QUEST_POOL[Math.floor(Math.random() * QUEST_POOL.length)];
+    // 초기 상태: AVAILABLE
+    return {
+      id: q.id,
+      title: q.title,
+      coin: q.coin,
+      match: q.match,           // { type: "ANY_RECORD" } 또는 { type: "MANUAL" }
+      date: todayStr,
+      status: "AVAILABLE",      // AVAILABLE | ACCEPTED | COMPLETABLE | COMPLETED
+      localToken: null,
+      recordedAt: null,
+    };
+  };
+
+  const loadOrCreateTodayQuest = async () => {
+    try {
+      const saved = await AsyncStorage.getItem("daily_quest");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.date === todayStr) {
+          setQuest(parsed);
+          return;
+        }
+      }
+      const newQuest = pickRandomQuest();
+      setQuest(newQuest);
+      await AsyncStorage.setItem("daily_quest", JSON.stringify(newQuest));
+    } catch (e) {
+      // 무시
+    }
+  };
+
+  const refreshQuestFromStorage = async () => {
+    try {
+      const raw = await AsyncStorage.getItem("daily_quest");
+      if (raw) setQuest(JSON.parse(raw));
+    } catch (e) {}
+  };
+
+  const handleAcceptQuest = debounce(async () => {
+    if (!quest) return;
+    if (quest.status !== "AVAILABLE") return;
+    const next = {
+      ...quest,
+      status: quest?.match?.type === "MANUAL" ? "COMPLETABLE" : "ACCEPTED",
+    };
+    setQuest(next);
+    await AsyncStorage.setItem("daily_quest", JSON.stringify(next));
+  }, 500);
+
+  const handleCompleteQuest = debounce(async () => {
+  if (!quest) return;
+
+  // 1) 타입별 사전 검증
+  if (quest.match?.type === "ANY_RECORD") {
+    // 기록 성공으로 토큰이 생겨야 완료 가능
+    if (quest.status !== "COMPLETABLE" || !quest.localToken) {
+      Alert.alert("안내", "먼저 오늘의 습관을 기록해주세요!");
+      return;
+    }
+  } else if (quest.match?.type === "MANUAL") {
+    // 수동형은 수락만 했어도 바로 완료 허용
+    if (!(quest.status === "ACCEPTED" || quest.status === "COMPLETABLE")) {
+      Alert.alert("안내", "수락 후 완료할 수 있어요.");
+      return;
+    }
+  } else {
+    // 정의되지 않은 타입 안전망
+    Alert.alert("안내", "완료 조건이 정의되지 않은 퀘스트입니다.");
+    return;
+  }
+
+  try {
+    setQuestLoading(true);
+
+    const token = await AsyncStorage.getItem("authToken");
+    const res = await fetch(`${API_BASE_URL}/quest-award`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ coin: quest.coin }),
+    });
+
+    if (!res.ok) {
+      Alert.alert("보상 실패", `상태코드: ${res.status}`);
+      return;
+    }
+
+    // 완료 처리: 토큰은 소진(ANY_RECORD), 수동형은 어차피 없음
+    const next = { ...quest, status: "COMPLETED", localToken: null };
+    setQuest(next);
+    await AsyncStorage.setItem("daily_quest", JSON.stringify(next));
+
+    // 코인 최신화
+    await fetchHandaliStatus();
+
+    Alert.alert("축하!", `일일 퀘스트 보상 ${quest.coin}코인을 받았어요!`);
+  } catch (e) {
+    Alert.alert("오류", "보상 지급 중 문제가 발생했어요.");
+  } finally {
+    setQuestLoading(false);
+  }
+}, 800);
+
+  // ====== 화면 포커스 시 데이터 갱신 ======
   useFocusEffect(
     React.useCallback(() => {
       fetchHandaliStatus();
+      loadOrCreateTodayQuest();
+      refreshQuestFromStorage();
       intervalRef.current = setInterval(fetchHandaliStatus, 60000);
       return () => clearInterval(intervalRef.current);
     }, [])
   );
-
+  const StatMiniBar = ({ label, value, max }) => {
+    const { level, percent } = getInLevelProgress(value, max);
+    return (
+      <View style={styles.miniRow}>
+        <Text style={styles.miniLabel}>{label} Lv.{level}</Text>
+        <View style={styles.miniBarBg}>
+          <View style={[styles.miniBarFill, { width: `${percent}%` }]} />
+        </View>
+      </View>
+    );
+  };
   return (
     <ImageBackground
       source={require("../assets/storeItems/배경없음.png")}
@@ -219,17 +402,14 @@ export default function MainScreen({ navigation }) {
           <TouchableOpacity onPress={() => navigation.navigate("JobScreen")}>
             <Text>직업 획득</Text>
           </TouchableOpacity>
-          {/* <TouchableOpacity onPress={() => navigation.navigate("DexScreen")}>
-            <Text 
-            style={{ color: "#3258A5", fontFamily: "Jua-Regular", marginTop: 20 }}>
-            도감 보기
-            </Text>
-          </TouchableOpacity> */}
-         
-          <View style={styles.coinContainer}>
+          <TouchableOpacity onPress={() => navigation.navigate("GrowthScreen")}>
+            <Text>성장</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.coinContainer} onLongPress={resetTodayQuest}>
             <Image source={require("../assets/coin.png")} style={styles.coinIcon} />
             <Text style={styles.coinText}>{totalCoin}</Text>
-          </View>
+          </TouchableOpacity>
 
           <View style={styles.topIcons}>
             <TouchableOpacity onPress={() => navigation.navigate("Store")}>
@@ -239,7 +419,6 @@ export default function MainScreen({ navigation }) {
             <TouchableOpacity onPress={() => setModalVisible(true)}>
               <Image source={require("../assets/settings.png")} style={styles.icon} />
             </TouchableOpacity>
-
           </View>
         </View>
 
@@ -249,9 +428,7 @@ export default function MainScreen({ navigation }) {
           visible={modalVisible}
           onRequestClose={() => setModalVisible(false)}
         >
-          <View
-            style={styles.modalOverlay}
-          >
+          <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <TouchableOpacity onPress={handleLogout} style={styles.button}>
                 <Text style={styles.buttonText}>로그아웃</Text>
@@ -262,14 +439,14 @@ export default function MainScreen({ navigation }) {
               <TouchableOpacity
                 onPress={async () => {
                   await AsyncStorage.removeItem("tutorial_seen");
-                  navigation.replace("TutorialScreen"); // 튜토리얼로 이동
+                  navigation.replace("TutorialScreen");
                 }}
                 style={styles.button}
               >
                 <Text style={styles.buttonText}>튜토리얼 보기</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={() => setModalVisible(false)} // 모달 닫기
+                onPress={() => setModalVisible(false)}
                 style={styles.modalCloseButton}
               >
                 <Text style={styles.modalCloseButtonText}>닫기</Text>
@@ -277,6 +454,12 @@ export default function MainScreen({ navigation }) {
             </View>
           </View>
         </Modal>
+        
+        <View style={styles.miniStatsWrap}>
+          <StatMiniBar label="활동" value={miniStats.activity} max={miniStats.max_activity} />
+          <StatMiniBar label="지능" value={miniStats.intelligence} max={miniStats.max_intelligence} />
+          <StatMiniBar label="예술" value={miniStats.art} max={miniStats.max_art} />
+        </View>
 
         <View style={styles.content}>
           <Text style={styles.dayText}>
@@ -309,8 +492,8 @@ export default function MainScreen({ navigation }) {
               }
             />
           )}
-          
-            {/* 캐릭터 */}
+
+          {/* 캐릭터 */}
           <TouchableOpacity
             style={styles.characterContainer}
             onPress={() => {
@@ -327,7 +510,70 @@ export default function MainScreen({ navigation }) {
           </TouchableOpacity>
         </View>
 
-        {/* <View style={styles.bottomBackground}></View> */}
+       {/* 일일 퀘스트 FAB (완료된 날은 숨김) */}
+       {!shouldHideQuestUI && (
+          <TouchableOpacity
+            style={styles.questFab}
+            activeOpacity={0.85}
+            onPress={() => setQuestPanelOpen(v => !v)}
+            onLongPress={async () => {
+              await AsyncStorage.removeItem("daily_quest");
+              const newQuest = pickRandomQuest();
+              setQuest(newQuest);
+              await AsyncStorage.setItem("daily_quest", JSON.stringify(newQuest));
+            Alert.alert("리셋", "오늘 퀘스트가 초기화되었습니다.");
+            }}
+          >
+            <Text style={styles.questFabMark}>!</Text>
+          </TouchableOpacity>
+        )}
+        {/* 일일 퀘스트 패널 */}
+        {(!shouldHideQuestUI) && questPanelOpen && quest && (
+          <View style={styles.questPanel}>
+            <Text style={styles.questTitle}>일일 퀘스트</Text>
+            <Text style={styles.questContent}>{quest.title}</Text>
+
+            {quest.status === "AVAILABLE" && (
+              <TouchableOpacity
+                style={[styles.questBtn, { backgroundColor: "#76D6F4" }]}
+                onPress={handleAcceptQuest}
+              >
+                <Text style={styles.questBtnText}>수락</Text>
+              </TouchableOpacity>
+            )}
+
+            {(quest.status === "ACCEPTED" && quest?.match?.type === "ANY_RECORD") && (
+              <TouchableOpacity
+                style={[styles.questBtn, { backgroundColor: "#76D6F4" }]}
+                onPress={() => navigation.navigate("Record")}
+              >
+                <Text style={styles.questBtnText}>기록하러 가기</Text>
+              </TouchableOpacity>
+            )}
+
+            {quest.status === "COMPLETABLE" && (
+              <TouchableOpacity
+                style={[styles.questBtn, { backgroundColor: "#4CD964" }]}
+                onPress={handleCompleteQuest}
+                disabled={questLoading}
+              >
+                <Text style={styles.questBtnText}>
+                  {questLoading ? "지급 중..." : "완료"}
+                </Text>
+              </TouchableOpacity>
+            )}
+
+            {quest.status === "COMPLETED" && (
+              <View style={[styles.questBtn, { backgroundColor: "#C7C7CC" }]}>
+                <Text style={styles.questBtnText}>완료됨</Text>
+              </View>
+            )}
+
+            <TouchableOpacity onPress={() => setQuestPanelOpen(false)} style={styles.questClose}>
+              <Text style={styles.questCloseText}>닫기</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         <View style={styles.bottomNav}>
           <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate("Summary")} >
@@ -540,4 +786,101 @@ const styles = StyleSheet.create({
     color: "#333",
     fontFamily: "Jua-Regular",
   },
+
+  // === 일일 퀘스트 스타일 ===
+  questFab: {
+    position: "absolute",
+    left: wp('4%'),
+    bottom: hp('11%'), // bottomNav 위
+    width: wp('12%'),
+    height: wp('12%'),
+    borderRadius: wp('6%'),
+    backgroundColor: "#FFB800",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 5,
+    elevation: 6,
+  },
+  questFabMark: {
+    color: "#fff",
+    fontSize: wp('7%'),
+    lineHeight: wp('8%'),
+    fontFamily: "Jua-Regular",
+  },
+  questPanel: {
+    position: "absolute",
+    left: wp('4%'),
+    bottom: hp('21%'),
+    width: wp('60%'),
+    borderRadius: wp('3%'),
+    padding: wp('4%'),
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.1)",
+    zIndex: 6,
+    elevation: 7,
+  },
+  questTitle: {
+    fontSize: wp('4.5%'),
+    color: "#2D5D6B",
+    fontFamily: "Jua-Regular",
+    marginBottom: hp('1%'),
+  },
+  questContent: {
+    fontSize: wp('4%'),
+    color: "#333",
+    fontFamily: "Jua-Regular",
+    marginBottom: hp('1.5%'),
+  },
+  questBtn: {
+    width: "100%",
+    paddingVertical: hp('1.3%'),
+    borderRadius: wp('3%'),
+    alignItems: "center",
+    marginTop: hp('0.5%'),
+  },
+  questBtnText: {
+    color: "#2D5D6B",
+    fontSize: wp('4.2%'),
+    fontFamily: "Jua-Regular",
+  },
+  questClose: {
+    marginTop: hp('1%'),
+    alignSelf: "center",
+  },
+  questCloseText: {
+    color: "#666",
+    fontSize: wp('3.8%'),
+    fontFamily: "Jua-Regular",
+  },
+  miniStatsWrap: {
+    position: "absolute",
+    right: wp('55%'),      // 코인 위치에 맞춰 조정
+    top: hp('12%'),       // 상단 여백 상황에 맞춰 살짝 조정
+    width: wp('40%'),
+  },
+
+  miniRow: {
+    marginTop: hp('0.6%'),
+  },
+
+  miniLabel: {
+    fontSize: wp('3%'),
+    color: "#2D5D6B",
+    marginBottom: hp('0.3%'),
+    fontFamily: "Jua-Regular",
+  },
+
+  miniBarBg: {
+    width: "100%",
+    height: hp('1.1%'),
+    backgroundColor: "rgba(0,0,0,0.12)",
+    borderRadius: 999,
+    overflow: "hidden",
+  },
+
+  miniBarFill: {
+    height: "100%",
+    backgroundColor: "#76D6F4",
+  }
 });

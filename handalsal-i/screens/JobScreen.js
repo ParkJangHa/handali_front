@@ -129,7 +129,7 @@ const JobScreen = ({ navigation }) => {
 
             {/* 버튼 */}
             <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Category')}>
+                <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Category', {from: 'JobScreen'})}>
                     <Text style={styles.buttonText}>다음 한달이 시작하기</Text>
                 </TouchableOpacity>
             </View>
