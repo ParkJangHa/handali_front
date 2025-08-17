@@ -1,34 +1,37 @@
-import { StyleSheet, Text, View, TouchableOpacity, Image } from "react-native";
+import { StyleSheet, Text, View, TouchableOpacity, Image, ImageBackground } from "react-native";
 import React, { useState, useEffect } from "react";
-import { LinearGradient } from "expo-linear-gradient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { API_BASE_URL } from '@env';
+import { API_BASE_URL } from "@env";
 import { characterImageMap } from "../utils/characterImageMap";
+import LottieView from "lottie-react-native";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
+const CATEGORY_ICON = {
+  ACTIVITY: require("../assets/icons/activity.png"),
+  INTELLIGENCE: require("../assets/icons/intelligence.png"),
+  ART: require("../assets/icons/art.png"),
+};
 
-const THRESHOLDS = [100, 250, 450, 700, 1000]; // 레벨 임계값
+const CATEGORY_COLOR = {
+  ACTIVITY: "#FFCF2A",      // 활동
+  INTELLIGENCE: "#92CBE0",  // 지능
+  ART: "#FA8772",           // 예술
+};
+const THRESHOLDS = [10, 25, 45, 70, 100];
 
 const GrowthScreen = ({ navigation }) => {
   const [nickname, setNickname] = useState();
-  const [imageSource, setImageSource] = useState(
-    require("../assets/character/0,0,0.png")
-  );
+  const [imageSource, setImageSource] = useState(require("../assets/character/0,0,0.png"));
   const [stats, setStats] = useState({
     activity_value: 0,
     intelligence_value: 0,
     art_value: 0,
-    max_stat_activity: 100,
-    max_stat_art: 100,
-    max_stat_intelligence: 100,
   });
 
   const setImageSourceByName = (imageName) => {
-    const mapped =
-      (imageName && characterImageMap[imageName]) ||
-      require("../assets/character/0,0,0.png");
+    const mapped = (imageName && characterImageMap[imageName]) || require("../assets/character/0,0,0.png");
     setImageSource(mapped);
   };
 
@@ -40,74 +43,65 @@ const GrowthScreen = ({ navigation }) => {
   useEffect(() => {
     const fetchGrowthInfo = async () => {
       const token = await AsyncStorage.getItem("authToken");
-
       try {
         const response = await fetch(`${API_BASE_URL}/handalis/view`, {
           method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
-
-        const responseBody = await response.text();
-        // console.log("서버 응답 원본:", responseBody);
-
-        if (response.ok) {
-          const data = JSON.parse(responseBody);
-
-          setNickname(data.nickname);
-          setImageSourceByName(data.handali_img);
-
-          setStats({
-            activity_value: Number(data.activity_value ?? 0),
-            intelligence_value: Number(data.intelligence_value ?? 0),
-            art_value: Number(data.art_value ?? 0),
-            max_stat_activity: Number(data.max_stat_activity ?? 100),
-            max_stat_art: Number(data.max_stat_art ?? 100),
-            max_stat_intelligence: Number(data.max_stat_intelligence ?? 100),
-          });
-        }
-      } catch (error) {
-        console.error("성장 정보 불러오기 실패:", error);
+        const bodyText = await response.text();
+        // console.log("📩 /handalis/view RAW:", bodyText);
+        if (!response.ok) return;
+        const data = JSON.parse(bodyText);
+        setNickname(data.nickname);
+        setImageSourceByName(data.handali_img);
+        setStats({
+          activity_value: Number(data.activity_value ?? 0),
+          intelligence_value: Number(data.intelligence_value ?? 0),
+          art_value: Number(data.art_value ?? 0),
+        });
+      } catch (e) {
+        console.error("성장 정보 불러오기 실패:", e);
       }
     };
-
     fetchGrowthInfo();
   }, []);
 
-  // 현재 레벨 구간에서의 진행률 계산
-  const getInLevelProgress = (valueRaw, maxOfThisLevelRaw) => {
-    const value = Number(valueRaw ?? 0);
-    const maxOfThisLevel = Number(maxOfThisLevelRaw ?? 100);
-
-    const idx = THRESHOLDS.findIndex((t) => t === maxOfThisLevel);
-    const level = idx >= 0 ? idx + 1 : 1;
+  const getLevelProgressByValue = (rawValue) => {
+    const value = Math.max(0, Number(rawValue ?? 0));
+    let idx = THRESHOLDS.findIndex((t) => value < t);
+    if (idx === -1) idx = THRESHOLDS.length - 1;
+    const level = idx + 1;
     const prev = idx > 0 ? THRESHOLDS[idx - 1] : 0;
-
-    const span = Math.max(1, maxOfThisLevel - prev); // 이 레벨에서 필요한 총치
-    const gained = Math.min(Math.max(0, value - prev), span); // 이 레벨에서 채운 양
-    const percent = (gained / span) * 100;
-
-    return { level, gained, span, percent: Math.min(100, Math.max(0, percent)) };
+    const span = Math.max(1, THRESHOLDS[idx] - prev);
+    const gained = Math.min(Math.max(0, value - prev), span);
+    const percent = Math.min(100, Math.max(0, (gained / span) * 100));
+    return { level, percent };
   };
 
- const StatBar = ({ label, value, max }) => {
-    const { level, gained, span, percent } = getInLevelProgress(value, max);
+  const StatBar = ({ label, value, icon, barColor }) => {
+    const { level, percent } = getLevelProgressByValue(value);
 
     return (
-      <View style={styles.statBarContainer}>
-        <Text style={styles.statTitle}>
-          {label} Lv.{level}
-        </Text>
-        <View style={styles.expBarBackground}>
-          <View style={[styles.expBarFill, { width: `${percent}%` }]} />
+      <View style={styles.statBarRow}>
+        <Image source={icon} style={styles.statIcon} resizeMode="contain" />
+        <View style={styles.statRight}>
+          <Text style={styles.statTitle}>
+            {label} Lv.{level}
+          </Text>
+          <View style={styles.expBarBackground}>
+            <View style={[styles.expBarFill, { width: `${percent}%`, backgroundColor: barColor }]} />
+          </View>
         </View>
       </View>
     );
   };
 
   return (
-    <View style={styles.container}>
+    <ImageBackground
+      source={require("../assets/bg_gr.png")}   // ✅ 고정 배경 이미지
+      style={styles.container}
+      resizeMode="cover"
+    >
       <View style={styles.titleContainer}>
         <Text style={styles.dateText}>{formattedDate}</Text>
         <Text style={styles.titleText}>한달이가 성장했어요! 🎉</Text>
@@ -116,29 +110,40 @@ const GrowthScreen = ({ navigation }) => {
         </View>
       </View>
 
+      {/* 한달이 영역 (카드 제거, 배경 위로 직접 배치) */}
       <View style={styles.handaliContainer}>
-        <LinearGradient
-          colors={["#feebe1", "#fdd7be", "#fdcfae", "#FFB08A"]}
-          style={styles.circle}
-        >
-          <Text style={styles.nicknameText}>{nickname}</Text>
-          <Image source={imageSource} style={styles.handaliImage} />
+        {/* Lottie: 항상 무한 반복 */}
+        <LottieView
+          source={require("../assets/card_shine.json")}
+          autoPlay
+          loop
+          style={styles.lottieEffect}
+          renderMode="AUTOMATIC"
+        />
 
-          {/* 스탯 진행률 */}
-          <View style={styles.statContainer}>
-            <StatBar
-              label="활동"
-              value={stats.activity_value}
-              max={stats.max_stat_activity}
-            />
-            <StatBar
-              label="지능"
-              value={stats.intelligence_value}
-              max={stats.max_stat_intelligence}
-            />
-            <StatBar label="예술" value={stats.art_value} max={stats.max_stat_art} />
-          </View>
-        </LinearGradient>
+        <Text style={styles.nicknameText}>{nickname}</Text>
+        <Image source={imageSource} style={styles.handaliImage} />
+
+        <View style={styles.statContainer}>
+          <StatBar
+            label="활동"
+            value={stats.activity_value}
+            icon={CATEGORY_ICON.ACTIVITY}
+            barColor={CATEGORY_COLOR.ACTIVITY}
+          />
+          <StatBar
+            label="지능"
+            value={stats.intelligence_value}
+            icon={CATEGORY_ICON.INTELLIGENCE}
+            barColor={CATEGORY_COLOR.INTELLIGENCE}
+          />
+          <StatBar
+            label="예술"
+            value={stats.art_value}
+            icon={CATEGORY_ICON.ART}
+            barColor={CATEGORY_COLOR.ART}
+          />
+        </View>
       </View>
 
       <View style={styles.buttonContainer}>
@@ -149,7 +154,7 @@ const GrowthScreen = ({ navigation }) => {
           <Text style={styles.buttonText}>메인 화면으로 돌아가기</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </ImageBackground>
   );
 };
 
@@ -157,10 +162,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: hp("2%"),
-    backgroundColor: "#FFE98A",
   },
   titleContainer: {
-    marginTop: hp("7%"),
+    marginTop: hp("4%"),
     alignItems: "center",
   },
   memoContainer: {
@@ -169,84 +173,115 @@ const styles = StyleSheet.create({
     marginTop: hp("1%"),
     marginBottom: hp("2%"),
   },
+
   handaliContainer: {
     alignItems: "center",
-    marginBottom: hp("2%"),
-  },
-  circle: {
-    width: wp("80%"),
-    height: hp("60%"),
-    borderRadius: 30,
-    alignItems: "center",
+    marginTop:hp("-6%"),
+    height: hp("80%"),            // 이전 카드 높이만큼 영역 확보
+    position: "relative",         // Lottie absolute 기준
     justifyContent: "center",
-    paddingHorizontal: wp("3%"),
+  },
+  lottieEffect: {
+    position: "absolute",
+    top: 0, left: 0, right: 0, bottom: 150,  // 한달이 영역 전체 덮기
+    pointerEvents: "none",
+    zIndex: 1,
   },
   handaliImage: {
-    width: "90%",
-    height: "80%",
+    width: "80%",
+    maxHeight: "75%",             // 컨테이너를 꽉 채우지 않도록 제한
     resizeMode: "contain",
-    marginTop: hp("-8%"),
+    marginTop: hp("-10%"),
+    left: wp("-4%"),
+    zIndex: 2,
   },
   nicknameText: {
     fontSize: wp("6%"),
     color: "#5A3A29",
     fontFamily: "Jua-Regular",
+    marginTop: hp("8%"),
+    zIndex: 2,
   },
+
   statContainer: {
-    width: "100%",
-    marginTop: hp("-8%"),
+    width: "80%",
+    marginTop: hp("-10%"),
+    zIndex: 2,
+    left: wp("-3%"),
   },
   statBarContainer: {
-    width: "100%",
+    width: "70%",
     paddingHorizontal: wp("5%"),
-    marginBottom: hp("2%"),
   },
+statBarRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: hp("1%"),
+    paddingHorizontal: wp("5%"),
+  },
+
+  statIcon: {
+    width: wp("12%"),
+    height: wp("12%"),
+    marginRight: wp("3%"),
+  },
+
+  statRight: {
+    flex: 1, // 아이콘 제외한 공간 전부 사용
+  },
+
   statTitle: {
     fontSize: wp("5%"),
     color: "#2D5D6B",
     fontFamily: "Jua-Regular",
-    marginBottom: hp("0.5%"),
+    marginBottom: hp("0.6%"),
   },
+
   expBarBackground: {
     width: "100%",
-    height: hp("1.6%"), // 살짝 낮춤
-    backgroundColor: "#D9D9D9",
+    height: hp("1.5%"),
+    backgroundColor: "rgba(255,255,255,0.6)",
     borderRadius: hp("1%"),
     overflow: "hidden",
   },
+
   expBarFill: {
     height: "100%",
-    backgroundColor: "#76D6F4",
   },
+
   buttonContainer: {
     justifyContent: "center",
     alignItems: "center",
+    marginTop:hp("-8%"),
   },
   button: {
-    backgroundColor: "#76D6F4",
+    backgroundColor: "#F7B61B",
     width: wp("80%"),
     paddingVertical: hp("2%"),
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 30,
   },
+
   dateText: {
-    fontSize: wp("5.5%"),
-    fontFamily: "Jua-Regular",
-  },
-  titleText: {
     fontSize: wp("6%"),
     fontFamily: "Jua-Regular",
     textAlign: "center",
   },
+  titleText: {
+    fontSize: wp("8%"),
+    fontFamily: "Jua-Regular",
+    textAlign: "center",
+  },
   memoText: {
-    fontSize: wp("5%"),
+    fontSize: wp("6%"),
     color: "#ff8851",
     fontFamily: "Jua-Regular",
+    textAlign: "center",
   },
   buttonText: {
     fontSize: wp("5%"),
-    color: "#2D5D6B",
+    color: "#000000",
     fontFamily: "Jua-Regular",
   },
 });

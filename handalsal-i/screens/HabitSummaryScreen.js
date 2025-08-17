@@ -49,7 +49,9 @@ const sortCats = (arr) =>
 export default function HabitSummaryScreen() {
   const navigation = useNavigation();
   const [summaryData, setSummaryData] = useState(null);
-  const [range, setRange] = useState("month"); // 'month' | 'week'
+
+  // ✅ 기본 진입을 '이번주'로
+  const [range, setRange] = useState("week"); // 'month' | 'week'
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -120,6 +122,19 @@ export default function HabitSummaryScreen() {
   const numMonths = monthlyCount.length;
   const chartWidth = Math.max(Number(wp("90%")), numMonths * 40);
 
+  /** === 월/주 타이틀 계산(월요일 시작) === */
+  const getWeekOfMonth = (date) => {
+    const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const first = new Date(d.getFullYear(), d.getMonth(), 1);
+    const firstDayMonStart = (first.getDay() + 6) % 7; // 월요일 기준
+    return Math.floor((d.getDate() + firstDayMonStart - 1) / 7) + 1;
+  };
+  const now = new Date();
+  const monthNum = now.getMonth() + 1;
+  const weekNum = getWeekOfMonth(now);
+  const titleText =
+    range === "month" ? `${monthNum}월 습관요약` : `${monthNum}월 ${weekNum}째주 습관요약`;
+
   if (loading || !summaryData) {
     return (
       <View style={styles.centered}>
@@ -130,150 +145,168 @@ export default function HabitSummaryScreen() {
 
   const hasRecPie = totalRecs > 0 && recByCat.length > 0;
 
+  /** === 섹션 순서 설정 === */
+  const SECTION_ORDER = {
+    month: ["total", "monthly", "pie", "satisfaction", "time"],
+    week: [ "total", "satisfaction", "time", "pie"],
+  };
+
+  /** === 섹션 렌더러 === */
+  const renderSection = (key) => {
+    switch (key) {
+      case "total":
+        return (
+          <View style={styles.card} key="total">
+            <Text style={styles.cardTitle}>
+              {range === "month" ? "이번달 총 기록 횟수" : "이번주 총 기록 횟수"}
+            </Text>
+            <Text style={styles.innerText}>{totalRecs}회</Text>
+          </View>
+        );
+
+      case "satisfaction":
+        return (
+          <View style={styles.card} key="satisfaction">
+            <Text style={styles.cardTitle}>
+              {range === "month" ? "이번달" : "이번주"} 카테고리별 만족도 평균
+            </Text>
+            {satByCat.length === 0 ? (
+              <Text style={styles.emptyText}>아직 데이터가 없어요.</Text>
+            ) : (
+              satByCat.map((item) => (
+                <View key={item.category} style={styles.row}>
+                  <Text style={styles.innerText}>{CATEGORY_NAME[item.category]}</Text>
+                  <Text style={styles.innerText}>
+                    {getEmoji(Number(item.avg_satisfaction))} {Math.round(Number(item.avg_satisfaction))}
+                  </Text>
+                </View>
+              ))
+            )}
+          </View>
+        );
+
+      case "pie":
+        return (
+          <View style={styles.card} key="pie">
+            <Text style={styles.cardTitle}>
+              {range === "month" ? "이번달" : "이번주"} 카테고리별 총 기록 비율
+            </Text>
+            {hasRecPie ? (
+              <View style={styles.pieChartContainer}>
+                <PieChart
+                  data={recByCat.map((item) => ({
+                    name: CATEGORY_NAME[item.category],
+                    value: Number(item.total_records),
+                    color: CATEGORY_COLOR[item.category],
+                    legendFontColor: "#333",
+                    legendFontSize: 14,
+                  }))}
+                  width={Number(wp("90%"))}
+                  height={hp("25%")}
+                  chartConfig={chartConfig}
+                  accessor="value"
+                  backgroundColor="transparent"
+                  paddingLeft="0"
+                  absolute
+                  hasLegend={false}
+                />
+                <View style={styles.customLegend}>
+                  {recByCat.map((item) => {
+                    const v = Number(item.total_records) || 0;
+                    const pct = totalRecs ? Math.round((v / totalRecs) * 100) : 0;
+                    return (
+                      <View key={item.category} style={styles.legendItem}>
+                        <View
+                          style={[
+                            styles.legendColor,
+                            { backgroundColor: CATEGORY_COLOR[item.category] },
+                          ]}
+                        />
+                        <Text style={styles.legendText}>
+                          {CATEGORY_NAME[item.category]} {pct}% ({v}회)
+                        </Text>
+                      </View>
+                    );
+                  })}
+                </View>
+              </View>
+            ) : (
+              <Text style={styles.emptyText}>기록이 아직 없어요.</Text>
+            )}
+          </View>
+        );
+
+      case "time":
+        return (
+          <View style={styles.card} key="time">
+            <Text style={styles.cardTitle}>
+              {range === "month" ? "이번달" : "이번주"} 카테고리별 누적 시간
+            </Text>
+            {timeByCat.length === 0 ? (
+              <Text style={styles.emptyText}>데이터가 없어요.</Text>
+            ) : (
+              timeByCat.map((item) => (
+                <Text style={styles.innerText} key={item.category}>
+                  {CATEGORY_NAME[item.category]}: {Number(item.total_time).toFixed(1)}시간
+                </Text>
+              ))
+            )}
+          </View>
+        );
+
+      case "monthly":
+        if (range !== "month") return null;
+        return (
+          <View style={styles.card} key="monthly">
+            <Text style={styles.cardTitle}>월별 기록 횟수 (최근 1년)</Text>
+            {monthlyCount.length > 0 ? (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <LineChart
+                  data={{
+                    labels: monthlyCount.map((m) => `${m.month}월`),
+                    datasets: [{ data: monthlyCount.map((m) => Number(m.totalRecords) || 0) }],
+                  }}
+                  width={chartWidth}
+                  height={hp("25%")}
+                  chartConfig={chartConfig}
+                  fromZero
+                />
+              </ScrollView>
+            ) : (
+              <Text style={styles.emptyText}>월별 데이터가 없습니다.</Text>
+            )}
+          </View>
+        );
+
+      default:
+        return null;
+    }
+  };
+
   return (
     <ScrollView
       contentContainerStyle={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
       {/* 헤더 + 토글 */}
       <View style={styles.headerRow}>
-        <Text style={styles.header}>습관 요약</Text>
+        <Text style={styles.header}>{titleText}</Text>
         <View style={styles.toggleRow}>
-          {["month", "week"].map((r) => (
+          {/* ✅ 토글 순서도 '이번주'가 왼쪽으로 오게 */}
+          {["week", "month"].map((r) => (
             <Text
               key={r}
               onPress={() => setRange(r)}
-              style={[
-                styles.toggle,
-                range === r && styles.toggleActive,
-              ]}
+              style={[styles.toggle, range === r && styles.toggleActive]}
             >
-              {r === "month" ? "이번달" : "이번주"}
+              {r === "week" ? "이번주" : "이번달"}
             </Text>
           ))}
         </View>
       </View>
 
-      {/* 만족도 평균 */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>
-          {range === "month" ? "이번달" : "이번주"} 카테고리별 만족도 평균
-        </Text>
-        {satByCat.length === 0 ? (
-          <Text style={styles.emptyText}>아직 데이터가 없어요.</Text>
-        ) : (
-          satByCat.map((item) => (
-            <View key={item.category} style={styles.row}>
-              <Text style={styles.innerText}>{CATEGORY_NAME[item.category]}</Text>
-              <Text style={styles.innerText}>
-                {getEmoji(Number(item.avg_satisfaction))}{" "}
-                {Math.round(Number(item.avg_satisfaction))}
-              </Text>
-            </View>
-          ))
-        )}
-      </View>
-
-      {/* 총 기록 횟수 파이차트 */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>
-          {range === "month" ? "이번달" : "이번주"} 카테고리별 총 기록 비율
-        </Text>
-
-        {hasRecPie ? (
-          <>
-            <View style={styles.pieChartContainer}>
-              <PieChart
-                data={recByCat.map((item) => ({
-                  name: CATEGORY_NAME[item.category],
-                  value: Number(item.total_records),
-                  color: CATEGORY_COLOR[item.category],
-                  legendFontColor: "#333",
-                  legendFontSize: 14,
-                }))}
-                width={Number(wp("90%"))}
-                height={hp("25%")}
-                chartConfig={chartConfig}
-                accessor="value"
-                backgroundColor="transparent"
-                paddingLeft="0"
-                absolute
-                hasLegend={false}
-              />
-              <View style={styles.customLegend}>
-                {recByCat.map((item) => {
-                  const v = Number(item.total_records) || 0;
-                  const pct = totalRecs ? Math.round((v / totalRecs) * 100) : 0;
-                  return (
-                    <View key={item.category} style={styles.legendItem}>
-                      <View
-                        style={[
-                          styles.legendColor,
-                          { backgroundColor: CATEGORY_COLOR[item.category] },
-                        ]}
-                      />
-                      <Text style={styles.legendText}>
-                        {CATEGORY_NAME[item.category]} {pct}% ({v}회)
-                      </Text>
-                    </View>
-                  );
-                })}
-              </View>
-            </View>
-          </>
-        ) : (
-          <Text style={styles.emptyText}>기록이 아직 없어요.</Text>
-        )}
-      </View>
-
-      {/* 누적 시간 */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>
-          {range === "month" ? "이번달" : "이번주"} 카테고리별 누적 시간
-        </Text>
-        {timeByCat.length === 0 ? (
-          <Text style={styles.emptyText}>데이터가 없어요.</Text>
-        ) : (
-          timeByCat.map((item) => (
-            <Text style={styles.innerText} key={item.category}>
-              {CATEGORY_NAME[item.category]}: {Number(item.total_time).toFixed(1)}시간
-            </Text>
-          ))
-        )}
-      </View>
-
-      {/* 월별 기록 횟수(최근 1년) — 항상 월 기준으로 제공됨 */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>월별 기록 횟수 (최근 1년)</Text>
-        {monthlyCount.length > 0 ? (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <LineChart
-              data={{
-                labels: monthlyCount.map((m) => `${m.month}월`),
-                datasets: [
-                  { data: monthlyCount.map((m) => Number(m.totalRecords) || 0) },
-                ],
-              }}
-              width={chartWidth}
-              height={hp("25%")}
-              chartConfig={chartConfig}
-              fromZero
-            />
-          </ScrollView>
-        ) : (
-          <Text style={styles.emptyText}>월별 데이터가 없습니다.</Text>
-        )}
-      </View>
-
-      {/* 총 기록 수 요약 */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>
-          {range === "month" ? "이번달 총 기록 횟수" : "이번주 총 기록 횟수"}
-        </Text>
-        <Text style={styles.innerText}>{totalRecs}회</Text>
-      </View>
+      {/* 섹션을 순서대로 렌더 */}
+      {SECTION_ORDER[range].map(renderSection)}
     </ScrollView>
   );
 }
@@ -283,7 +316,7 @@ const styles = StyleSheet.create({
   container: {
     padding: wp("5%"),
     alignItems: "center",
-    backgroundColor: "#FFE98A",
+    backgroundColor: "#FFFFFF",
   },
   centered: {
     flex: 1,

@@ -138,7 +138,7 @@ const App = () => {
         <Stack.Screen name="Summary" component={HabitSummaryScreen}
           options={{
             headerStyle: {
-              backgroundColor: "#FFE98A", // 헤더 배경색
+              backgroundColor: "#FFFFFF", // 헤더 배경색
 
             },
           }}
