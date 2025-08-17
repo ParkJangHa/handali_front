@@ -20,6 +20,7 @@ import StoreScreen from "./screens/StoreScreen";
 import HabitSummaryScreen from "./screens/HabitSummaryScreen";
 import DexScreen from "./screens/dogam";
 import TutorialScreen from "./screens/TutorialScreen";
+import GrowthScreen from "./screens/GrowthScreen";
 const Stack = createStackNavigator();
 
 const App = () => {
@@ -27,7 +28,7 @@ const App = () => {
     <NavigationContainer>
       <Stack.Navigator
         initialRouteName="Home"
-        //initialRouteName="TutorialScreen"
+        //initialRouteName="GrowthScreen"
         screenOptions={{
           headerStyle: {
             backgroundColor: "#FFD563", // 헤더 배경색
@@ -124,6 +125,11 @@ const App = () => {
             headerShown: false, gestureEnabled: true
           }}
         />
+        <Stack.Screen name="GrowthScreen" component={GrowthScreen}
+          options={{
+            headerShown: false, gestureEnabled: true
+          }}
+        />
         <Stack.Screen name="ApartScreen" component={ApartScreen}
           options={{
             headerShown: false, gestureEnabled: true
@@ -132,7 +138,7 @@ const App = () => {
         <Stack.Screen name="Summary" component={HabitSummaryScreen}
           options={{
             headerStyle: {
-              backgroundColor: "#FFE98A", // 헤더 배경색
+              backgroundColor: "#FFFFFF", // 헤더 배경색
 
             },
           }}

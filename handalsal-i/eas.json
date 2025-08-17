@@ -14,7 +14,7 @@
     "production": {
       "autoIncrement": true,
       "env": {
-        "API_BASE_URL": "https://dev-handali20.duckdns.org"
+        "API_BASE_URL": "https://handali20.duckdns.org"
       }
     }
   },
