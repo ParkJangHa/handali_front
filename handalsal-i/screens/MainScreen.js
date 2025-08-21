@@ -7,7 +7,9 @@ import {
   TouchableOpacity,
   Alert,
   Modal,
-  ImageBackground
+  ImageBackground,
+  Animated,
+  Pressable,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from "@env";
@@ -23,232 +25,56 @@ export default function MainScreen({ navigation }) {
   const [nickname, setNickname] = useState("");
   const [daysSinceCreated, setDaysSinceCreated] = useState(0);
   const [totalCoin, setTotalCoin] = useState(0);
-  const [handaliImage, setHandaliImage] = useState(characterImageMap["default_character.png"]);
+  const [handaliImage, setHandaliImage] = useState(
+    characterImageMap["default_character.png"]
+  );
   const [appliedItems, setAppliedItems] = useState({
     소파: null,
     배경: null,
     벽장식: null,
     바닥장식: null,
   });
-
   const [stats, setStats] = useState({
     activity_value: 0,
     intelligence_value: 0,
     art_value: 0,
   });
 
-  // ✅ 고정 임계값
-  const THRESHOLDS = [10, 25, 45, 70, 100];
+  // 설정 모달
+  const [modalVisible, setModalVisible] = useState(false);
 
-  // ✅ 값 기준 레벨/퍼센트 계산 (경계값 도달 시 다음 레벨로 표기: '<')
+  // ===== 레벨/퍼센트 계산 =====
+  const THRESHOLDS = [10, 25, 45, 70, 100];
   const getLevelProgressByValue = (rawValue) => {
     const value = Math.max(0, Number(rawValue ?? 0));
     let idx = THRESHOLDS.findIndex((t) => value < t);
     if (idx === -1) idx = THRESHOLDS.length - 1;
 
-    const level = idx + 1; // Lv.1부터
+    const level = idx + 1;
     const prev = idx > 0 ? THRESHOLDS[idx - 1] : 0;
     const span = Math.max(1, THRESHOLDS[idx] - prev);
     const gained = Math.min(Math.max(0, value - prev), span);
     const percent = Math.min(100, Math.max(0, (gained / span) * 100));
-
     return { level, percent };
   };
 
-  const resetTodayQuest = async () => {
-    await AsyncStorage.removeItem("daily_quest");
-    const newQuest = pickRandomQuest();
-    setQuest(newQuest);
-    await AsyncStorage.setItem("daily_quest", JSON.stringify(newQuest));
-    Alert.alert("리셋", "오늘 퀘스트가 초기화되었습니다.");
-    setQuestPanelOpen(true);
-  };
-
-  const intervalRef = useRef(null);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [quoteVisible, setQuoteVisible] = useState(false);
-
-  // === 일일 퀘스트 상태 ===
+  // ===== 일일 퀘스트 상태 =====
   const [quest, setQuest] = useState(null);
   const [questPanelOpen, setQuestPanelOpen] = useState(false);
   const [questLoading, setQuestLoading] = useState(false);
-  const todayStr = new Date().toISOString().slice(0,10); // YYYY-MM-DD
+  const todayStr = new Date().toISOString().slice(0, 10);
   const isToday = (d) => d === todayStr;
-  const shouldHideQuestUI = quest && isToday(quest.date) && quest.status === "COMPLETED";
+  const shouldHideQuestUI =
+    quest && isToday(quest.date) && quest.status === "COMPLETED";
 
-  const quotes = [
-    "오늘도 수고했어!",
-    "한 걸음 한 걸음이 모여~",
-    "성장하고 있어, 나도 너도!",
-    "잠깐 쉬는 것도 괜찮아",
-    "기록은 곧 힘이야!",
-    "늦었다고 생각할 때가 진짜 너무 늦었다..",
-    "오늘도 스스로를 위해 \n노력한 당신, 정말 멋져요!",
-    "한 달 뒤 멋진 나를 기대해요!",
-    "하루하루 쌓인 당신의 습관이,\n한달이의 날개가 되고 있어요!",
-    "잠깐 쉬어도 괜찮아요. 중요한 건 \n다시 일어나는 당신의 마음이에요.",
-    "오늘의 작은 실천이 내일의\n 큰 변화를 만들어요.",
-    "포기하지 않는 당신을 한달이는\n 누구보다 자랑스러워해요!",
-    "지금 이 순간도 당신은 성장하고 있어요.\n 느껴지지 않아도 괜찮아요.",
-    "완벽하지 않아도 괜찮아요.\n 꾸준함이 당신을 빛나게 해요.",
-    "오늘도 자기 자신을 위해 \n시간을 낸 당신, 정말 대단해요!",
-    "슬픈 날도, 기쁜 날도 당신의 기록은\n 한달이에게 소중해요.",
-    "한 걸음 느려도 괜찮아요. 멈추지 않는\n 당신이 최고예요.",
-    "내일도 함께해요. 한달이는\n 항상 당신 편이에요.",
-  ];
-  const getRandomQuote = () => quotes[Math.floor(Math.random() * quotes.length)];
-
-  // ====== 서버 연동 ======
-  const fetchHandaliStatus = async () => {
-    try {
-      const token = await AsyncStorage.getItem("authToken");
-      if (!token) {
-        Alert.alert("세션 만료", "다시 로그인해주세요.");
-        navigation.navigate("Login");
-        return;
-      }
-
-      const response = await fetch(`${API_BASE_URL}/handalis/view`, {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (response.status === 401) {
-        await AsyncStorage.removeItem("authToken");
-        Alert.alert("세션 만료", "로그인이 만료되었습니다. 다시 로그인해주세요.");
-        navigation.navigate("Login");
-        return;
-      }
-
-      if (response.ok) {
-        const data = await response.json();
-
-        setStats({
-          activity_value: Number(data.activity_value ?? 0),          intelligence_value: Number(data.intelligence_value ?? 0),
-          art_value: Number(data.art_value ?? 0),
-        });
-        setNickname(data.nickname);
-        setDaysSinceCreated(data.days_since_created);
-        setTotalCoin(data.total_coin);
-
-        if (data.handali_img && characterImageMap[data.handali_img]) {
-          setHandaliImage(characterImageMap[data.handali_img]);
-        } else {
-          setHandaliImage(characterImageMap["default_character.png"]);
-        }
-
-        const applied = {
-          소파: data.sofa_img?.includes("none") ? null : data.sofa_img,
-          배경: data.background_img?.includes("none") ? null : data.background_img,
-          벽장식: data.wall_img?.includes("none") ? null : data.wall_img,
-          바닥장식: data.floor_img?.includes("none") ? null : data.floor_img,
-        };
-        setAppliedItems(applied);
-      } else if (response.status === 404) {
-        checkLastHandali();
-      } else {
-        Alert.alert("오류", `오류 코드: ${response.status}`);
-      }
-    } catch (error) {
-      console.error("한달이 상태 조회 오류:", error);
-      Alert.alert("오류", "네트워크 오류가 발생했습니다.");
-      setHandaliImage(characterImageMap["default_character.png"]);
-    }
-  };
-
-  const checkLastHandali = async () => {
-    try {
-      const token = await AsyncStorage.getItem("authToken");
-      const response = await fetch(`${API_BASE_URL}/handalis/recent`, {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        navigation.navigate("JobScreen", { handaliId: data.handali_id });
-      } else if (response.status === 404) {
-        navigation.navigate("CategorySelectScreen");
-      } else {
-        Alert.alert("오류", "서버 오류가 발생했습니다.");
-      }
-    } catch (error) {
-      console.error("마지막 생성된 한달이 조회 오류:", error);
-      navigation.navigate("CategorySelectScreen");
-    }
-  };
-
-  const handleLogout = async () => {
-    Alert.alert("로그아웃", "정말 로그아웃 하시겠습니까?", [
-      { text: "취소", style: "cancel" },
-      {
-        text: "확인",
-        onPress: async () => {
-          try {
-            const token = await AsyncStorage.getItem("authToken");
-            if (token) {
-              await fetch(`${API_BASE_URL}/logout`, {
-                method: "POST",
-                headers: { Authorization: `Bearer ${token}` },
-              });
-            }
-          } catch (e) {}
-          await AsyncStorage.removeItem("authToken");
-          navigation.reset({ index: 0, routes: [{ name: "Login" }] });
-        },
-      },
-    ]);
-  };
-
-  const handleDeleteAccount = async () => {
-    const confirm = await new Promise((resolve) => {
-      Alert.alert(
-        "회원 탈퇴",
-        "정말로 탈퇴하시겠습니까?",
-        [
-          { text: "취소", style: "cancel", onPress: () => resolve(false) },
-          { text: "탈퇴", style: "destructive", onPress: () => resolve(true) },
-        ],
-        { cancelable: true }
-      );
-    });
-
-    if (!confirm) return;
-
-    try {
-      const token = await AsyncStorage.getItem("authToken");
-      const response = await fetch(`${API_BASE_URL}/delete`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        Alert.alert("탈퇴 완료", "정상적으로 탈퇴되었습니다.");
-        await AsyncStorage.removeItem("authToken");
-        navigation.reset({
-          index: 0,
-          routes: [{ name: "Login" }],
-        });
-      } else {
-        const text = await response.text();
-        Alert.alert("에러", `탈퇴 실패: ${text}`);
-      }
-    } catch (error) {
-      console.error(error);
-      Alert.alert("에러", "네트워크 오류가 발생했습니다.");
-    }
-  };
-
-  // ====== 일일 퀘스트 (시간 조건 제거 버전) ======
-  const debounce = (fn, delay=600) => {
+  const debounce = (fn, delay = 600) => {
     let timer;
     return (...args) => {
       if (timer) return;
       fn(...args);
-      timer = setTimeout(() => { timer = null; }, delay);
+      timer = setTimeout(() => {
+        timer = null;
+      }, delay);
     };
   };
 
@@ -266,10 +92,19 @@ export default function MainScreen({ navigation }) {
       coin: q.coin,
       match: q.match,
       date: todayStr,
-      status: "AVAILABLE",      // AVAILABLE | ACCEPTED | COMPLETABLE | COMPLETED
+      status: "AVAILABLE", // AVAILABLE | ACCEPTED | COMPLETABLE | COMPLETED
       localToken: null,
       recordedAt: null,
     };
+  };
+
+  const resetTodayQuest = async () => {
+    await AsyncStorage.removeItem("daily_quest");
+    const newQuest = pickRandomQuest();
+    setQuest(newQuest);
+    await AsyncStorage.setItem("daily_quest", JSON.stringify(newQuest));
+    Alert.alert("리셋", "오늘 퀘스트가 초기화되었습니다.");
+    setQuestPanelOpen(true);
   };
 
   const loadOrCreateTodayQuest = async () => {
@@ -326,7 +161,6 @@ export default function MainScreen({ navigation }) {
 
     try {
       setQuestLoading(true);
-
       const token = await AsyncStorage.getItem("authToken");
       const res = await fetch(`${API_BASE_URL}/quest-award`, {
         method: "POST",
@@ -345,9 +179,7 @@ export default function MainScreen({ navigation }) {
       const next = { ...quest, status: "COMPLETED", localToken: null };
       setQuest(next);
       await AsyncStorage.setItem("daily_quest", JSON.stringify(next));
-
       await fetchHandaliStatus();
-
       Alert.alert("축하!", `일일 퀘스트 보상 ${quest.coin}코인을 받았어요!`);
     } catch (e) {
       Alert.alert("오류", "보상 지급 중 문제가 발생했어요.");
@@ -356,7 +188,89 @@ export default function MainScreen({ navigation }) {
     }
   }, 800);
 
-  // ====== 화면 포커스 시 데이터 갱신 ======
+  // ===== 서버 연동 =====
+  const fetchHandaliStatus = async () => {
+    try {
+      const token = await AsyncStorage.getItem("authToken");
+      if (!token) {
+        Alert.alert("세션 만료", "다시 로그인해주세요.");
+        navigation.navigate("Login");
+        return;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/handalis/view`, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.status === 401) {
+        await AsyncStorage.removeItem("authToken");
+        Alert.alert("세션 만료", "로그인이 만료되었습니다. 다시 로그인해주세요.");
+        navigation.navigate("Login");
+        return;
+      }
+
+      if (response.ok) {
+        const data = await response.json();
+
+        setStats({
+          activity_value: Number(data.activity_value ?? 0),
+          intelligence_value: Number(data.intelligence_value ?? 0),
+          art_value: Number(data.art_value ?? 0),
+        });
+        setNickname(data.nickname);
+        setDaysSinceCreated(data.days_since_created);
+        setTotalCoin(data.total_coin);
+
+        if (data.handali_img && characterImageMap[data.handali_img]) {
+          setHandaliImage(characterImageMap[data.handali_img]);
+        } else {
+          setHandaliImage(characterImageMap["default_character.png"]);
+        }
+
+        const applied = {
+          소파: data.sofa_img?.includes("none") ? null : data.sofa_img,
+          배경: data.background_img?.includes("none") ? null : data.background_img,
+          벽장식: data.wall_img?.includes("none") ? null : data.wall_img,
+          바닥장식: data.floor_img?.includes("none") ? null : data.floor_img,
+        };
+        setAppliedItems(applied);
+      } else if (response.status === 404) {
+        checkLastHandali();
+      } else {
+        Alert.alert("오류", `오류 코드: ${response.status}`);
+      }
+    } catch (error) {
+      console.error("한달이 상태 조회 오류:", error);
+      Alert.alert("오류", "네트워크 오류가 발생했습니다.");
+      setHandaliImage(characterImageMap["default_character.png"]);
+    }
+  };
+
+  const checkLastHandali = async () => {
+    try {
+      const token = await AsyncStorage.getItem("authToken");
+      const response = await fetch(`${API_BASE_URL}/handalis/recent`, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        navigation.navigate("JobScreen", { handaliId: data.handali_id });
+      } else if (response.status === 404) {
+        navigation.navigate("CategorySelectScreen");
+      } else {
+        Alert.alert("오류", "서버 오류가 발생했습니다.");
+      }
+    } catch (error) {
+      console.error("마지막 생성된 한달이 조회 오류:", error);
+      navigation.navigate("CategorySelectScreen");
+    }
+  };
+
+  // ===== 화면 포커스 시 데이터 갱신 =====
+  const intervalRef = useRef(null);
   useFocusEffect(
     React.useCallback(() => {
       fetchHandaliStatus();
@@ -367,17 +281,135 @@ export default function MainScreen({ navigation }) {
     }, [])
   );
 
-  // ✅ 미니바: value만 사용
-  const StatMiniBar = ({ label, value }) => {
+  // ===== 캐릭터 말풍선 =====
+  const [quoteVisible, setQuoteVisible] = useState(false);
+  const quotes = [
+    "오늘도 수고했어!",
+    "한 걸음 한 걸음이 모여~",
+    "성장하고 있어, 나도 너도!",
+    "잠깐 쉬는 것도 괜찮아",
+    "기록은 곧 힘이야!",
+    "늦었다고 생각할 때가 진짜 너무 늦었다..",
+    "오늘도 스스로를 위해 \n노력한 당신, 정말 멋져요!",
+    "한 달 뒤 멋진 나를 기대해요!",
+    "하루하루 쌓인 당신의 습관이,\n한달이의 날개가 되고 있어요!",
+    "잠깐 쉬어도 괜찮아요. 중요한 건 \n다시 일어나는 당신의 마음이에요.",
+    "오늘의 작은 실천이 내일의\n 큰 변화를 만들어요.",
+    "포기하지 않는 당신을 한달이는\n 누구보다 자랑스러워해요!",
+    "지금 이 순간도 당신은 성장하고 있어요.\n 느껴지지 않아도 괜찮아요.",
+    "완벽하지 않아도 괜찮아요.\n 꾸준함이 당신을 빛나게 해요.",
+    "오늘도 자기 자신을 위해 \n시간을 낸 당신, 정말 대단해요!",
+    "슬픈 날도, 기쁜 날도 당신의 기록은\n 한달이에게 소중해요.",
+    "한 걸음 느려도 괜찮아요. 멈추지 않는\n 당신이 최고예요.",
+    "내일도 함께해요. 한달이는\n 항상 당신 편이에요.",
+  ];
+  const getRandomQuote = () => quotes[Math.floor(Math.random() * quotes.length)];
+
+  // ===== 미니 스탯 바 컴포넌트 =====
+  const StatMiniBar = ({ label, value, icon }) => {
     const { level, percent } = getLevelProgressByValue(value);
     return (
-      <View style={styles.miniRow}>
-        <Text style={styles.miniLabel}>{label} Lv.{level}</Text>
-        <View style={styles.miniBarBg}>
-          <View style={[styles.miniBarFill, { width: `${percent}%` }]} />
+      <View style={styles.statRow}>
+        <Image source={icon} style={styles.statIcon} />
+        <Text style={styles.statLabel}>{label}</Text>
+
+        <View style={styles.statBarBg}>
+          <View style={[styles.statBarFill, { width: `${percent}%` }]} />
         </View>
+
+        <Text style={styles.statLevel}>Lv.{level}</Text>
       </View>
     );
+  };
+
+  // ====== 우하단 FAB (기록소/도감) + 퀘스트 버튼 동시 상승 ======
+  const [fabOpen, setFabOpen] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);        // ✅ 애니메이션 잠금
+  const fabAnim = useRef(new Animated.Value(0)).current; // 0 닫힘, 1 열림
+
+  const toggleFab = () => {
+    if (isAnimating) return;             
+    const next = !fabOpen;               
+    setFabOpen(next);                     
+    setIsAnimating(true);
+
+    Animated.timing(fabAnim, {
+      toValue: next ? 1 : 0,
+      duration: 220,
+      useNativeDriver: true,             
+    }).start(() => {
+      setIsAnimating(false);             
+    });
+  };
+
+  const actions = [
+    { key: "summary", label: "기록소", icon: require("../assets/icons/summary.png"),
+      onPress: () => navigation.navigate("Summary") },
+    { key: "dogam",   label: "도감",   icon: require("../assets/icons/dogam.png"),
+      onPress: () => navigation.navigate("Dogam") },
+  ];
+  const gap = hp("7%");
+  const rise = gap * actions.length + hp("2%");
+
+  const handleLogout = async () => {
+    Alert.alert("로그아웃", "정말 로그아웃 하시겠습니까?", [
+      { text: "취소", style: "cancel" },
+      {
+        text: "확인",
+        onPress: async () => {
+          try {
+            const token = await AsyncStorage.getItem("authToken");
+            if (token) {
+              await fetch(`${API_BASE_URL}/logout`, {
+                method: "POST",
+                headers: { Authorization: `Bearer ${token}` },
+              });
+            }
+          } catch (e) {}
+          await AsyncStorage.removeItem("authToken");
+          navigation.reset({ index: 0, routes: [{ name: "Login" }] });
+        },
+      },
+    ]);
+  };
+
+  const handleDeleteAccount = async () => {
+    const confirm = await new Promise((resolve) => {
+      Alert.alert(
+        "회원 탈퇴",
+        "정말로 탈퇴하시겠습니까?",
+        [
+          { text: "취소", style: "cancel", onPress: () => resolve(false) },
+          { text: "탈퇴", style: "destructive", onPress: () => resolve(true) },
+        ],
+        { cancelable: true }
+      );
+    });
+
+    if (!confirm) return;
+
+    try {
+      const token = await AsyncStorage.getItem("authToken");
+      const response = await fetch(`${API_BASE_URL}/delete`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        Alert.alert("탈퇴 완료", "정상적으로 탈퇴되었습니다.");
+        await AsyncStorage.removeItem("authToken");
+        navigation.reset({ index: 0, routes: [{ name: "Login" }] });
+      } else {
+        const text = await response.text();
+        Alert.alert("에러", `탈퇴 실패: ${text}`);
+      }
+    } catch (error) {
+      console.error(error);
+      Alert.alert("에러", "네트워크 오류가 발생했습니다.");
+    }
   };
 
   return (
@@ -385,55 +417,94 @@ export default function MainScreen({ navigation }) {
       source={require("../assets/storeItems/배경없음.png")}
       style={styles.background}
       resizeMode="cover"
+      imageStyle={styles.backgroundImage}
     >
       <View style={styles.container}>
+        {/* 상단바: 코인 + 설정 */}
         <View style={styles.topBar}>
-          <TouchableOpacity onPress={() => navigation.navigate("JobScreen")}>
-            <Text>직업 획득</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate("GrowthScreen")}>
-            <Text>성장</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.coinContainer} onLongPress={resetTodayQuest}>
-            <Image source={require("../assets/coin.png")} style={styles.coinIcon} />
-            <Text style={styles.coinText}>{totalCoin}</Text>
-          </TouchableOpacity>
-
-          <View style={styles.topIcons}>
-            <TouchableOpacity onPress={() => navigation.navigate("Store")}>
-              <Image source={require("../assets/store_v2.png")} style={styles.icon} />
+          {/* 왼쪽 묶음: 코인 + 프로필 */}
+          <View style={styles.topLeftCluster}>
+            {/* 코인 알약 */}
+            <TouchableOpacity style={styles.coinPill} onLongPress={resetTodayQuest}>
+              <Image source={require("../assets/icons/coin.png")} style={styles.coinIcon} />
+              <Text style={styles.coinValue}>{totalCoin}</Text>
+              <Text style={styles.coinLabel}>coin</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={() => setModalVisible(true)}>
-              <Image source={require("../assets/settings.png")} style={styles.icon} />
-            </TouchableOpacity>
+            {/* n일차/닉네임 박스 */}
+            <View style={styles.profilePill}>
+              <Text style={styles.profileText}>
+                {daysSinceCreated}일차 {nickname || "별명 없음"}
+              </Text>
+            </View>
           </View>
+
+          {/* 설정 알약 */}
+          <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.settingsPill}>
+            <Image source={require("../assets/icons/setting.png")} style={styles.settingsIcon} />
+          </TouchableOpacity>
         </View>
 
+        {/* 미니 스탯 카드 */}
+        <View style={styles.miniStatsCard}>
+          <StatMiniBar
+            label="활동"
+            value={stats.activity_value}
+            icon={require("../assets/icons/activity.png")}
+          />
+          <StatMiniBar
+            label="지능"
+            value={stats.intelligence_value}
+            icon={require("../assets/icons/intelligence.png")}
+          />
+          <StatMiniBar
+            label="예술"
+            value={stats.art_value}
+            icon={require("../assets/icons/art.png")}
+          />
+        </View>
+
+        {/* 설정 모달 */}
         <Modal
           animationType="slide"
-          transparent={true}
+          transparent
           visible={modalVisible}
           onRequestClose={() => setModalVisible(false)}
         >
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
+              <TouchableOpacity
+                onPress={() => { setModalVisible(false); navigation.navigate("JobScreen"); }}
+                style={styles.button}
+              >
+                <Text style={styles.buttonText}>직업 화면</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => { setModalVisible(false); navigation.navigate("GrowthScreen"); }}
+                style={styles.button}
+              >
+                <Text style={styles.buttonText}>성장 화면</Text>
+              </TouchableOpacity>
+
               <TouchableOpacity onPress={handleLogout} style={styles.button}>
                 <Text style={styles.buttonText}>로그아웃</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={handleDeleteAccount} style={styles.button}>
                 <Text style={styles.buttonText}>회원탈퇴</Text>
               </TouchableOpacity>
+
               <TouchableOpacity
                 onPress={async () => {
                   await AsyncStorage.removeItem("tutorial_seen");
+                  setModalVisible(false);
                   navigation.replace("TutorialScreen");
                 }}
                 style={styles.button}
               >
                 <Text style={styles.buttonText}>튜토리얼 보기</Text>
               </TouchableOpacity>
+
               <TouchableOpacity
                 onPress={() => setModalVisible(false)}
                 style={styles.modalCloseButton}
@@ -444,42 +515,38 @@ export default function MainScreen({ navigation }) {
           </View>
         </Modal>
 
-        {/* ✅ 미니 스탯 바 (값 기준 계산) */}
-        <View style={styles.miniStatsWrap}>
-          <StatMiniBar label="활동" value={stats.activity_value} />
-          <StatMiniBar label="지능" value={stats.intelligence_value} />
-          <StatMiniBar label="예술" value={stats.art_value} />
-        </View>
-
+        {/* 본문 콘텐츠 */}
         <View style={styles.content}>
-          <Text style={styles.dayText}>
-            {daysSinceCreated}일차, {nickname || "별명 없음"}
-          </Text>
-
           {/* 벽장식 */}
           {appliedItems["벽장식"] && (
             <Image
-              source={storeItemImageMap[appliedItems["벽장식"].replace(/ /g, "_")] || storeItemImageMap.default}
+              source={
+                storeItemImageMap[appliedItems["벽장식"].replace(/ /g, "_")] ||
+                storeItemImageMap.default
+              }
               style={styles.window}
             />
           )}
 
+          {/* 바닥장식 */}
           {appliedItems["바닥장식"] && (
             <Image
-              source={storeItemImageMap[appliedItems["바닥장식"].replace(/ /g, "_")] || storeItemImageMap.default}
+              source={
+                storeItemImageMap[appliedItems["바닥장식"].replace(/ /g, "_")] ||
+                storeItemImageMap.default
+              }
               style={styles.floor}
             />
           )}
 
-          {/* 소파 */}
+          {/* 소파/의자 */}
           {appliedItems["소파"] && (
             <Image
-              source={storeItemImageMap[appliedItems["소파"].replace(/ /g, "_")] || storeItemImageMap.default}
-              style={
-                appliedItems["소파"].includes("의자")
-                  ? styles.chair
-                  : styles.sofa
+              source={
+                storeItemImageMap[appliedItems["소파"].replace(/ /g, "_")] ||
+                storeItemImageMap.default
               }
+              style={appliedItems["소파"].includes("의자") ? styles.chair : styles.sofa}
             />
           )}
 
@@ -500,88 +567,239 @@ export default function MainScreen({ navigation }) {
           </TouchableOpacity>
         </View>
 
-        {/* 일일 퀘스트 FAB (완료된 날은 숨김) */}
-        {!shouldHideQuestUI && (
-          <TouchableOpacity
-            style={styles.questFab}
-            activeOpacity={0.85}
-            onPress={() => setQuestPanelOpen(v => !v)}
-            onLongPress={async () => {
-              await AsyncStorage.removeItem("daily_quest");
-              const newQuest = pickRandomQuest();
-              setQuest(newQuest);
-              await AsyncStorage.setItem("daily_quest", JSON.stringify(newQuest));
-              Alert.alert("리셋", "오늘 퀘스트가 초기화되었습니다.");
-            }}
-          >
-            <Text style={styles.questFabMark}>!</Text>
-          </TouchableOpacity>
+        {/* === 우하단 FAB & 액션 === */}
+        {(fabOpen || isAnimating) && (
+          <Pressable
+            style={styles.fabBackdrop}
+            pointerEvents={fabOpen && !isAnimating ? "auto" : "none"}  // ✅ 이동 중 닫기 탭 방지
+            onPress={toggleFab}
+          />
         )}
 
-        {/* 일일 퀘스트 패널 */}
-        {(!shouldHideQuestUI) && questPanelOpen && quest && (
-          <View style={styles.questPanel}>
-            <Text style={styles.questTitle}>일일 퀘스트</Text>
-            <Text style={styles.questContent}>{quest.title}</Text>
+        {/* FAB 메인 버튼(우하단, 네비 위) */}
+        <TouchableOpacity
+          style={[
+            styles.fabMain,
+            { backgroundColor: fabOpen ? "#84CBFE" : "#FFFFFF" },
+          ]}
+          onPress={toggleFab}
+          activeOpacity={0.9}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <Image source={require("../assets/icons/menu.png")} style={styles.fabMainIcon} />
+        </TouchableOpacity>
 
-            {quest.status === "AVAILABLE" && (
-              <TouchableOpacity
-                style={[styles.questBtn, { backgroundColor: "#76D6F4" }]}
-                onPress={handleAcceptQuest}
-              >
-                <Text style={styles.questBtnText}>수락</Text>
-              </TouchableOpacity>
-            )}
+        {/* 펼쳐지는 액션: 기록소/도감 */}
+        {(fabOpen || isAnimating) && (
+          <View
+            pointerEvents={fabOpen && !isAnimating ? "box-none" : "none"}  // ✅ 닫힘/이동 중 터치 차단
+            style={styles.fabActionsWrap}
+          >
+            {actions.map((a, idx) => {
+              const translateY = fabAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0, -gap * (idx + 1)],
+              });
+              const opacity = fabAnim.interpolate({
+                inputRange: [0, 0.6, 1],
+                outputRange: [0, 0.9, 1],
+              });
+              const scale = fabAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0.9, 1],
+              });
 
-            {(quest.status === "ACCEPTED" && quest?.match?.type === "ANY_RECORD") && (
-              <TouchableOpacity
-                style={[styles.questBtn, { backgroundColor: "#76D6F4" }]}
-                onPress={() => navigation.navigate("Record")}
-              >
-                <Text style={styles.questBtnText}>기록하러 가기</Text>
-              </TouchableOpacity>
-            )}
-
-            {quest.status === "COMPLETABLE" && (
-              <TouchableOpacity
-                style={[styles.questBtn, { backgroundColor: "#4CD964" }]}
-                onPress={handleCompleteQuest}
-                disabled={questLoading}
-              >
-                <Text style={styles.questBtnText}>
-                  {questLoading ? "지급 중..." : "완료"}
-                </Text>
-              </TouchableOpacity>
-            )}
-
-            {quest.status === "COMPLETED" && (
-              <View style={[styles.questBtn, { backgroundColor: "#C7C7CC" }]}>
-                <Text style={styles.questBtnText}>완료됨</Text>
-              </View>
-            )}
-
-            <TouchableOpacity onPress={() => setQuestPanelOpen(false)} style={styles.questClose}>
-              <Text style={styles.questCloseText}>닫기</Text>
-            </TouchableOpacity>
+              return (
+                <Animated.View
+                  key={a.key}
+                  style={[
+                    styles.fabActionItem,
+                    { transform: [{ translateY }, { scale }], opacity },
+                  ]}
+                >
+                  <View style={styles.fabLabelBubbleRight}>
+                    <Text style={styles.fabLabelText}>{a.label}</Text>
+                  </View>
+                  <TouchableOpacity
+                    style={styles.fabIconBtn}
+                    activeOpacity={0.85}
+                    disabled={!fabOpen || isAnimating}               // ✅ 애니메이션 중 비활성
+                    onPress={() => {
+                      toggleFab();
+                      setTimeout(() => a.onPress(), 160);
+                    }}
+                  >
+                    <Image source={a.icon} style={styles.fabIcon} />
+                  </TouchableOpacity>
+                </Animated.View>
+              );
+            })}
           </View>
         )}
 
+        {/* 퀘스트 버튼: FAB 열림에 맞춰 함께 위로 이동 (우하단 기준) */}
+        <Animated.View
+          pointerEvents="box-none"
+          style={[
+            styles.questAnchor,
+            {
+              transform: [
+                {
+                  translateY: fabAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, -rise],
+                  }),
+                },
+              ],
+            },
+          ]}
+        >
+          {!shouldHideQuestUI && (
+            <TouchableOpacity
+              style={[
+                styles.questFabAbs,
+                { backgroundColor: questPanelOpen ? "#84CBFE" : "#FFFFFF" },
+              ]}
+              activeOpacity={0.85}
+              disabled={isAnimating}                                // ✅ 이동 중 클릭 금지
+              onPress={() => setQuestPanelOpen(v => !v)}
+              onLongPress={async () => {
+                await AsyncStorage.removeItem("daily_quest");
+                const newQuest = pickRandomQuest();
+                setQuest(newQuest);
+                await AsyncStorage.setItem("daily_quest", JSON.stringify(newQuest));
+                Alert.alert("리셋", "오늘 퀘스트가 초기화되었습니다.");
+              }}
+              hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+            >
+              <Image
+                source={require("../assets/icons/quest.png")}
+                style={styles.questIcon}
+              />
+            </TouchableOpacity>
+          )}
+
+          {(!shouldHideQuestUI) && questPanelOpen && quest && (
+            <View
+              style={styles.questPanelRightAbs}
+              pointerEvents={isAnimating ? "none" : "auto"}          // ✅ 이동 중 패널 조작 금지
+            >
+              {/* ── (A) 헤더: 아이콘 + 타이틀 + 상태칩 ── */}
+              <View style={styles.qHeaderRow}>
+                <View style={styles.qHeaderLeft}>
+                  <Image source={require("../assets/icons/quest.png")} style={styles.qHeaderIcon} />
+                  <Text style={styles.qHeaderTitle}>일일 퀘스트</Text>
+                </View>
+
+                <View
+                  style={[
+                    styles.qStatusChip,
+                    quest.status === "AVAILABLE"   && { backgroundColor: "#EAF6FF" },
+                    quest.status === "ACCEPTED"    && { backgroundColor: "#FFF7E8" },
+                    quest.status === "COMPLETABLE" && { backgroundColor: "#EFFFF3" },
+                    quest.status === "COMPLETED"   && { backgroundColor: "#F1F1F1" },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.qStatusText,
+                      quest.status === "AVAILABLE"   && { color: "#2D5D6B" },
+                      quest.status === "ACCEPTED"    && { color: "#B66600" },
+                      quest.status === "COMPLETABLE" && { color: "#0F8A3A" },
+                      quest.status === "COMPLETED"   && { color: "#555" },
+                    ]}
+                  >
+                    {quest.status === "AVAILABLE" ? "대기"
+                      : quest.status === "ACCEPTED" ? "진행중"
+                      : quest.status === "COMPLETABLE" ? "완료 가능"
+                      : "완료"}
+                  </Text>
+                </View>
+              </View>
+
+              {/* ── (B) 본문: 내용 + 보상 ── */}
+              <Text style={styles.qBodyText}>{quest.title}</Text>
+
+              <View style={styles.qRewardRow}>
+                <Image source={require("../assets/icons/coin.png")} style={styles.qRewardIcon} />
+                <Text style={styles.qRewardText}>{quest.coin} 코인</Text>
+              </View>
+
+              <View style={styles.qDivider} />
+
+              {/* ── (C) CTA: 상태별 버튼 ── */}
+              {quest.status === "AVAILABLE" && (
+                <TouchableOpacity
+                  style={[styles.qPrimaryBtn, styles.qBtnBlue]}
+                  onPress={handleAcceptQuest}
+                  activeOpacity={0.9}
+                >
+                  <Text style={styles.qPrimaryBtnText}>수락</Text>
+                </TouchableOpacity>
+              )}
+
+              {(quest.status === "ACCEPTED" && quest?.match?.type === "ANY_RECORD") && (
+                <TouchableOpacity
+                  style={[styles.qPrimaryBtn, styles.qBtnBlue]}
+                  onPress={() => {
+                    setQuestPanelOpen(false);
+                    navigation.navigate("Record");
+                  }}
+                  activeOpacity={0.9}
+                >
+                  <Text style={styles.qPrimaryBtnText}>기록하러 가기</Text>
+                </TouchableOpacity>
+              )}
+
+              {quest.status === "COMPLETABLE" && (
+                <TouchableOpacity
+                  style={[styles.qPrimaryBtn, styles.qBtnGreen]}
+                  onPress={handleCompleteQuest}
+                  disabled={questLoading}
+                  activeOpacity={0.9}
+                >
+                  <Text style={styles.qPrimaryBtnText}>
+                    {questLoading ? "지급 중..." : "완료"}
+                  </Text>
+                </TouchableOpacity>
+              )}
+
+              {quest.status === "COMPLETED" && (
+                <View style={[styles.qPrimaryBtn, styles.qBtnGray]}>
+                  <Text style={styles.qPrimaryBtnText}>완료됨</Text>
+                </View>
+              )}
+            </View>
+          )}
+
+        </Animated.View>
+
+        {/* 하단 네비: 좌=상점 / 중=기록 / 우=아파트 */}
         <View style={styles.bottomNav}>
-          <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate("Summary")} >
-            <Image source={require("../assets/summary.png")} style={styles.navIcon} />
-            <Text style={styles.navText}>기록소</Text>
+          <TouchableOpacity
+            style={styles.navButton}
+            onPress={() => navigation.navigate("Store")}
+          >
+            <Image source={require("../assets/icons/store.png")} style={styles.navIcon} />
+            <Text style={styles.navText}>상점</Text>
           </TouchableOpacity>
+
           <TouchableOpacity
             style={styles.recordButton}
             onPress={() => navigation.navigate("Record")}
+            activeOpacity={0.9}
           >
-            <Image source={require("../assets/record.png")} style={styles.recordIcon} />
+            <Image source={require("../assets/icons/record.png")} style={styles.recordIcon} />
           </TouchableOpacity>
+
           <TouchableOpacity
             style={styles.navButton}
             onPress={() => navigation.navigate("ApartScreen")}
           >
-            <Image source={require("../assets/apartment_nav.png")} style={styles.navIcon} />
+            <Image
+              source={require("../assets/icons/apartment_nav.png")}
+              style={styles.navIcon}
+            />
             <Text style={styles.navText}>아파트</Text>
           </TouchableOpacity>
         </View>
@@ -593,51 +811,86 @@ export default function MainScreen({ navigation }) {
 const styles = StyleSheet.create({
   background: {
     flex: 1,
-    width: wp('100%'),
-    height: hp('100%'),
+    width: wp("100%"),
+    height: hp("100%"),
+  },
+  backgroundImage: {
+    width: wp("102%"),
+    left: -wp("1%"),
   },
   container: {
     flex: 1,
-    position: 'relative',
+    position: "relative",
     marginBottom: hp("2%"),
   },
   topBar: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: wp('5%'),
-    marginTop: hp('5%'),
+    paddingHorizontal: wp("5%"),
+    marginTop: hp("5%"),
+  },
+
+  topLeftCluster: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: wp("2.5%"),
   },
   coinContainer: {
-    width: wp('35%'),
-    height: wp('10%'),
-    borderRadius: wp('3%'),
+    width: wp("35%"),
+    height: wp("10%"),
+    borderRadius: wp("3%"),
     backgroundColor: "rgba(217, 217, 217, 0.48)",
     flexDirection: "row",
     alignItems: "center",
   },
-  coinIcon: {
-    width: wp('7%'),
-    height: wp('7%'),
-    marginLeft: wp('2%'),
-    marginRight: wp('2%'),
+  coinPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: wp("4%"),
+    height: wp("10%"),
+    borderRadius: wp("3%"),
+    backgroundColor: "rgba(255,255,255,0.9)",
   },
-  coinText: {
-    fontSize: hp('2.2%'),
-    color: "#000",
-    marginLeft: wp('2%'),
+  coinIcon: {
+    width: wp("6.2%"),
+    height: wp("6.2%"),
+    marginRight: wp("6%"),
+    resizeMode: "contain",
+  },
+  coinLabel: {
+    fontSize: wp("3.6%"),
+    color: "#000000",
+    marginRight: wp("2%"),
     fontFamily: "Jua-Regular",
   },
-  topIcons: {
-    flexDirection: "row",
-    gap: wp('5%'),
+  coinValue: {
+    fontSize: wp("4%"),
+    color: "#1D1D1D",
+    fontFamily: "Jua-Regular",
+    marginRight: wp("4%"),
   },
-  icon: {
-    width: wp('10%'),
-    height: wp('10%'),
+  settingsPill: {
+    height: wp("12%"),
+    width: wp("12%"),
+    borderRadius: wp("6%"),
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.9)",
+  },
+  settingsIcon: {
+    width: wp("15%"),
+    height: wp("15%"),
+    resizeMode: "contain",
+  },
+  // 모달 버튼 래퍼
+  button: {
+    width: "100%",
+    paddingVertical: hp("1.2%"),
+    alignItems: "center",
   },
   buttonText: {
-    fontSize: wp('4%'),
+    fontSize: wp("4%"),
     color: "red",
     fontFamily: "Jua-Regular",
   },
@@ -648,10 +901,10 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.4)",
   },
   modalContent: {
-    width: wp('70%'),
+    width: wp("70%"),
     backgroundColor: "#fff",
-    borderRadius: wp('2%'),
-    padding: wp('5%'),
+    borderRadius: wp("2%"),
+    padding: wp("5%"),
     alignItems: "center",
   },
   modalCloseButtonText: {
@@ -660,93 +913,103 @@ const styles = StyleSheet.create({
     fontFamily: "Jua-Regular",
   },
   modalCloseButton: {
-    marginTop: hp('2%'),
+    marginTop: hp("2%"),
     backgroundColor: "#FFE98A",
     width: "100%",
-    padding: hp('1.5%'),
-    borderRadius: wp('10%'),
+    padding: hp("1.5%"),
+    borderRadius: wp("10%"),
+    alignItems: "center",
   },
-  content: {
-    flex: 1,
+  content: { flex: 1 },
+  profilePill: {
+    paddingHorizontal: wp("3.5%"),
+    height: wp("10%"),
+    borderRadius: wp("5%"),
+    justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.9)",
   },
-  dayText: {
-    fontSize: wp('5%'),
+  profileText: {
+    fontSize: wp("4%"),
     color: "#000",
-    position: "absolute",
-    right: wp('5%'),
-    top: hp('1%'),
     fontFamily: "Jua-Regular",
   },
   characterContainer: {
     position: "absolute",
-    top: "27.5%",
-    left: "10%",
-    transform: [
-      { translateX: wp('11%') },
-      { translateY: wp('35%') },
-    ],
+    top: hp("12%"),
+    left: wp("6%"),
+    transform: [{ translateX: wp("11%") }, { translateY: wp("35%") }],
     zIndex: 2,
   },
   character: {
-    width: wp('60%'),
-    height: hp('30%'),
+    width: wp("60%"),
+    height: hp("30%"),
     resizeMode: "contain",
   },
   sofa: {
-    width: wp('100%'),
-    height: wp('60%'),
+    width: wp("100%"),
+    height: wp("60%"),
     position: "absolute",
-    top: hp('38%'),
-    left: wp('26%'),
+    top: hp("38%"),
+    left: wp("26%"),
     zIndex: 1,
     resizeMode: "contain",
   },
   chair: {
-    width: wp('50%'),
-    height: wp('40%'),
+    width: wp("50%"),
+    height: wp("40%"),
     position: "absolute",
-    top: hp('40%'),
-    left: wp('60%'),
+    top: hp("40%"),
+    left: wp("60%"),
     zIndex: 1,
     resizeMode: "contain",
   },
   window: {
-    width: wp('40%'),
-    height: wp('30%'),
+    width: wp("40%"),
+    height: wp("30%"),
     position: "absolute",
-    top: hp('20%'),
-    left: wp('5%'),
+    top: hp("20%"),
+    left: wp("5%"),
     resizeMode: "contain",
   },
   floor: {
-    width: wp('50%'),
-    height: wp('50%'),
+    width: wp("50%"),
+    height: wp("50%"),
     position: "absolute",
-    top: hp('40%'),
-    left: wp('-10%'),
+    top: hp("40%"),
+    left: wp("-10%"),
     resizeMode: "contain",
   },
+
+  /* 하단 네비 */
   bottomNav: {
     position: "absolute",
-    bottom: hp('1.5%'),
-    width: "100%",
-    height: hp('8%'),
+    bottom: hp("1.5%"),
+    width: "80%",
+    height: hp("7%"),
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: wp('15%'),
-    paddingVertical: hp('2%'),
-    zIndex: 4,
+    paddingHorizontal: wp("15%"),
+    paddingVertical: hp("2%"),
+    zIndex: 50,
+    elevation: 50,
+    backgroundColor: "rgba(255,255,255,0.9)",
+    borderTopLeftRadius: wp("7%"),
+    borderTopRightRadius: wp("7%"),
+    borderBottomLeftRadius: wp("7%"),
+    borderBottomRightRadius: wp("7%"),
+    marginBottom: hp("1%"),
+    alignSelf: "center",
   },
   navButton: {
     alignItems: "center",
   },
   navIcon: {
-    width: wp('8%'),
-    height: wp('8%'),
+    width: wp("6%"),
+    height: wp("6%"),
   },
   navText: {
-    fontSize: wp('3%'),
+    fontSize: wp("3%"),
     color: "#2D5D6B",
     fontFamily: "Jua-Regular",
   },
@@ -754,10 +1017,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   recordIcon: {
-    width: wp('19%'),
-    height: wp('17%'),
-    marginBottom: hp('2%'),
+    width: wp("19%"),
+    height: wp("17%"),
+    marginBottom: hp("4%"),
   },
+
+  /* 캐릭터 말풍선 */
   speechBubble: {
     position: "absolute",
     bottom: "100%",
@@ -778,96 +1043,257 @@ const styles = StyleSheet.create({
     fontFamily: "Jua-Regular",
   },
 
-  // === 일일 퀘스트 스타일 ===
-  questFab: {
+  /* === 우하단 FAB & 액션 === */
+  fabBackdrop: {
     position: "absolute",
-    left: wp('4%'),
-    bottom: hp('11%'),
-    width: wp('12%'),
-    height: wp('12%'),
-    borderRadius: wp('6%'),
-    backgroundColor: "#FFB800",
+    left: 0, right: 0, top: 0, bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.08)",
+    zIndex: 55,
+  },
+  fabMain: {
+    position: "absolute",
+    right: wp("6%"),
+    bottom: hp("11%"), // 네비(약 7~8%) 바로 위
+    width: wp("16%"),
+    height: wp("16%"),
+    borderRadius: wp("8%"),
+    backgroundColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
-    zIndex: 5,
+    zIndex: 60,            // ✅ 네비보다 위
     elevation: 6,
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 6,
   },
-  questFabMark: {
+  fabMainIcon: {
+    width: wp("9%"),
+    height: wp("9%"),
+    resizeMode: "contain",
+    tintColor: "#282828",
+  },
+  fabActionsWrap: {
+    position: "absolute",
+    right: wp("8%"),
+    bottom: hp("20%"),
+    zIndex: 59,           // ✅ 네비보다 위, 메인FAB 아래
+    alignItems: "flex-end",
+  },
+  fabActionItem: {
+    position: "absolute",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  fabLabelBubbleRight: {
+    marginRight: wp("2.5%"),
+    paddingHorizontal: wp("3%"),
+    paddingVertical: hp("0.7%"),
+    backgroundColor: "rgba(0,0,0,0.75)",
+    borderRadius: wp("2.5%"),
+  },
+  fabLabelText: {
     color: "#fff",
-    fontSize: wp('7%'),
-    lineHeight: wp('8%'),
+    fontSize: wp("3.5%"),
     fontFamily: "Jua-Regular",
   },
-  questPanel: {
+  fabIconBtn: {
+    width: wp("12%"),
+    height: wp("12%"),
+    borderRadius: wp("6%"),
+    backgroundColor: "#FFFFFF",
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 6,
+  },
+  fabIcon: {
+    width: wp("7%"),
+    height: wp("7%"),
+    resizeMode: "contain",
+  },
+
+  /* 퀘스트: 우하단 기준 */
+  questAnchor: {
     position: "absolute",
-    left: wp('4%'),
-    bottom: hp('21%'),
-    width: wp('60%'),
-    borderRadius: wp('3%'),
-    padding: wp('4%'),
+    right: wp("8%"),
+    bottom: hp("20%"),
+    zIndex: 59,
+    alignItems: "flex-end",
+  },
+  questIcon: {
+    width: wp("9%"),
+    height: wp("9%"),
+    resizeMode: "contain",
+    tintColor: "#282828",
+  },
+  questFabAbs: {
+    position: "absolute",
+    right: -8,
+    bottom: 0,
+    width: wp("16%"),
+    height: wp("16%"),
+    borderRadius: wp("8%"),
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#FFFFFF",
+    elevation: 6,
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 6,
+  },
+  questPanelRightAbs: {
+    position: "absolute",
+    right: 0,
+    bottom: wp("14%"), // 버튼 높이(12%) + 여백(2%) 정도
+    width: wp("60%"),
+    borderRadius: wp("3%"),
+    padding: wp("4%"),
     backgroundColor: "#FFFFFF",
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.1)",
-    zIndex: 6,
+    zIndex: 8,
     elevation: 7,
+    alignItems: "center",
   },
-  questTitle: {
-    fontSize: wp('4.5%'),
+
+  // ── 퀘스트 카드 내부 ──
+  qHeaderRow: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: hp("0.8%"),
+  },
+  qHeaderLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  qHeaderIcon: {
+    width: wp("5.2%"),
+    height: wp("5.2%"),
+    resizeMode: "contain",
+    marginRight: wp("2%"),
+  },
+  qHeaderTitle: {
+    fontSize: wp("4.2%"),
     color: "#2D5D6B",
     fontFamily: "Jua-Regular",
-    marginBottom: hp('1%'),
   },
-  questContent: {
-    fontSize: wp('4%'),
+  qStatusChip: {
+    paddingHorizontal: wp("2.7%"),
+    paddingVertical: hp("0.4%"),
+    borderRadius: 999,
+  },
+  qStatusText: {
+    fontSize: wp("3.2%"),
+    fontFamily: "Jua-Regular",
+  },
+
+  qBodyText: {
+    width: "100%",
+    fontSize: wp("3.8%"),
+    color: "#222",
+    fontFamily: "Jua-Regular",
+    marginTop: hp("0.2%"),
+    marginBottom: hp("0.6%"),
+    lineHeight: hp("2.6%"),
+  },
+  qRewardRow: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: hp("0.6%"),
+  },
+  qRewardIcon: {
+    width: wp("4.8%"),
+    height: wp("4.8%"),
+    resizeMode: "contain",
+    marginRight: wp("1.5%"),
+  },
+  qRewardText: {
+    fontSize: wp("3.6%"),
     color: "#333",
     fontFamily: "Jua-Regular",
-    marginBottom: hp('1.5%'),
   },
-  questBtn: {
+  qDivider: {
     width: "100%",
-    paddingVertical: hp('1.3%'),
-    borderRadius: wp('3%'),
+    height: 1,
+    backgroundColor: "rgba(0,0,0,0.08)",
+    marginVertical: hp("1.0%"),
+  },
+
+  qPrimaryBtn: {
+    width: "100%",
+    paddingVertical: hp("1.2%"),
+    borderRadius: wp("2.8%"),
     alignItems: "center",
-    marginTop: hp('0.5%'),
+    justifyContent: "center",
+    marginTop: hp("0.5%"),
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
   },
-  questBtnText: {
+  qPrimaryBtnText: {
     color: "#2D5D6B",
-    fontSize: wp('4.2%'),
+    fontSize: wp("4%"),
     fontFamily: "Jua-Regular",
   },
-  questClose: {
-    marginTop: hp('1%'),
-    alignSelf: "center",
+  qBtnBlue:  { backgroundColor: "#76D6F4" },
+  qBtnGreen: { backgroundColor: "#4CD964" },
+  qBtnGray:  { backgroundColor: "#C7C7CC" },
+
+  // 미니 스탯
+  miniStatsCard: {
+    marginTop: hp("1%"),
+    width: wp("75%"),
+    marginHorizontal: wp("5%"),
+    paddingVertical: hp("1.2%"),
+    paddingHorizontal: wp("3%"),
+    borderRadius: wp("4%"),
+    backgroundColor: "rgba(255,255,255,0.9)",
   },
-  questCloseText: {
-    color: "#666",
-    fontSize: wp('3.8%'),
-    fontFamily: "Jua-Regular",
+  statRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: hp("-0.3%"),
   },
-  miniStatsWrap: {
-    position: "absolute",
-    right: wp('55%'),
-    top: hp('12%'),
-    width: wp('40%'),
+  statIcon: {
+    width: wp("5.5%"),
+    height: wp("5.5%"),
+    marginRight: wp("2.3%"),
+    resizeMode: "contain",
   },
-  miniRow: {
-    marginTop: hp('0.6%'),
-  },
-  miniLabel: {
-    fontSize: wp('3%'),
+  statLabel: {
+    width: wp("12%"),
+    fontSize: wp("3.6%"),
     color: "#2D5D6B",
-    marginBottom: hp('0.3%'),
     fontFamily: "Jua-Regular",
   },
-  miniBarBg: {
-    width: "100%",
-    height: hp('1.1%'),
+  statBarBg: {
+    flex: 1,
+    height: hp("1%"),
     backgroundColor: "rgba(0,0,0,0.12)",
     borderRadius: 999,
     overflow: "hidden",
+    marginRight: wp("2.3%"),
   },
-  miniBarFill: {
+  statBarFill: {
     height: "100%",
     backgroundColor: "#76D6F4",
-  }
+  },
+  statLevel: {
+    width: wp("12%"),
+    textAlign: "right",
+    fontSize: wp("3.6%"),
+    color: "#2D5D6B",
+    fontFamily: "Jua-Regular",
+  },
 });

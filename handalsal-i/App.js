@@ -18,7 +18,7 @@ import ApartScreen from "./screens/ApartScreen";
 import JobScreen from "./screens/JobScreen";
 import StoreScreen from "./screens/StoreScreen";
 import HabitSummaryScreen from "./screens/HabitSummaryScreen";
-import DexScreen from "./screens/dogam";
+import Dogam from "./screens/dogam";
 import TutorialScreen from "./screens/TutorialScreen";
 import GrowthScreen from "./screens/GrowthScreen";
 const Stack = createStackNavigator();
@@ -153,7 +153,7 @@ const App = () => {
             headerShown: false, gestureEnabled: true
           }}
         />
-        <Stack.Screen name="DexScreen" component={DexScreen}
+        <Stack.Screen name="Dogam" component={Dogam}
           options={{
             headerShown: false, gestureEnabled: true
           }}

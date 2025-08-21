@@ -21,10 +21,10 @@ import {
 
 const categories = ["소파", "배경", "벽장식", "바닥장식"];
 const categoryIcons = {
-  소파: require("../assets/Store_Furniture.png"),
-  배경: require("../assets/Store_Background.png"),
-  벽장식: require("../assets/Store_Window.png"),
-  바닥장식: require("../assets/Store_Clock.png"),
+  소파: require("../assets/icons/Store_Furniture.png"),
+  배경: require("../assets/icons/Store_Background.png"),
+  벽장식: require("../assets/icons/Store_Window.png"),
+  바닥장식: require("../assets/icons/Store_Clock.png"),
 };
 
 export default function StoreScreen({ navigation }) {
@@ -286,7 +286,7 @@ export default function StoreScreen({ navigation }) {
         {/* 구매 안했으면 가격 표시 */}
         {!item.buy && (
           <View style={styles.priceTag}>
-            <Image source={require("../assets/coin.png")} style={styles.coinIcon} />
+            <Image source={require("../assets/icons/coin.png")} style={styles.coinIcon} />
             <Text style={styles.priceText}>{item.price}</Text>
           </View>
         )}
@@ -301,7 +301,7 @@ export default function StoreScreen({ navigation }) {
           <Image source={require("../assets/x.png")} style={styles.closeIcon} />
         </TouchableOpacity>
         <View style={styles.coinWrapper}>
-          <Image source={require("../assets/coin.png")} style={styles.coinIcon} />
+          <Image source={require("../assets/icons/coin.png")} style={styles.coinIcon} />
           <Text style={styles.coinText}>{totalCoin}</Text>
         </View>
       </View>
@@ -373,7 +373,7 @@ export default function StoreScreen({ navigation }) {
               {/* 가격 표시 */}
               {!currentItem.buy && (
                 <View style={[styles.priceTag, { marginBottom: 12 }]}>
-                  <Image source={require("../assets/coin.png")} style={styles.coinIcon} />
+                  <Image source={require("../assets/icons/coin.png")} style={styles.coinIcon} />
                   <Text style={styles.priceText}>{currentItem.price}</Text>
                 </View>
               )}
