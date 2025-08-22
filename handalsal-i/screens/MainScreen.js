@@ -39,6 +39,13 @@ export default function MainScreen({ navigation }) {
     intelligence_value: 0,
     art_value: 0,
   });
+  const getSeatType = (rawName) => {
+  if (!rawName) return "unknown";
+  const norm = String(rawName).trim().replace(/ /g, "_");
+  if (/_Chair$/i.test(norm)) return "chair";
+  if (/_Sofa$/i.test(norm)) return "sofa";
+  return "unknown";
+};
 
   // 설정 모달
   const [modalVisible, setModalVisible] = useState(false);
@@ -434,7 +441,7 @@ export default function MainScreen({ navigation }) {
             {/* n일차/닉네임 박스 */}
             <View style={styles.profilePill}>
               <Text style={styles.profileText}>
-                {daysSinceCreated}일차 {nickname || "별명 없음"}
+                {daysSinceCreated}일차
               </Text>
             </View>
           </View>
@@ -540,15 +547,22 @@ export default function MainScreen({ navigation }) {
           )}
 
           {/* 소파/의자 */}
-          {appliedItems["소파"] && (
-            <Image
-              source={
-                storeItemImageMap[appliedItems["소파"].replace(/ /g, "_")] ||
-                storeItemImageMap.default
-              }
-              style={appliedItems["소파"].includes("의자") ? styles.chair : styles.sofa}
-            />
-          )}
+          {appliedItems["소파"] && (() => {
+            const name = appliedItems["소파"];
+            const key = name.replace(/ /g, "_");
+            const type = getSeatType(name); // "chair" | "sofa" | "unknown"
+
+            return (
+              <Image
+                source={storeItemImageMap[key] || storeItemImageMap.default}
+                style={
+                  type === "chair" ? styles.chair :
+                  type === "sofa"  ? styles.sofa  :
+                  styles.sofa // 기본은 소파 스타일
+                }
+              />
+            );
+          })()}
 
           {/* 캐릭터 */}
           <TouchableOpacity
@@ -580,7 +594,7 @@ export default function MainScreen({ navigation }) {
         <TouchableOpacity
           style={[
             styles.fabMain,
-            { backgroundColor: fabOpen ? "#84CBFE" : "#FFFFFF" },
+            { backgroundColor: fabOpen ? "#84CBFE" : "#84CBFE" },
           ]}
           onPress={toggleFab}
           activeOpacity={0.9}
@@ -658,7 +672,7 @@ export default function MainScreen({ navigation }) {
             <TouchableOpacity
               style={[
                 styles.questFabAbs,
-                { backgroundColor: questPanelOpen ? "#84CBFE" : "#FFFFFF" },
+                { backgroundColor: questPanelOpen ? "#84CBFE" : "#84CBFE" },
               ]}
               activeOpacity={0.85}
               disabled={isAnimating}                                // ✅ 이동 중 클릭 금지
@@ -775,7 +789,11 @@ export default function MainScreen({ navigation }) {
         </Animated.View>
 
         {/* 하단 네비: 좌=상점 / 중=기록 / 우=아파트 */}
-        <View style={styles.bottomNav}>
+        <View
+          key={`nav-${modalVisible ? 'on' : 'off'}`}
+          collapsable={false}
+          style={styles.bottomNav}
+        >
           <TouchableOpacity
             style={styles.navButton}
             onPress={() => navigation.navigate("Store")}
@@ -935,7 +953,7 @@ const styles = StyleSheet.create({
   },
   characterContainer: {
     position: "absolute",
-    top: hp("12%"),
+    top: hp("3%"),
     left: wp("6%"),
     transform: [{ translateX: wp("11%") }, { translateY: wp("35%") }],
     zIndex: 2,
@@ -946,11 +964,11 @@ const styles = StyleSheet.create({
     resizeMode: "contain",
   },
   sofa: {
-    width: wp("100%"),
+    width: wp("80%"),
     height: wp("60%"),
     position: "absolute",
-    top: hp("38%"),
-    left: wp("26%"),
+    top: hp("18%"),
+    left: wp("30%"),
     zIndex: 1,
     resizeMode: "contain",
   },
@@ -958,8 +976,8 @@ const styles = StyleSheet.create({
     width: wp("50%"),
     height: wp("40%"),
     position: "absolute",
-    top: hp("40%"),
-    left: wp("60%"),
+    top: hp("22%"),
+    left: wp("55%"),
     zIndex: 1,
     resizeMode: "contain",
   },
@@ -967,16 +985,16 @@ const styles = StyleSheet.create({
     width: wp("40%"),
     height: wp("30%"),
     position: "absolute",
-    top: hp("20%"),
+    top: hp("5%"),
     left: wp("5%"),
     resizeMode: "contain",
   },
   floor: {
-    width: wp("50%"),
-    height: wp("50%"),
+    width: wp("45%"),
+    height: wp("45%"),
     position: "absolute",
-    top: hp("40%"),
-    left: wp("-10%"),
+    top: hp("20%"),
+    left: wp("-5%"),
     resizeMode: "contain",
   },
 
@@ -984,32 +1002,32 @@ const styles = StyleSheet.create({
   bottomNav: {
     position: "absolute",
     bottom: hp("1.5%"),
-    width: "80%",
+    width: "85%",
     height: hp("7%"),
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: wp("15%"),
     paddingVertical: hp("2%"),
-    zIndex: 50,
-    elevation: 50,
+    zIndex: 49,
+    elevation: 14,
     backgroundColor: "rgba(255,255,255,0.9)",
     borderTopLeftRadius: wp("7%"),
     borderTopRightRadius: wp("7%"),
     borderBottomLeftRadius: wp("7%"),
     borderBottomRightRadius: wp("7%"),
-    marginBottom: hp("1%"),
+    marginBottom: hp("3%"),
     alignSelf: "center",
   },
   navButton: {
     alignItems: "center",
   },
   navIcon: {
-    width: wp("6%"),
-    height: wp("6%"),
+    width: wp("7%"),
+    height: wp("7%"),
   },
   navText: {
-    fontSize: wp("3%"),
+    fontSize: wp("4%"),
     color: "#2D5D6B",
     fontFamily: "Jua-Regular",
   },
@@ -1047,21 +1065,21 @@ const styles = StyleSheet.create({
   fabBackdrop: {
     position: "absolute",
     left: 0, right: 0, top: 0, bottom: 0,
-    backgroundColor: "rgba(0,0,0,0.08)",
-    zIndex: 55,
+    backgroundColor: "transparent",
+    zIndex: 10,
   },
   fabMain: {
     position: "absolute",
     right: wp("6%"),
-    bottom: hp("11%"), // 네비(약 7~8%) 바로 위
+    bottom: hp("13%"), // 네비(약 7~8%) 바로 위
     width: wp("16%"),
     height: wp("16%"),
     borderRadius: wp("8%"),
     backgroundColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
-    zIndex: 60,            // ✅ 네비보다 위
-    elevation: 6,
+    zIndex: 24,            // ✅ 네비보다 위
+    elevation: 8,
     shadowColor: "#000",
     shadowOpacity: 0.15,
     shadowOffset: { width: 0, height: 2 },
@@ -1076,8 +1094,8 @@ const styles = StyleSheet.create({
   fabActionsWrap: {
     position: "absolute",
     right: wp("8%"),
-    bottom: hp("20%"),
-    zIndex: 59,           // ✅ 네비보다 위, 메인FAB 아래
+    bottom: hp("22%"),
+    zIndex: 20,           // ✅ 네비보다 위, 메인FAB 아래
     alignItems: "flex-end",
   },
   fabActionItem: {
@@ -1121,8 +1139,9 @@ const styles = StyleSheet.create({
   questAnchor: {
     position: "absolute",
     right: wp("8%"),
-    bottom: hp("20%"),
-    zIndex: 59,
+    bottom: hp("22%"),
+    zIndex: 31,
+    elevation: 12,
     alignItems: "flex-end",
   },
   questIcon: {
@@ -1141,7 +1160,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#FFFFFF",
-    elevation: 6,
+    elevation: 13,
     shadowColor: "#000",
     shadowOpacity: 0.15,
     shadowOffset: { width: 0, height: 2 },
@@ -1157,8 +1176,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.1)",
-    zIndex: 8,
-    elevation: 7,
+    zIndex: 30,
+    elevation: 11,
     alignItems: "center",
   },
 
@@ -1263,7 +1282,7 @@ const styles = StyleSheet.create({
   statRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginVertical: hp("-0.3%"),
+    marginVertical: hp("0%"),
   },
   statIcon: {
     width: wp("5.5%"),
@@ -1278,7 +1297,7 @@ const styles = StyleSheet.create({
     fontFamily: "Jua-Regular",
   },
   statBarBg: {
-    flex: 1,
+    width: wp("40%"),
     height: hp("1%"),
     backgroundColor: "rgba(0,0,0,0.12)",
     borderRadius: 999,
@@ -1291,7 +1310,7 @@ const styles = StyleSheet.create({
   },
   statLevel: {
     width: wp("12%"),
-    textAlign: "right",
+    textAlign: "left",
     fontSize: wp("3.6%"),
     color: "#2D5D6B",
     fontFamily: "Jua-Regular",

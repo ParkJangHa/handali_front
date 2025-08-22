@@ -265,7 +265,7 @@ export default function HabitDetailScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFE98A",
+    backgroundColor: "#FFFFFF",
   },
   backButton: {
     marginTop: hp("6%"),

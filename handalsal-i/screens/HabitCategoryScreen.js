@@ -120,6 +120,7 @@ export default function HabitCategoryScreen({ navigation }) {
         {selectedType === null ? (
           <View style={styles.speechBubble}>
             <Text style={styles.speechText}>오늘 뭐했어요?</Text>
+            <View style={styles.speechTriangleBorder} />
             <View style={styles.speechTriangle} />
           </View>
         ) : null}
@@ -177,7 +178,7 @@ export default function HabitCategoryScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FFE98A" },
+  container: { flex: 1, backgroundColor: "#FFFFFF" },
   backButton: { marginTop: hp("6%"), marginLeft: wp("6%") },
   containerTop: { flex: 1, alignItems: "center", justifyContent: "center" },
   containerBottom: {
@@ -188,13 +189,35 @@ const styles = StyleSheet.create({
   speechBubble: {
     position: "absolute", top: hp("8%"), left: wp("30%"),
     backgroundColor: "white", borderRadius: 15, padding: wp("2%"),
-    width: wp("60%"), alignItems: "center",
+    width: wp("60%"), alignItems: "center", borderWidth: 2, borderColor: "black",
   },
   speechTriangle: {
-    position: "absolute", bottom: -15, left: "50%", marginLeft: -5,
-    width: 0, height: 0,
-    borderLeftWidth: 10, borderRightWidth: 10, borderTopWidth: 15,
-    borderLeftColor: "transparent", borderRightColor: "transparent", borderTopColor: "white",
+    position: "absolute",
+    bottom: -15,   
+    left: "50%",
+    marginLeft: -5,
+    width: 0,
+    height: 0,
+    borderLeftWidth: 10,
+    borderRightWidth: 10,
+    borderTopWidth: 15,
+    borderLeftColor: "transparent",
+    borderRightColor: "transparent",
+    borderTopColor: "white",   
+  },
+  speechTriangleBorder: {
+    position: "absolute",
+    bottom: -17,   
+    left: "50%",
+    marginLeft: -7,
+    width: 0,
+    height: 0,
+    borderLeftWidth: 12,
+    borderRightWidth: 12,
+    borderTopWidth: 17,
+    borderLeftColor: "transparent",
+    borderRightColor: "transparent",
+    borderTopColor: "black",   
   },
   categoryImage: { width: hp("25%"), height: hp("25%") },
   todayHabitRecord: { flex: 0.4 },

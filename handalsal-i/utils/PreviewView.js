@@ -6,7 +6,9 @@ import { storeItemImageMap } from "./storeItemImageMap";
 import { characterImageMap } from "./characterImageMap";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 
-const scaleRatio = 0.65;
+// 메인 화면의 디자인 비율을 적어주세요. (예: 9:16 = 9/16 ≈ 0.5625)
+// 보통 세로형 화면은 9/16, 9/19.5 등. 메인과 가장 근접한 값을 넣어주세요.
+const STAGE_RATIO = 9 / 16; // ← 필요 시 조정
 
 export default function PreviewView({ characterImage, appliedItems, navigation }) {
   const [handaliImage, setHandaliImage] = useState(characterImageMap["default_character.png"]);
@@ -14,138 +16,163 @@ export default function PreviewView({ characterImage, appliedItems, navigation }
   const getImage = (name) => {
     if (!name) return null;
     const key = name.replace(/ /g, "_");
-    const image = storeItemImageMap[key];
-    return typeof image === "number" ? image : null;
+    const img = storeItemImageMap[key];
+    return typeof img === "number" ? img : null;
   };
 
   useEffect(() => {
-    const fetchHandaliImage = async () => {
-      const token = await AsyncStorage.getItem("authToken");
-
+    (async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/handalis/view`, {
+        const token = await AsyncStorage.getItem("authToken");
+        const res = await fetch(`${API_BASE_URL}/handalis/view`, {
           method: "GET",
           headers: { Authorization: `Bearer ${token}` },
         });
-
-        if (response.status === 401) {
+        if (res.status === 401) {
           await AsyncStorage.removeItem("authToken");
           Alert.alert("세션 만료", "로그인이 만료되었습니다. 다시 로그인해주세요.");
           navigation?.navigate("Login");
           return;
         }
-
-        if (response.ok) {
-          const data = await response.json();
-          console.log("✅ 캐릭터 이미지 응답:", data.handali_img);
+        if (res.ok) {
+          const data = await res.json();
           if (data.handali_img && characterImageMap[data.handali_img]) {
             setHandaliImage(characterImageMap[data.handali_img]);
           } else {
             setHandaliImage(characterImageMap["default_character.png"]);
           }
         }
-      } catch (error) {
-        console.log("❌ 캐릭터 이미지 불러오기 오류:", error);
-      }
-    };
-
-    fetchHandaliImage();
+      } catch {}
+    })();
   }, []);
+
+  // 좌석 타입 구분(소파/의자)
+  const getSeatType = (raw) => {
+    if (!raw) return "unknown";
+    const norm = String(raw).trim();
+    if (/의자/i.test(norm) || /_Chair$/i.test(norm.replace(/ /g, "_"))) return "chair";
+    if (/소파/i.test(norm) || /_Sofa$/i.test(norm.replace(/ /g, "_"))) return "sofa";
+    return "unknown";
+  };
+  const seatType = appliedItems["소파"] ? getSeatType(appliedItems["소파"]) : "unknown";
 
   return (
     <View style={styles.previewContainer}>
-      <Image source={require("../assets/storeItems/배경없음.png")} style={styles.backgroundImage} />
+      {/* Stage는 메인 화면 비율을 유지하며, 미리보기 안에서 가운데 정렬됩니다 */}
+      <View style={styles.stageWrapper}>
+        <View style={styles.stage}>
+          {/* 배경 (필요시 교체) */}
+          <Image
+            source={require("../assets/storeItems/배경없음.png")}
+            style={styles.bg}
+            resizeMode="cover"
+          />
 
-      {appliedItems["벽장식"] && getImage(appliedItems["벽장식"]) && (
-        <Image source={getImage(appliedItems["벽장식"])} style={styles.window} />
-      )}
+          {/* 벽장식: 메인과 동일한 % 좌표/크기 */}
+          {appliedItems["벽장식"] && getImage(appliedItems["벽장식"]) && (
+            <Image
+              source={getImage(appliedItems["벽장식"])}
+              style={styles.wall}
+              resizeMode="contain"
+            />
+          )}
 
-      {appliedItems["바닥장식"] && getImage(appliedItems["바닥장식"]) && (
-        <Image source={getImage(appliedItems["바닥장식"])} style={styles.floor} />
-      )}
+          {/* 바닥장식 */}
+          {appliedItems["바닥장식"] && getImage(appliedItems["바닥장식"]) && (
+            <Image
+              source={getImage(appliedItems["바닥장식"])}
+              style={styles.floor}
+              resizeMode="contain"
+            />
+          )}
 
-      <View style={styles.characterContainer}>
-        <Image source={handaliImage} style={styles.character} />
+          {/* 소파/의자 (캐릭터 뒤 레이어) */}
+          {appliedItems["소파"] && getImage(appliedItems["소파"]) && (
+            <Image
+              source={getImage(appliedItems["소파"])}
+              style={seatType === "chair" ? styles.chair : styles.sofa}
+              resizeMode="contain"
+            />
+          )}
+
+          {/* 캐릭터 (최상단) */}
+          <Image source={handaliImage} style={styles.character} resizeMode="contain" />
+        </View>
       </View>
-
-      {appliedItems["소파"] && getImage(appliedItems["소파"]) && (
-        <Image
-          source={getImage(appliedItems["소파"])}
-          style={
-            appliedItems["소파"].includes("의자")
-              ? styles.chair
-              : styles.sofa
-          }
-        />
-      )}
     </View>
   );
 }
 
-
 const styles = StyleSheet.create({
   previewContainer: {
-    width: wp(110 * scaleRatio),
-    height: hp(70 * scaleRatio),
-    borderRadius: 20,
-    overflow: "visible",
-    position: "relative",
+    width: wp("85%"),
+    height: hp("70%"),
     alignSelf: "center",
-    overflow: "hidden"
   },
-  backgroundImage: {
+
+  stageWrapper: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  stage: {
+    width: "100%",
+    aspectRatio: STAGE_RATIO, 
+    backgroundColor: "transparent",
+    overflow: "hidden",
+    position: "relative",
+  },
+
+  bg: {
     position: "absolute",
-    width: wp(120 * scaleRatio),
-    height: hp(90 * scaleRatio),      // 이미지를 크게
-    resizeMode: "cover",
-    zIndex: -3,
-    transform: [{ translateY: -hp("22%") }],
+    left: 0,
+    top: 0,
+    width: "100%",
+    height: "70%"
   },
-  characterContainer: {
+
+  wall: {
     position: "absolute",
-    top: hp(17),
-    left: wp(14),
-    zIndex: -1,
+    width: "30%",
+    height: "30%",
+    left: "12%",
+    top: "3%",
+    zIndex: 1,
   },
-  character: {
-    width: wp(60 * scaleRatio),
-    height: hp(25 * scaleRatio),
-    resizeMode: "contain",
-  },
-  sofa: {
-    width: wp(100 * scaleRatio),
-    height: wp(50 * scaleRatio),
-    position: "absolute",
-    top: hp(15),
-    left: wp(15),
-    zIndex: -2,
-    resizeMode: "contain",
-  },
-  chair: {
-    width: wp(40 * scaleRatio),
-    height: wp(35 * scaleRatio),
-    position: "absolute",
-    top: hp(17.3),
-    left: wp(35),
-    zIndex: -2,
-    resizeMode: "contain",
-  },
-  window: {
-    width: wp(40 * scaleRatio),
-    height: wp(30 * scaleRatio),
-    position: "absolute",
-    top: hp(5),
-    left: wp(5),
-    zIndex: -2,
-    resizeMode: "contain",
-  },
+
   floor: {
-    width: wp(40 * scaleRatio),
-    height: wp(40 * scaleRatio),
     position: "absolute",
-    top: hp(15),
-    left: wp(1),
-    zIndex: -2,
-    resizeMode: "contain",
+    width: "40%",
+    height: "40%",
+    left: "1%",
+    top: "20%",
+    zIndex: 1,
+  },
+
+  sofa: {
+    position: "absolute",
+    width: "70%",
+    height: "34%",
+    left: "35%",
+    top: "23%",
+    zIndex: 2,
+  },
+
+  chair: {
+    position: "absolute",
+    width: "40%",
+    height: "35%",
+    left: "58%",
+    top: "23%",
+    zIndex: 2,
+  },
+
+  character: {
+    position: "absolute",
+    width: "60%",
+    height: "30%",
+    left: "17%",
+    top: "28%",
+    zIndex: 3,
   },
 });
