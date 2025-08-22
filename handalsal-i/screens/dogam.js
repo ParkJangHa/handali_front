@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   View,
   StyleSheet,
@@ -72,7 +72,6 @@ const DexItem = React.memo(function DexItem({ code, codeToAsset }) {
 export default function DexScreen({ navigation }) {
   const [slots, setSlots] = useState(Array(TOTAL_SLOTS).fill(null));
   const [loading, setLoading] = useState(false);
-  const didInitRef = useRef(false); // 최초 1회만 네트워크 호출
 
   const codeToAsset = useCallback((code) => {
     if (characterImageMap[code]) return characterImageMap[code];
@@ -98,10 +97,7 @@ export default function DexScreen({ navigation }) {
   }, []);
 
   // 서버 호출 (최초 1회)
-  const fetchHandbooksOnce = useCallback(async () => {
-    if (didInitRef.current) return;
-    didInitRef.current = true;
-
+  const fetchHandbooks = useCallback(async () => {
     try {
       setLoading(true);
       const token = await AsyncStorage.getItem("authToken");
@@ -110,6 +106,13 @@ export default function DexScreen({ navigation }) {
         method: "GET",
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (res.status === 401) {
+        // 세션 만료 처리 (선택)
+        await AsyncStorage.removeItem("authToken");
+        Alert.alert("세션 만료", "다시 로그인해주세요.");
+        navigation.navigate("Login"); 
+        return;
+      }
 
       const raw = await res.text();
       console.log("[DEX] /handbooks status:", res.status);
@@ -160,19 +163,13 @@ export default function DexScreen({ navigation }) {
     }
   }, []);
 
-  // 화면 최초 진입 시: 캐시 먼저 시도 → 서버 1회 호출
   useFocusEffect(
     useCallback(() => {
       (async () => {
-        const hadCache = await loadFromCache();
-        if (!hadCache) {
-          await fetchHandbooksOnce();
-        } else {
-          // 캐시가 있더라도 최초 1회는 서버 갱신 원하면 아래 주석 해제
-          // await fetchHandbooksOnce();
-        }
+        await loadFromCache();
+        await fetchHandbooks();
       })();
-    }, [loadFromCache, fetchHandbooksOnce])
+    }, [loadFromCache, fetchHandbooks])
   );
 
   // 그리드 데이터: slots를 직접 사용 (문자열 또는 null)
