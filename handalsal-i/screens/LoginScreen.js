@@ -1,26 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-  Image,
-  Platform,
-  StatusBar,
+  View, Text, TextInput, TouchableOpacity, StyleSheet,
+  Alert, Image, Platform, StatusBar,
 } from "react-native";
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from "@env";
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from "react-native-responsive-screen";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
   const validateInput = () => {
     const emailRegex = /\S+@\S+\.\S+/;
     if (!email || !emailRegex.test(email)) {
@@ -32,7 +23,6 @@ const LoginScreen = ({ navigation }) => {
 
   const handleLogin = async () => {
     if (!validateInput()) return;
-
     try {
       const response = await fetch(`${API_BASE_URL}/login`, {
         method: "POST",
@@ -59,23 +49,17 @@ const LoginScreen = ({ navigation }) => {
 
       if (handaliViewResponse.ok) {
         navigation.navigate("MainScreen");
-        console.log(API_BASE_URL);
       } else {
         const seenTutorial = await AsyncStorage.getItem("tutorial_seen");
         if (seenTutorial === "true") {
-          // 튜토리얼 본 적 있음 → 바로 Category 이동
           navigation.navigate("Category");
         } else {
-          // 튜토리얼 본 적 없음 → Tutorial 화면으로 이동
           navigation.navigate("TutorialScreen");
         }
-        console.log(API_BASE_URL);
       }
     } catch (error) {
-      console.log(API_BASE_URL);
       console.error("로그인 오류:", error);
       Alert.alert("오류", "네트워크 연결이 원활하지 않습니다.");
-
     }
   };
 
@@ -85,32 +69,22 @@ const LoginScreen = ({ navigation }) => {
       <KeyboardAwareScrollView
         style={{ flex: 1 }}
         contentContainerStyle={styles.container}
-        enableOnAndroid={true}
-        keyboardShouldPersistTaps="handled"
-        extraScrollHeight={hp("15%")}
+        enableOnAndroid
+        keyboardShouldPersistTaps="always"
+        extraScrollHeight={hp("1%")}
+        extraHeight={Platform.OS === "android" ? hp("24%") : 0}
+        enableAutomaticScroll
       >
-          <View style={styles.container}>
-            <Image source={require("../assets/LoginScreen/Weve.png")} style={styles.img} resizeMode="stretch" />
+        <View style={styles.container}>
+          <Image source={require("../assets/LoginScreen/Weve.png")} style={styles.img} resizeMode="stretch" />
+          <Image source={require("../assets/LoginScreen/Blue.png")} style={styles.catIcon} />
+          <Image source={require("../assets/LoginScreen/turtle.png")} style={styles.turuleImg} />
+          <Image source={require("../assets/LoginScreen/crab.png")} style={styles.crabImg} />
 
-          <Image
-            source={require("../assets/LoginScreen/Blue.png")}
-            style={styles.catIcon}
-          />
-          <Image
-            source={require("../assets/LoginScreen/turtle.png")}
-            style={styles.turuleImg}
-          />
-          <Image
-            source={require("../assets/LoginScreen/crab.png")}
-            style={styles.crabImg}
-          />
-          <View style={styles.bContainer}>
-          </View>
+          <View style={styles.bContainer} />
+
           <View style={styles.inputWithIconEmail}>
-            <Image
-              source={require("../assets/LoginScreen/Email_icon.png")}
-              style={styles.icon}
-            />
+            <Image source={require("../assets/LoginScreen/Email_icon.png")} style={styles.icon} />
             <TextInput
               style={styles.inputField}
               placeholder="email"
@@ -118,13 +92,12 @@ const LoginScreen = ({ navigation }) => {
               value={email}
               onChangeText={setEmail}
               placeholderTextColor="#000000"
+              returnKeyType="next"
             />
           </View>
+
           <View style={styles.inputWithIconPassword}>
-            <Image
-              source={require("../assets/LoginScreen/Password_icon.png")}
-              style={styles.icon}
-            />
+            <Image source={require("../assets/LoginScreen/Password_icon.png")} style={styles.icon} />
             <TextInput
               style={styles.inputField}
               placeholder="password"
@@ -132,19 +105,19 @@ const LoginScreen = ({ navigation }) => {
               value={password}
               onChangeText={setPassword}
               placeholderTextColor="#000000"
+              returnKeyType="done"
             />
           </View>
+
           <View style={styles.rowContainer}>
-            <TouchableOpacity
-              style={styles.signupButton}
-              onPress={() => navigation.navigate("Signup")}
-            >
+            <TouchableOpacity style={styles.signupButton} onPress={() => navigation.navigate("Signup")}>
               <Text style={styles.signupText}>회원가입</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.button} onPress={handleLogin}>
               <Text style={styles.buttonText}>로그인</Text>
             </TouchableOpacity>
           </View>
+
           <TouchableOpacity
             style={styles.resetTutorialButton}
             onPress={async () => {
@@ -154,7 +127,9 @@ const LoginScreen = ({ navigation }) => {
           >
             <Text style={styles.resetTutorialText}>튜토리얼 다시 보기 (개발용)</Text>
           </TouchableOpacity>
-          </View>
+
+          <View style={{ height: hp("8%") }} />
+        </View>
       </KeyboardAwareScrollView>
     </>
   );
@@ -162,44 +137,36 @@ const LoginScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,                 
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#8BE1FC",
+    paddingBottom: hp("2%"),    
   },
-  bContainer: {
-    marginBottom: hp("30%"),
-  },
+  bContainer: { marginBottom: hp("30%") },
   img: {
-    top: 0,
-    position: "absolute",
-    width: wp("100%"),
-    height: hp("45%"),
+    top: 0, position: "absolute",
+    width: wp("100%"), height: hp("45%"),
     zIndex: 0,
   },
   catIcon: {
     position: "absolute",
     top: hp("3%"),
-    width: wp("55%"),
-    height: hp("25%"),
+    width: wp("55%"), height: hp("25%"),
     resizeMode: "contain",
     alignSelf: "center",
   },
-    turuleImg: {
+  turuleImg: {
     position: "absolute",
-    width: wp("14%"),
-    height: hp("9%"),
+    width: wp("14%"), height: hp("9%"),
     resizeMode: "contain",
-    top: hp("0%"),
-    left: wp("0%"), 
+    top: hp("0%"), left: wp("0%"),
   },
-    crabImg: {
+  crabImg: {
     position: "absolute",
-    width: wp("14%"),
-    height: hp("9%"),
+    width: wp("14%"), height: hp("9%"),
     resizeMode: "contain",
-    top: hp("25%"),
-    left: wp("60%"),
+    top: hp("25%"), left: wp("60%"),
   },
   inputWithIconEmail: {
     flexDirection: "row",
@@ -214,7 +181,7 @@ const styles = StyleSheet.create({
     marginTop: hp("5%"),
     backgroundColor: "#FFFFFF",
   },
-   inputWithIconPassword: {
+  inputWithIconPassword: {
     flexDirection: "row",
     alignItems: "center",
     width: wp("65%"),
@@ -227,68 +194,50 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
   },
   icon: {
-    width: wp("3.8%"),
-    height: hp("2.5%"),
+    width: wp("3.8%"), height: hp("2.5%"),
     marginRight: wp("2%"),
+    right: wp("10%"),
   },
   inputField: {
-    flex: 1,
-    fontSize: 14,
-    color: "#000000",
-    fontFamily: "Jua-Regular"
+    width: wp("50%"),
+    fontSize: 14, color: "#000000",
+    fontFamily: "Jua-Regular",
+    right: wp("10%"),
   },
-   rowContainer: {
+  rowContainer: {
     flexDirection: "row",
     justifyContent: "space-evenly",
     alignItems: "center",
     width: wp("80%"),
     gap: wp("4%"),
-    marginTop: hp("3%")
+    marginTop: hp("3%"),
   },
   button: {
     backgroundColor: "#FFF5CB",
-    paddingVertical: 12,
-    paddingHorizontal: 65,
-    borderRadius: 30,
-    borderWidth: 3,
-    borderColor: "#76D6F4",
+    paddingVertical: 12, paddingHorizontal: 65,
+    borderRadius: 30, borderWidth: 3, borderColor: "#76D6F4",
     marginTop: 10,
   },
   buttonText: {
-    color: "#000",
-    fontSize: 20,
-    // fontWeight: "bold",
-    fontFamily: "Jua-Regular"
+    color: "#000", fontSize: 20, fontFamily: "Jua-Regular",
   },
   signupButton: {
     backgroundColor: "#FFFFFF",
-    paddingVertical: 12,
-    paddingHorizontal: 30,
-    borderRadius: 30,
-    borderWidth: 3,
-    borderColor: "#76D6F4",
+    paddingVertical: 12, paddingHorizontal: 30,
+    borderRadius: 30, borderWidth: 3, borderColor: "#76D6F4",
     marginTop: 10,
   },
   signupText: {
-    color: "#2D5D6B",
-    fontSize: 17,
-    // fontWeight: "bold",
-    fontFamily: "Jua-Regular"
+    color: "#2D5D6B", fontSize: 17, fontFamily: "Jua-Regular",
   },
   resetTutorialButton: {
     backgroundColor: "#FFDDDD",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 20,
-    borderWidth: 2,
-    borderColor: "#FF8888",
+    paddingVertical: 10, paddingHorizontal: 20,
+    borderRadius: 20, borderWidth: 2, borderColor: "#FF8888",
     marginTop: hp("2%"),
   },
   resetTutorialText: {
-    color: "#990000",
-    fontSize: 14,
-    textAlign: "center",
-    fontFamily: "Jua-Regular",
+    color: "#990000", fontSize: 14, textAlign: "center", fontFamily: "Jua-Regular",
   },
 });
 
