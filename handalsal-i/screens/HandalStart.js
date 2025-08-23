@@ -1,19 +1,19 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, StyleSheet, Image, TouchableOpacity, Alert, ActivityIndicator } from "react-native";
+import {
+  View, Text, TextInput, StyleSheet, Image,
+  TouchableOpacity, Alert, ActivityIndicator, Platform, Keyboard, TouchableWithoutFeedback
+} from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from '@env';
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from "react-native-responsive-screen";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 
 const HandalStart = ({ navigation }) => {
   const today = new Date();
   const formattedDate = `${today.getFullYear()}-${(today.getMonth() + 1)
-    .toString()
-    .padStart(2, "0")}-${today.getDate().toString().padStart(2, "0")}`;
+    .toString().padStart(2, "0")}-${today.getDate().toString().padStart(2, "0")}`;
 
-  const [progress, setProgress] = useState(100); // 진행률 (0~100)
+  const [progress] = useState(100);
   const [nicknameInput, setNicknameInput] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -21,13 +21,11 @@ const HandalStart = ({ navigation }) => {
     try {
       setLoading(true);
       const token = await AsyncStorage.getItem("authToken");
-
       if (!token) {
         Alert.alert("세션 만료", "다시 로그인해주세요.");
         navigation.navigate("LoginScreen");
         return;
       }
-
       if (!nicknameInput.trim()) {
         Alert.alert("알림", "한달이의 별명을 입력해주세요!");
         setLoading(false);
@@ -35,9 +33,6 @@ const HandalStart = ({ navigation }) => {
       }
 
       const handaliData = { nickname: nicknameInput.trim() };
-      console.log("📌 한달이 생성 요청 데이터:", JSON.stringify(handaliData));
-
-      // 한달이 생성 API 요청
       const handaliResponse = await fetch(`${API_BASE_URL}/handalis`, {
         method: "POST",
         headers: {
@@ -47,18 +42,10 @@ const HandalStart = ({ navigation }) => {
         body: JSON.stringify(handaliData),
       });
 
-      // 📌 응답을 먼저 `text()`로 받음
       const responseText = await handaliResponse.text();
-      console.log("📌 한달이 생성 응답 (원본):", responseText);
-
-      // 📌 JSON인지 확인 후 파싱
       let handaliResult;
-      try {
-        handaliResult = JSON.parse(responseText); // JSON으로 변환 시도
-      } catch (error) {
-        console.warn("🚨 JSON 파싱 실패, 원본 텍스트 사용:", responseText);
-        handaliResult = { message: responseText }; // JSON이 아니면 그냥 문자열 저장
-      }
+      try { handaliResult = JSON.parse(responseText); }
+      catch { handaliResult = { message: responseText }; }
 
       if (!handaliResponse.ok) {
         if (handaliResponse.status === 409) {
@@ -71,7 +58,7 @@ const HandalStart = ({ navigation }) => {
       }
 
       Alert.alert("완료", "한달이가 성공적으로 생성되었습니다!");
-      navigation.navigate("MainScreen"); // ✅ 메인 화면으로 이동
+      navigation.navigate("MainScreen");
     } catch (error) {
       console.error("🚨 한달이 생성 중 오류 발생:", error);
       Alert.alert("오류", "네트워크 오류가 발생했습니다. 다시 시도해주세요.");
@@ -80,65 +67,73 @@ const HandalStart = ({ navigation }) => {
     }
   };
 
-
   return (
-    <View style={styles.container}>
-      <Image source={require("../assets/Category/Weve.png")} style={styles.img} resizeMode="stretch" />
-      <Text style={styles.dateText}>{formattedDate}</Text>
-      <Text style={styles.title}>이제 '한달이'가 태어나요</Text>
-      <View style={styles.progressBar}>
-        <Image
-          source={require("../assets/probar.png")} // 이미지 경로 설정
-          style={styles.backgroundBar} // 스타일 적용
-        />
-        <View style={[styles.foregroundWrapper, { width: `${progress}%` }]}>
-          <Image
-            source={require("../assets/probarlevel.png")}
-            style={styles.foregroundBar}
-          />
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <KeyboardAwareScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={styles.container}   // flexGrow 적용
+        enableOnAndroid
+        keyboardShouldPersistTaps="always"
+        enableAutomaticScroll
+        extraScrollHeight={hp("10%")}
+        extraHeight={Platform.OS === "android" ? hp("24%") : 0}
+      >
+     
+        <Image source={require("../assets/Category/Weve.png")} style={styles.img} resizeMode="stretch" />
+        <Text style={styles.dateText}>{formattedDate}</Text>
+        <Text style={styles.title}>이제 '한달이'가 태어나요</Text>
+
+        <View style={styles.progressBar}>
+          <Image source={require("../assets/probar.png")} style={styles.backgroundBar} />
+          <View style={[styles.foregroundWrapper, { width: `${progress}%` }]}>
+            <Image source={require("../assets/probarlevel.png")} style={styles.foregroundBar} />
+          </View>
         </View>
-      </View>
-      <Text style={styles.subTitle}>앞으로 같이 성장할 '한달이'에요.</Text>
-      <Image
-        source={require("../assets/character/default_character.png")}
-        style={styles.handalImage}
-      />
-      <Image
-        source={require("../assets/Category/Vector.png")}
-        style={styles.handalbackImage}
-      />
-      <View style={styles.bottomCon}>
-        <View style={styles.nicknameCon}>
-          <Text style={styles.nicknameText}>한달이에게 별명을 지어주세요!</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="   별명을 입력해 주세요."
-            placeholderTextColor="#BFBDBD"
-            value={nicknameInput}
-            onChangeText={setNicknameInput}
-            maxLength={9} // 닉네임 최대 9자
-          />
+
+        <Text style={styles.subTitle}>앞으로 같이 성장할 '한달이'에요.</Text>
+
+        <Image source={require("../assets/character/default_character.png")} style={styles.handalImage} />
+        <Image source={require("../assets/Category/Vector.png")} style={styles.handalbackImage} />
+
+    
+        <View style={styles.bottomCon}>
+          <View style={styles.nicknameCon}>
+            <Text style={styles.nicknameText}>한달이에게 별명을 지어주세요!</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="   별명을 입력해 주세요."
+              placeholderTextColor="#BFBDBD"
+              value={nicknameInput}
+              onChangeText={setNicknameInput}
+              maxLength={9}
+              returnKeyType="done"
+            />
+          </View>
+
+          {loading ? (
+            <ActivityIndicator size="large" color="#F8B66C" />
+          ) : (
+            <TouchableOpacity style={styles.startButton} onPress={createHandali}>
+              <Text style={styles.startButtonText}>시작할래요</Text>
+            </TouchableOpacity>
+          )}
         </View>
-        {loading ? (
-          <ActivityIndicator size="large" color="#F8B66C" />
-        ) : (
-          <TouchableOpacity style={styles.startButton} onPress={createHandali}>
-            <Text style={styles.startButtonText}>시작할래요</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-      <Image source={require("../assets/Category/B_weve.png")} style={styles.background} resizeMode="stretch" />
-    </View>
+
+        <View style={{ height: hp("8%") }} />
+        <Image source={require("../assets/Category/B_weve.png")} style={styles.background} resizeMode="stretch" />
+      </KeyboardAwareScrollView>
+    </TouchableWithoutFeedback>
   );
 };
 
 export const styles = StyleSheet.create({
+
   container: {
-    flex: 1,
+    flexGrow: 1,
     alignItems: "center",
     padding: wp("5%"),
     backgroundColor: "#FFF",
-    marginTop: -wp("6%"),
+    paddingBottom: hp("2%"),
   },
   img: {
     top: 0,
@@ -202,13 +197,14 @@ export const styles = StyleSheet.create({
     marginTop: hp("6%"),
     zIndex: -1,
   },
+
   bottomCon: {
-    bottom: 0,
-    position: "absolute",
-    marginBottom: hp("5%")
+    width: "100%",
+    marginTop: hp("40%"),
+    alignSelf: "center",
   },
   nicknameCon: {
-    width: wp("90%"),
+    width: "100%",
     height: hp("15%"),
     justifyContent: "center",
     alignItems: "center",
@@ -255,6 +251,5 @@ export const styles = StyleSheet.create({
     zIndex: -1,
   },
 });
-
 
 export default HandalStart;
