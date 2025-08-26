@@ -3,8 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity, Image, Alert } from 'react-na
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from '@env';
 import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
+    widthPercentageToDP as wp,
+    heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
 
 export default function HabitCheckScreen({ route, navigation }) {
@@ -12,26 +12,26 @@ export default function HabitCheckScreen({ route, navigation }) {
 
     // ✅ 기록 성공 시: 오늘 퀘스트가 ANY_RECORD + ACCEPTED 이면 COMPLETABLE로 전환
     const markDailyQuestCompletable = async () => {
-    try {
-        const todayStr = new Date().toISOString().slice(0,10);
-        const raw = await AsyncStorage.getItem("daily_quest");
-        if (!raw) return;
-        const q = JSON.parse(raw);
+        try {
+            const todayStr = new Date().toISOString().slice(0, 10);
+            const raw = await AsyncStorage.getItem("daily_quest");
+            if (!raw) return;
+            const q = JSON.parse(raw);
 
-        // 오늘 + 수락 상태 + ANY_RECORD 타입만 처리
-        if (q.date !== todayStr) return;
-        if (q.status !== "ACCEPTED") return;
-        if (q.match?.type !== "ANY_RECORD") return;
+            // 오늘 + 수락 상태 + ANY_RECORD 타입만 처리
+            if (q.date !== todayStr) return;
+            if (q.status !== "ACCEPTED") return;
+            if (q.match?.type !== "ANY_RECORD") return;
 
-        const token = `${Date.now()}-${Math.random().toString(36).slice(2,10)}`;
-        const next = {
-        ...q,
-        status: "COMPLETABLE",
-        localToken: token,
-        recordedAt: Date.now(),
-        };
-        await AsyncStorage.setItem("daily_quest", JSON.stringify(next));
-    } catch {}
+            const token = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+            const next = {
+                ...q,
+                status: "COMPLETABLE",
+                localToken: token,
+                recordedAt: Date.now(),
+            };
+            await AsyncStorage.setItem("daily_quest", JSON.stringify(next));
+        } catch { }
     };
     // 기록하기 버튼이 눌렸을 때, 습관 기록 데이터 서버로 전송
     const handleRecord = async () => {
@@ -122,7 +122,7 @@ export default function HabitCheckScreen({ route, navigation }) {
                         [
                             {
                                 text: "성장 화면 바로 가기",
-                                onPress: () => navigation.navigate("GrowthScreen"),
+                                onPress: () => navigation.navigate("GrowthScreen", { grownCategory: convertedCategoryType }),
                             },
                         ],
                         { cancelable: false }
@@ -231,87 +231,87 @@ export default function HabitCheckScreen({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#76D6F4",
-  },
-  backButton: {
-    marginTop: hp("6%"),
-    marginLeft: wp("6%"),
-  },
-  mainContainer: {
-    flex: 1,
-    paddingTop: wp("3%"),
-    paddingLeft: wp("7%"),
-    paddingRight: wp("7%"),
-    paddingBottom: wp("7%"),
-  },
-  mainTitleCon: {
-    flex: 0.8,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  categoryNameCon: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  detailedHabitNameCon: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  timeCon: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  satisfactionCon: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  recordCon: {
-    flex: 0.6,
-    justifyContent: "center",
-  },
-  card: {
-    backgroundColor: "white",
-    width: "100%",
-    padding: wp("5%"),
-    borderRadius: 20,
-  },
-  recordButton: {
-    backgroundColor: "#FFE98A",
-    padding: hp("2%"),
-    borderRadius: 30,
-    alignItems: "center",
-  },
-  mainTitleText: {
-    fontSize: wp("7%"),
-    color: "black",
-    fontFamily: "Jua-Regular",
-  },
-  mainSubTitleText: {
-    fontSize: wp("3.7%"),
-    color: "#3076f7",
-    fontFamily: "Jua-Regular",
-  },
-  labelsText: {
-    fontSize: wp("4%"),
-    color: "black",
-    fontFamily: "Jua-Regular",
-  },
-  contentText: {
-    fontSize: wp("9%"),
-    fontWeight: "400",
-    alignSelf: "center",
-    color: "black",
-    fontFamily: "Jua-Regular",
-  },
-  recordText: {
-    fontSize: wp("5%"),
-    color: "black",
-    fontFamily: "Jua-Regular",
-  },
+    container: {
+        flex: 1,
+        backgroundColor: "#76D6F4",
+    },
+    backButton: {
+        marginTop: hp("6%"),
+        marginLeft: wp("6%"),
+    },
+    mainContainer: {
+        flex: 1,
+        paddingTop: wp("3%"),
+        paddingLeft: wp("7%"),
+        paddingRight: wp("7%"),
+        paddingBottom: wp("7%"),
+    },
+    mainTitleCon: {
+        flex: 0.8,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    categoryNameCon: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    detailedHabitNameCon: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    timeCon: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    satisfactionCon: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    recordCon: {
+        flex: 0.6,
+        justifyContent: "center",
+    },
+    card: {
+        backgroundColor: "white",
+        width: "100%",
+        padding: wp("5%"),
+        borderRadius: 20,
+    },
+    recordButton: {
+        backgroundColor: "#FFE98A",
+        padding: hp("2%"),
+        borderRadius: 30,
+        alignItems: "center",
+    },
+    mainTitleText: {
+        fontSize: wp("7%"),
+        color: "black",
+        fontFamily: "Jua-Regular",
+    },
+    mainSubTitleText: {
+        fontSize: wp("3.7%"),
+        color: "#3076f7",
+        fontFamily: "Jua-Regular",
+    },
+    labelsText: {
+        fontSize: wp("4%"),
+        color: "black",
+        fontFamily: "Jua-Regular",
+    },
+    contentText: {
+        fontSize: wp("9%"),
+        fontWeight: "400",
+        alignSelf: "center",
+        color: "black",
+        fontFamily: "Jua-Regular",
+    },
+    recordText: {
+        fontSize: wp("5%"),
+        color: "black",
+        fontFamily: "Jua-Regular",
+    },
 });

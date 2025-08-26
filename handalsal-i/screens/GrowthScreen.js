@@ -4,10 +4,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from "@env";
 import { characterImageMap } from "../utils/characterImageMap";
 import LottieView from "lottie-react-native";
+import { useRoute } from "@react-navigation/native"; // ✅ Import useRoute
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
+
 const CATEGORY_ICON = {
   ACTIVITY: require("../assets/icons/activity.png"),
   INTELLIGENCE: require("../assets/icons/intelligence.png"),
@@ -22,6 +24,9 @@ const CATEGORY_COLOR = {
 const THRESHOLDS = [10, 25, 45, 70, 100];
 
 const GrowthScreen = ({ navigation }) => {
+  const route = useRoute();
+  const { grownCategory } = route.params || {}; // 이전 화면에서 넘겨준 grownCategory 값을 받습니다.
+
   const [nickname, setNickname] = useState();
   const [imageSource, setImageSource] = useState(require("../assets/character/0,0,0.png"));
   const [stats, setStats] = useState({
@@ -78,14 +83,20 @@ const GrowthScreen = ({ navigation }) => {
     return { level, percent };
   };
 
-  const StatBar = ({ label, value, icon, barColor }) => {
+  const StatBar = ({ label, value, icon, barColor, isGrownCategory }) => {
     const { level, percent } = getLevelProgressByValue(value);
+
+    // ✅ isGrownCategory가 true일 경우, 글자색을 해당 카테고리 색상으로 변경
+    const titleStyle = [
+      styles.statTitle,
+      isGrownCategory && { color: '#ff5a5a' }
+    ];
 
     return (
       <View style={styles.statBarRow}>
         <Image source={icon} style={styles.statIcon} resizeMode="contain" />
         <View style={styles.statRight}>
-          <Text style={styles.statTitle}>
+          <Text style={titleStyle}> {/* ✅ 수정된 스타일 적용 */}
             {label} Lv.{level}
           </Text>
           <View style={styles.expBarBackground}>
@@ -130,18 +141,21 @@ const GrowthScreen = ({ navigation }) => {
             value={stats.activity_value}
             icon={CATEGORY_ICON.ACTIVITY}
             barColor={CATEGORY_COLOR.ACTIVITY}
+            isGrownCategory={grownCategory === 'ACTIVITY'} // ✅ 추가
           />
           <StatBar
             label="지능"
             value={stats.intelligence_value}
             icon={CATEGORY_ICON.INTELLIGENCE}
             barColor={CATEGORY_COLOR.INTELLIGENCE}
+            isGrownCategory={grownCategory === 'INTELLIGENT'} // ✅ 추가
           />
           <StatBar
             label="예술"
             value={stats.art_value}
             icon={CATEGORY_ICON.ART}
             barColor={CATEGORY_COLOR.ART}
+            isGrownCategory={grownCategory === 'ART'} // ✅ 추가
           />
         </View>
       </View>
@@ -176,7 +190,7 @@ const styles = StyleSheet.create({
 
   handaliContainer: {
     alignItems: "center",
-    marginTop:hp("-6%"),
+    marginTop: hp("-6%"),
     height: hp("80%"),            // 이전 카드 높이만큼 영역 확보
     position: "relative",         // Lottie absolute 기준
     justifyContent: "center",
@@ -213,7 +227,7 @@ const styles = StyleSheet.create({
     width: "70%",
     paddingHorizontal: wp("5%"),
   },
-statBarRow: {
+  statBarRow: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: hp("1%"),
@@ -252,7 +266,7 @@ statBarRow: {
   buttonContainer: {
     justifyContent: "center",
     alignItems: "center",
-    marginTop:hp("-8%"),
+    marginTop: hp("-8%"),
   },
   button: {
     backgroundColor: "#F7B61B",
@@ -275,7 +289,7 @@ statBarRow: {
   },
   memoText: {
     fontSize: wp("6%"),
-    color: "#ff8851",
+    color: "black",
     fontFamily: "Jua-Regular",
     textAlign: "center",
   },
