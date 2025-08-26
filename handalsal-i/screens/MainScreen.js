@@ -497,13 +497,6 @@ export default function MainScreen({ navigation }) {
                 <Text style={styles.buttonText}>[개발용]성장 화면</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={handleLogout} style={styles.button}>
-                <Text style={styles.buttonText}>로그아웃</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={handleDeleteAccount} style={styles.button}>
-                <Text style={styles.buttonText}>회원탈퇴</Text>
-              </TouchableOpacity>
-
               <TouchableOpacity
                 onPress={async () => {
                   await AsyncStorage.removeItem("tutorial_seen");
@@ -513,6 +506,13 @@ export default function MainScreen({ navigation }) {
                 style={styles.button}
               >
                 <Text style={styles.buttonText}>[수정중]튜토리얼 보기</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity onPress={handleLogout} style={styles.button}>
+                <Text style={styles.buttonText}>로그아웃</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleDeleteAccount} style={styles.button}>
+                <Text style={styles.buttonText}>회원탈퇴</Text>
               </TouchableOpacity>
 
               <TouchableOpacity

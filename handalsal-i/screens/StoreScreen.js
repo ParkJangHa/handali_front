@@ -83,6 +83,8 @@ export default function StoreScreen({ navigation }) {
       }));
 
       if (response.ok) {
+        // ✅ 데이터를 가격(price) 기준으로 오름차순 정렬합니다.
+        const sortedData = data.sort((a, b) => a.price - b.price);
         setItems(data);
       } else {
         setItems([]);
@@ -320,6 +322,10 @@ export default function StoreScreen({ navigation }) {
   };
 
   const renderItem = ({ item }) => {
+    // ✅ 1단계: 가짜 아이템(spacer)일 경우, 보이지 않는 View를 렌더링
+    if (item.spacer) {
+      return <View style={[styles.itemBox, { borderWidth: 0 }]} />;
+    }
     const isNoneItem = [
       "배경없음",
       "소파없음",
@@ -367,6 +373,19 @@ export default function StoreScreen({ navigation }) {
     );
   };
 
+  // ✅ 2단계: FlatList에 데이터를 전달하기 전, 가짜 아이템을 추가하는 로직
+  const numColumns = 3;
+  const formatData = (data, numColumns) => {
+    const numberOfFullRows = Math.floor(data.length / numColumns);
+    let numberOfElementsLastRow = data.length - (numberOfFullRows * numColumns);
+    while (numberOfElementsLastRow !== numColumns && numberOfElementsLastRow !== 0) {
+      data.push({ storeId: `spacer-${numberOfElementsLastRow}`, spacer: true }); // 가짜 아이템 추가
+      numberOfElementsLastRow++;
+    }
+    return data;
+  };
+
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -405,11 +424,12 @@ export default function StoreScreen({ navigation }) {
         </View>
 
         <FlatList
-          data={items}
+          data={formatData(items, numColumns)} // ✅ 이렇게 수정
           renderItem={renderItem}
           keyExtractor={(item) => item.storeId.toString()}
           numColumns={3}
           contentContainerStyle={styles.itemList}
+          columnWrapperStyle={styles.row} // ✅ 이 줄 추가
         />
       </View>
 
@@ -531,7 +551,7 @@ const styles = StyleSheet.create({
   itemBox: {
     width: wp("22%"),
     height: wp("22%"),
-    margin: wp("2%"),
+    marginVertical: wp("2%"), // ✅ 이렇게 수정 (상하 여백만 줌)
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: wp("3%"),
@@ -592,5 +612,9 @@ const styles = StyleSheet.create({
     bottom: wp("1%"),
     right: 0,
     fontFamily: "Jua-Regular"
+  },
+  // ✅ 아래 스타일을 새로 추가해주세요.
+  row: {
+    justifyContent: "space-between",
   },
 });
