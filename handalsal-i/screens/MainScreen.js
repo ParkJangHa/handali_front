@@ -573,7 +573,7 @@ export default function MainScreen({ navigation }) {
             style={styles.characterContainer}
             onPress={() => {
               setQuoteVisible(true);
-              setTimeout(() => setQuoteVisible(false), 3000);
+              setTimeout(() => setQuoteVisible(false), 5000);
             }}
           >
             {quoteVisible && (
