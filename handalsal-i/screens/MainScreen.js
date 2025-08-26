@@ -40,12 +40,12 @@ export default function MainScreen({ navigation }) {
     art_value: 0,
   });
   const getSeatType = (rawName) => {
-  if (!rawName) return "unknown";
-  const norm = String(rawName).trim().replace(/ /g, "_");
-  if (/_Chair$/i.test(norm)) return "chair";
-  if (/_Sofa$/i.test(norm)) return "sofa";
-  return "unknown";
-};
+    if (!rawName) return "unknown";
+    const norm = String(rawName).trim().replace(/ /g, "_");
+    if (/_Chair$/i.test(norm)) return "chair";
+    if (/_Sofa$/i.test(norm)) return "sofa";
+    return "unknown";
+  };
 
   // 설정 모달
   const [modalVisible, setModalVisible] = useState(false);
@@ -87,8 +87,8 @@ export default function MainScreen({ navigation }) {
 
   const QUEST_POOL = [
     { id: "q_any_record", title: "오늘의 습관 기록하기", coin: 15, match: { type: "ANY_RECORD" } },
-    { id: "q_water_5",   title: "물 5잔 마시기",       coin: 10, match: { type: "MANUAL" } },
-    { id: "q_diary_5",   title: "일기 5줄 쓰기",       coin: 10, match: { type: "MANUAL" } },
+    { id: "q_water_5", title: "물 5잔 마시기", coin: 10, match: { type: "MANUAL" } },
+    { id: "q_diary_5", title: "일기 5줄 쓰기", coin: 10, match: { type: "MANUAL" } },
   ];
 
   const pickRandomQuest = () => {
@@ -127,14 +127,14 @@ export default function MainScreen({ navigation }) {
       const newQuest = pickRandomQuest();
       setQuest(newQuest);
       await AsyncStorage.setItem("daily_quest", JSON.stringify(newQuest));
-    } catch (e) {}
+    } catch (e) { }
   };
 
   const refreshQuestFromStorage = async () => {
     try {
       const raw = await AsyncStorage.getItem("daily_quest");
       if (raw) setQuest(JSON.parse(raw));
-    } catch (e) {}
+    } catch (e) { }
   };
 
   const handleAcceptQuest = debounce(async () => {
@@ -335,25 +335,29 @@ export default function MainScreen({ navigation }) {
   const fabAnim = useRef(new Animated.Value(0)).current; // 0 닫힘, 1 열림
 
   const toggleFab = () => {
-    if (isAnimating) return;             
-    const next = !fabOpen;               
-    setFabOpen(next);                     
+    if (isAnimating) return;
+    const next = !fabOpen;
+    setFabOpen(next);
     setIsAnimating(true);
 
     Animated.timing(fabAnim, {
       toValue: next ? 1 : 0,
       duration: 220,
-      useNativeDriver: true,             
+      useNativeDriver: true,
     }).start(() => {
-      setIsAnimating(false);             
+      setIsAnimating(false);
     });
   };
 
   const actions = [
-    { key: "summary", label: "기록소", icon: require("../assets/icons/summary.png"),
-      onPress: () => navigation.navigate("Summary") },
-    { key: "dogam",   label: "도감",   icon: require("../assets/icons/dogam.png"),
-      onPress: () => navigation.navigate("Dogam") },
+    {
+      key: "summary", label: "기록소", icon: require("../assets/icons/summary.png"),
+      onPress: () => navigation.navigate("Summary")
+    },
+    {
+      key: "dogam", label: "도감", icon: require("../assets/icons/dogam.png"),
+      onPress: () => navigation.navigate("Dogam")
+    },
   ];
   const gap = hp("7%");
   const rise = gap * actions.length + hp("2%");
@@ -372,7 +376,7 @@ export default function MainScreen({ navigation }) {
                 headers: { Authorization: `Bearer ${token}` },
               });
             }
-          } catch (e) {}
+          } catch (e) { }
           await AsyncStorage.removeItem("authToken");
           navigation.reset({ index: 0, routes: [{ name: "Login" }] });
         },
@@ -484,14 +488,14 @@ export default function MainScreen({ navigation }) {
                 onPress={() => { setModalVisible(false); navigation.navigate("JobScreen"); }}
                 style={styles.button}
               >
-                <Text style={styles.buttonText}>직업 화면</Text>
+                <Text style={styles.buttonText}>[개발용]직업 화면</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 onPress={() => { setModalVisible(false); navigation.navigate("GrowthScreen"); }}
                 style={styles.button}
               >
-                <Text style={styles.buttonText}>성장 화면</Text>
+                <Text style={styles.buttonText}>[개발용]성장 화면</Text>
               </TouchableOpacity>
 
               <TouchableOpacity onPress={handleLogout} style={styles.button}>
@@ -557,8 +561,8 @@ export default function MainScreen({ navigation }) {
                 source={storeItemImageMap[key] || storeItemImageMap.default}
                 style={
                   type === "chair" ? styles.chair :
-                  type === "sofa"  ? styles.sofa  :
-                  styles.sofa // 기본은 소파 스타일
+                    type === "sofa" ? styles.sofa :
+                      styles.sofa // 기본은 소파 스타일
                 }
               />
             );
@@ -708,25 +712,25 @@ export default function MainScreen({ navigation }) {
                 <View
                   style={[
                     styles.qStatusChip,
-                    quest.status === "AVAILABLE"   && { backgroundColor: "#EAF6FF" },
-                    quest.status === "ACCEPTED"    && { backgroundColor: "#FFF7E8" },
+                    quest.status === "AVAILABLE" && { backgroundColor: "#EAF6FF" },
+                    quest.status === "ACCEPTED" && { backgroundColor: "#FFF7E8" },
                     quest.status === "COMPLETABLE" && { backgroundColor: "#EFFFF3" },
-                    quest.status === "COMPLETED"   && { backgroundColor: "#F1F1F1" },
+                    quest.status === "COMPLETED" && { backgroundColor: "#F1F1F1" },
                   ]}
                 >
                   <Text
                     style={[
                       styles.qStatusText,
-                      quest.status === "AVAILABLE"   && { color: "#2D5D6B" },
-                      quest.status === "ACCEPTED"    && { color: "#B66600" },
+                      quest.status === "AVAILABLE" && { color: "#2D5D6B" },
+                      quest.status === "ACCEPTED" && { color: "#B66600" },
                       quest.status === "COMPLETABLE" && { color: "#0F8A3A" },
-                      quest.status === "COMPLETED"   && { color: "#555" },
+                      quest.status === "COMPLETED" && { color: "#555" },
                     ]}
                   >
                     {quest.status === "AVAILABLE" ? "대기"
                       : quest.status === "ACCEPTED" ? "진행중"
-                      : quest.status === "COMPLETABLE" ? "완료 가능"
-                      : "완료"}
+                        : quest.status === "COMPLETABLE" ? "완료 가능"
+                          : "완료"}
                   </Text>
                 </View>
               </View>
@@ -1265,9 +1269,9 @@ const styles = StyleSheet.create({
     fontSize: wp("4%"),
     fontFamily: "Jua-Regular",
   },
-  qBtnBlue:  { backgroundColor: "#76D6F4" },
+  qBtnBlue: { backgroundColor: "#76D6F4" },
   qBtnGreen: { backgroundColor: "#4CD964" },
-  qBtnGray:  { backgroundColor: "#C7C7CC" },
+  qBtnGray: { backgroundColor: "#C7C7CC" },
 
   // 미니 스탯
   miniStatsCard: {
