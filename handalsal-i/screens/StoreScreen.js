@@ -164,23 +164,69 @@ export default function StoreScreen({ navigation }) {
     }
   };
 
+  // const handleBuyItem = async () => {
+  //   try {
+  //     const token = await AsyncStorage.getItem("authToken");
+
+  //     if (currentItem.buy) {
+  //       handleApplyItem();
+  //       return;
+  //     }
+
+  //     // ✅ 여기 디버깅 로그 추가
+  //     console.log("구매 요청 URL:", `${API_BASE_URL}/store/buy`);
+  //     console.log("요청 body 데이터:", {
+  //       item_type: itemTypeMap[selectedTab],
+  //       name: currentItem.name,
+  //     });
+
+  //     const response = await fetch(`${API_BASE_URL}/store/buy`, {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //       body: JSON.stringify({
+  //         item_type: itemTypeMap[selectedTab],
+  //         name: currentItem.name,
+  //       }),
+  //     });
+  //     const text = await response.text();
+
+  //     // ✅ 응답 받은 결과 로그 추가
+  //     console.log("서버 응답 결과:", text);
+
+  //     if (response.ok) {
+  //       Alert.alert("구매 완료", "아이템을 구매했습니다!");
+  //       setModalVisible(false);
+  //       fetchItems();
+  //       fetchTotalCoin();
+  //       setCurrentItem({ ...currentItem, buy: true });
+  //     } else if (text.includes("코인이 부족합니다")) {
+  //       Alert.alert("구매 실패", "코인이 부족합니다.");
+  //     } else if (text.includes("이미 구매한 아이템입니다")) {
+  //       Alert.alert("구매 실패", "이미 구매한 아이템입니다.");
+  //     } else {
+  //       Alert.alert("에러", text || "예상치 못한 오류가 발생했습니다.");
+  //     }
+  //   } catch (error) {
+  //     console.error("handleBuyItem 오류:", error); // ✅ 여기 추가
+  //     Alert.alert("오류", "네트워크 오류가 발생했습니다.");
+  //   }
+  // };
+
   const handleBuyItem = async () => {
     try {
       const token = await AsyncStorage.getItem("authToken");
 
+      // 1. 이미 구매한 아이템이면, 기존처럼 적용만 실행합니다.
       if (currentItem.buy) {
         handleApplyItem();
         return;
       }
 
-      // ✅ 여기 디버깅 로그 추가
-      console.log("구매 요청 URL:", `${API_BASE_URL}/store/buy`);
-      console.log("요청 body 데이터:", {
-        item_type: itemTypeMap[selectedTab],
-        name: currentItem.name,
-      });
-
-      const response = await fetch(`${API_BASE_URL}/store/buy`, {
+      // 2. (신규 구매) 아이템 구매 API를 호출합니다.
+      const buyResponse = await fetch(`${API_BASE_URL}/store/buy`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -191,26 +237,53 @@ export default function StoreScreen({ navigation }) {
           name: currentItem.name,
         }),
       });
-      const text = await response.text();
 
-      // ✅ 응답 받은 결과 로그 추가
-      console.log("서버 응답 결과:", text);
-
-      if (response.ok) {
-        Alert.alert("구매 완료", "아이템을 구매했습니다!");
-        setModalVisible(false);
-        fetchItems();
-        fetchTotalCoin();
-        setCurrentItem({ ...currentItem, buy: true });
-      } else if (text.includes("코인이 부족합니다")) {
-        Alert.alert("구매 실패", "코인이 부족합니다.");
-      } else if (text.includes("이미 구매한 아이템입니다")) {
-        Alert.alert("구매 실패", "이미 구매한 아이템입니다.");
-      } else {
-        Alert.alert("에러", text || "예상치 못한 오류가 발생했습니다.");
+      // 3. 구매에 실패하면, 원인을 알리고 함수를 종료합니다.
+      if (!buyResponse.ok) {
+        const text = await buyResponse.text();
+        if (text.includes("코인이 부족합니다")) {
+          Alert.alert("구매 실패", "코인이 부족합니다.");
+        } else if (text.includes("이미 구매한 아이템입니다")) {
+          Alert.alert("구매 실패", "이미 구매한 아이템입니다.");
+        } else {
+          Alert.alert("구매 에러", text || "예상치 못한 오류가 발생했습니다.");
+        }
+        return; // 여기서 함수를 중단합니다.
       }
+
+      // 4. 구매 성공! 이어서 아이템 적용 API를 호출합니다.
+      const applyResponse = await fetch(`${API_BASE_URL}/store/set`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          item_type: itemTypeMap[selectedTab],
+          name: currentItem.name,
+        }),
+      });
+
+      // 5. 적용까지 성공했을 때의 처리
+      if (applyResponse.ok) {
+        Alert.alert("구매 및 적용 완료", "아이템을 구매하고 바로 적용했습니다!");
+      } else {
+        // 6. 구매는 성공했지만 적용에 실패했을 때의 처리
+        const text = await applyResponse.text();
+        Alert.alert(
+          "구매 완료, 적용 실패",
+          `아이템은 구매했지만 적용에 실패했습니다: ${text}`
+        );
+      }
+
+      // 7. 모든 과정이 끝나면 모달을 닫고, 최신 정보를 다시 불러옵니다.
+      setModalVisible(false);
+      fetchItems();       // 아이템 목록 갱신 (구매 상태 변경)
+      fetchTotalCoin();   // 코인 갱신
+      fetchAppliedItem(); // 적용 상태 갱신
+
     } catch (error) {
-      console.error("handleBuyItem 오류:", error); // ✅ 여기 추가
+      console.error("handleBuyItem 오류:", error);
       Alert.alert("오류", "네트워크 오류가 발생했습니다.");
     }
   };
@@ -255,7 +328,7 @@ export default function StoreScreen({ navigation }) {
     ].includes(item.name);
     const imageName = item.name.replace(/ /g, "_");
     const imageSource = storeItemImageMap[imageName] || storeItemImageMap.default;
-  
+
     return (
       <TouchableOpacity
         style={[styles.itemBox, selectedItem === item.storeId && styles.itemBoxSelected]}
@@ -341,34 +414,34 @@ export default function StoreScreen({ navigation }) {
       </View>
 
       {currentItem && (
-  <Modal
-    visible={modalVisible}
-    transparent
-    animationType="fade"
-    onRequestClose={() => setModalVisible(false)}
-  >
-    <View style={styles.modalOverlay}>
-      <View style={styles.modalBox}>
-        {/* ✅ 아이템 이미지 + 적용 체크 표시 */}
-        <View style={{ position: "relative", width: 80, height: 80, marginBottom: 10 }}>
-          <Image
-            source={storeItemImageMap[currentItem.name.replace(/ /g, "_")] || storeItemImageMap.default}
-            style={{ width: 80, height: 80, resizeMode: "contain"}}
-          />
-          {/* ✅ 현재 적용된 아이템이면 체크 이미지 띄우기 */}
-          {currentAppliedName === currentItem.name && (
-            <Image
-              source={require("../assets/storeItems/check.png")}
-              style={{
-                position: "absolute",
-                width: 24,
-                height: 24,
-                bottom: 0,
-                right: 0,
-              }}
-            />
-          )}
-        </View>
+        <Modal
+          visible={modalVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalBox}>
+              {/* ✅ 아이템 이미지 + 적용 체크 표시 */}
+              <View style={{ position: "relative", width: 80, height: 80, marginBottom: 10 }}>
+                <Image
+                  source={storeItemImageMap[currentItem.name.replace(/ /g, "_")] || storeItemImageMap.default}
+                  style={{ width: 80, height: 80, resizeMode: "contain" }}
+                />
+                {/* ✅ 현재 적용된 아이템이면 체크 이미지 띄우기 */}
+                {currentAppliedName === currentItem.name && (
+                  <Image
+                    source={require("../assets/storeItems/check.png")}
+                    style={{
+                      position: "absolute",
+                      width: 24,
+                      height: 24,
+                      bottom: 0,
+                      right: 0,
+                    }}
+                  />
+                )}
+              </View>
 
               {/* 가격 표시 */}
               {!currentItem.buy && (
