@@ -6,8 +6,6 @@ import { storeItemImageMap } from "./storeItemImageMap";
 import { characterImageMap } from "./characterImageMap";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 
-// 메인 화면의 디자인 비율을 적어주세요. (예: 9:16 = 9/16 ≈ 0.5625)
-// 보통 세로형 화면은 9/16, 9/19.5 등. 메인과 가장 근접한 값을 넣어주세요.
 const STAGE_RATIO = 9 / 16; // ← 필요 시 조정
 
 export default function PreviewView({ characterImage, appliedItems, navigation }) {
@@ -105,7 +103,7 @@ export default function PreviewView({ characterImage, appliedItems, navigation }
 
 const styles = StyleSheet.create({
   previewContainer: {
-    width: wp("85%"),
+    width: wp("78%"),
     height: hp("70%"),
     alignSelf: "center",
   },
