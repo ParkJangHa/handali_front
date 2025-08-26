@@ -513,7 +513,7 @@ export default function MainScreen({ navigation }) {
                 }}
                 style={styles.button}
               >
-                <Text style={styles.buttonText}>튜토리얼 보기</Text>
+                <Text style={styles.buttonText}>[수정중]튜토리얼 보기</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
