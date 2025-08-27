@@ -15,6 +15,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from "@env";
 import { characterImageMap } from "../utils/characterImageMap";
+import { storeItemImageMap } from "../utils/storeItemImageMap";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 
 // 층 배경 (열림/잠금 공통)
@@ -23,18 +24,15 @@ const floorImages = {
   locked: require("../assets/apart/floor_lock.png"),
 };
 
-// 좌/우 화살표 아이콘 (이미지로 교체)
+// 좌/우 화살표 아이콘
 const arrowLeft = require("../assets/icons/arrow_left.png");
 const arrowRight = require("../assets/icons/arrow_right.png");
-
-// (선택) 메인 네비게이션 바가 별도 컴포넌트라면 이렇게 사용
-// import MainBottomNav from "../components/MainBottomNav";
 
 const ApartScreen = ({ navigation }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedData, setSelectedData] = useState(null);
-  const [apartments, setApartments] = useState([]); // 여러 아파트(동)
-  const [selectedApartIndex, setSelectedApartindex] = useState(0); // 현재 선택된 동
+  const [apartments, setApartments] = useState([]);
+  const [selectedApartIndex, setSelectedApartindex] = useState(0);
   const flatListRef = useRef(null);
 
   // ---------- API ----------
@@ -80,14 +78,12 @@ const ApartScreen = ({ navigation }) => {
         return;
       }
 
-      // apart_id별 층 맵 구성
       const grouped = {};
       data.forEach((item) => {
         if (!grouped[item.apart_id]) grouped[item.apart_id] = {};
         grouped[item.apart_id][item.floor] = item;
       });
 
-      // 12층 고정 배열(12 → 1)
       const formatted = Object.keys(grouped).map((apart_id) => ({
         apart_id,
         floors: Array.from({ length: 12 }, (_, index) => {
@@ -101,6 +97,8 @@ const ApartScreen = ({ navigation }) => {
               job_name: null,
               week_salary: null,
               image: null,
+              sofa_img: null,
+              floor_img: null,
               locked: true,
             }
           );
@@ -109,7 +107,6 @@ const ApartScreen = ({ navigation }) => {
 
       setApartments(formatted);
 
-      // 현재 연도와 일치하는 동이 있으면 우선 선택
       const currentYear = new Date().getFullYear();
       const currentYearIndex = formatted.findIndex((apt) =>
         apt.apart_id.toString().startsWith(currentYear.toString())
@@ -132,7 +129,6 @@ const ApartScreen = ({ navigation }) => {
 
     const openFloors = floors.filter((f) => !!f.nickname);
     if (openFloors.length === 0) {
-      // 열림층 없으면 최상단(12층, index 0)로 이동
       setTimeout(() => {
         flatListRef.current.scrollToIndex({ index: 0, animated: true });
       }, 200);
@@ -181,7 +177,7 @@ const ApartScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      {/* 좌/우 화살표: 화면 중간 고정 오버레이 (스크롤과 무관) */}
+      {/* 좌/우 화살표 */}
       <View style={styles.arrowsOverlay} pointerEvents="box-none">
         <TouchableOpacity
           onPress={handlePrevApart}
@@ -219,7 +215,6 @@ const ApartScreen = ({ navigation }) => {
               style={styles.rooftopImage}
               resizeMode="cover"
             />
-            {/* 옥상 이미지 위 동 배너 */}
             <View style={styles.apartBanner}>
               <Text style={styles.apartBannerText}>
                 {apartments.length > 0
@@ -229,48 +224,73 @@ const ApartScreen = ({ navigation }) => {
             </View>
           </View>
         }
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.itemContainer}
-            activeOpacity={0.9}
-            onPress={() => {
-              if (item.nickname) {
-                setSelectedData(item);
-                setModalVisible(true);
-              }
-            }}
-          >
-            <ImageBackground
-              source={getFloorBg(item)}
-              style={styles.floorBg}
-              imageStyle={styles.floorBgImage}
-              resizeMode="cover"
+        renderItem={({ item }) => {
+          // [추가] DB에서 온 이름(공백 포함)을 Key(언더스코어)로 변환
+          const floorImgKey = item.floor_img ? item.floor_img.replace(/ /g, "_") : null;
+          const sofaImgKey = item.sofa_img ? item.sofa_img.replace(/ /g, "_") : null;
+
+          return (
+            <TouchableOpacity
+              style={styles.itemContainer}
+              activeOpacity={0.9}
+              onPress={() => {
+                if (item.nickname) {
+                  setSelectedData(item);
+                  setModalVisible(true);
+                }
+              }}
             >
-              {/* 층 배지 */}
-              <View style={styles.floorBadgeWrap}>
-                <View style={styles.floorBadge}>
-                  <Text style={styles.floorBadgeText}>{item.floor}층</Text>
+              <ImageBackground
+                source={getFloorBg(item)}
+                style={styles.floorBg}
+                imageStyle={styles.floorBgImage}
+                resizeMode="cover"
+              >
+                <View style={styles.floorBadgeWrap}>
+                  <View style={styles.floorBadge}>
+                    <Text style={styles.floorBadgeText}>{item.floor}층</Text>
+                  </View>
                 </View>
-              </View>
 
-              {/* 캐릭터: 열림층일 때만 */}
-              {item.nickname && (
-                <Image
-                  style={styles.handaliImageOverlay}
-                  source={getImageSource(item.image)}
-                  resizeMode="contain"
-                />
-              )}
-            </ImageBackground>
+                {item.nickname && (
+                  <View style={styles.characterAndFurnitureContainer}>
+                    {/* 왼쪽 가구 (floor_img) */}
+                    {floorImgKey && storeItemImageMap[floorImgKey] && ( // [수정] 변환된 키로 확인
+                      <Image
+                        style={styles.furnitureImage}
+                        source={storeItemImageMap[floorImgKey]} // [수정] 변환된 키로 이미지 소스 가져오기
+                        resizeMode="contain"
+                      />
+                    )}
 
-            {/* 층 구분 라인 */}
-            <View style={styles.floorDivider} />
-          </TouchableOpacity>
-        )}
-        contentContainerStyle={[styles.listContent, { paddingBottom: hp("10%") }]} // 바텀 네비 여백
+                    {/* 한달이 캐릭터 */}
+                    <Image
+                      style={styles.handaliImage}
+                      source={getImageSource(item.image)}
+                      resizeMode="contain"
+                    />
+
+                    {/* 오른쪽 가구 (sofa_img) */}
+                    {sofaImgKey && storeItemImageMap[sofaImgKey] && ( // [수정] 변환된 키로 확인
+                      <Image
+                        style={styles.furnitureImage}
+                        source={storeItemImageMap[sofaImgKey]} // [수정] 변환된 키로 이미지 소스 가져오기
+                        resizeMode="contain"
+                      />
+                    )}
+                  </View>
+                )}
+              </ImageBackground>
+
+              <View style={styles.floorDivider} />
+            </TouchableOpacity>
+          );
+        }}
+        contentContainerStyle={[styles.listContent, { paddingBottom: hp("10%") }]}
         showsVerticalScrollIndicator={false}
       />
       <BottomNav navigation={navigation} active="Apart" mode="apart" />
+
       {/* 모달 */}
       {selectedData && (
         <Modal visible={modalVisible} transparent animationType="slide">
@@ -295,14 +315,11 @@ const ApartScreen = ({ navigation }) => {
   );
 };
 
-
-
 export default ApartScreen;
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#F5EFE7" },
 
-  // 중앙 오버레이 화살표
   arrowsOverlay: {
     position: "absolute",
     top: "45%",
@@ -319,15 +336,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-
   arrowImg: {
     width: "100%",
     height: "100%",
   },
-  arrowBtnDisabled: { opacity: 0.5 },
-  arrowIcon: { width: "60%", height: "60%" },
 
-  // 옥상 + 동 배너
   rooftopWrap: {
     backgroundColor: "#A66E38",
     position: "relative",
@@ -348,8 +361,6 @@ const styles = StyleSheet.create({
     fontFamily: "Jua-Regular",
   },
 
-  // 리스트/층
-  listContent: {},
   itemContainer: { backgroundColor: "#FFE98A" },
   floorBg: {
     height: hp("30%"),
@@ -357,15 +368,26 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   floorBgImage: {},
-  handaliImageOverlay: {
+
+  characterAndFurnitureContainer: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "center",
+    marginBottom: hp("2%"),
+    paddingHorizontal: wp('5%'),
+  },
+  handaliImage: {
     width: wp("40%"),
     height: hp("18%"),
-    alignSelf: "center",
-    marginBottom: hp("2%"),
+    marginHorizontal: wp('1%'),
   },
+  furnitureImage: {
+    width: wp("20%"),
+    height: hp("10%"),
+  },
+
   floorDivider: { backgroundColor: "#684626", height: hp("1%") },
 
-  // 층 배지
   floorBadgeWrap: {
     position: "absolute",
     top: hp("1.2%"),
@@ -381,7 +403,6 @@ const styles = StyleSheet.create({
   },
   floorBadgeText: { fontSize: wp("4.2%"), color: "#2b1a12", fontFamily: "Jua-Regular" },
 
-  // 모달
   modalContainer: {
     flex: 1,
     justifyContent: "center",
