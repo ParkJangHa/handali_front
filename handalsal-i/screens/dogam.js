@@ -17,7 +17,7 @@ import {
 } from "react-native-responsive-screen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from "@env";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect, useIsFocused } from "@react-navigation/native";
 import { characterImageMap } from "../utils/characterImageMap";
 
 const SHADOW_IMG = require("../assets/character/shadow.png");
@@ -72,6 +72,7 @@ const DexItem = React.memo(function DexItem({ code, codeToAsset }) {
 export default function DexScreen({ navigation }) {
   const [slots, setSlots] = useState(Array(TOTAL_SLOTS).fill(null));
   const [loading, setLoading] = useState(false);
+  const isFocused = useIsFocused();
 
   const codeToAsset = useCallback((code) => {
     if (characterImageMap[code]) return characterImageMap[code];
@@ -201,7 +202,7 @@ export default function DexScreen({ navigation }) {
       )}
 
       {/* 리스트 */}
-      {!loading && (
+      {!loading && isFocused && (
         <FlatList
           data={slots}
           renderItem={({ item }) => (
@@ -211,10 +212,11 @@ export default function DexScreen({ navigation }) {
           numColumns={3}
           contentContainerStyle={styles.itemList}
           columnWrapperStyle={styles.rowWrap}
-          initialNumToRender={24}
-          maxToRenderPerBatch={11}
-          windowSize={7}
-          removeClippedSubviews={false}
+          initialNumToRender={18}
+          maxToRenderPerBatch={12}
+          windowSize={5}
+          removeClippedSubviews={true}
+          updateCellsBatchingPeriod={50}
         />
       )}
 
