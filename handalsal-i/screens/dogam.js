@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
-  Dimensions, 
+  Dimensions,
   Platform,
 } from "react-native";
 import {
@@ -18,7 +18,9 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from "@env";
 import { useFocusEffect } from "@react-navigation/native";
-import { characterImageMap } from "../utils/characterImageMap";
+// ✅ 수정: characterImageMap 대신 getCharacterImage 함수를 import 합니다.
+// ⛔️ 삭제: import { characterImageMap } from "../utils/characterImageMap";
+import { getCharacterImage } from "../utils/characterImageLoader"; // 경로는 실제 파일 위치에 맞게 수정해주세요.
 
 const SHADOW_IMG = require("../assets/character/shadow.png");
 const TOTAL_SLOTS = 216;
@@ -73,13 +75,14 @@ export default function DexScreen({ navigation }) {
   const [slots, setSlots] = useState(Array(TOTAL_SLOTS).fill(null));
   const [loading, setLoading] = useState(false);
 
+  // ✅ 수정: characterImageMap 객체에서 값을 찾는 대신 getCharacterImage 함수를 호출하도록 변경합니다.
   const codeToAsset = useCallback((code) => {
-    if (characterImageMap[code]) return characterImageMap[code];
-    if (code) console.warn("[DEX] image map missing key:", code);
-    return (
-      characterImageMap["default_character.png"] ||
-      require("../assets/character/default_character.png")
-    );
+    if (!code) {
+      // 이 경우는 DexItem 컴포넌트에서 SHADOW_IMG로 처리되므로 사실상 호출되지 않습니다.
+      return require("../assets/character/default_character.png");
+    }
+    // 맵에서 조회하는 것이 아니라, 함수를 호출하여 필요한 이미지만 동적으로 로드합니다.
+    return getCharacterImage(code);
   }, []);
 
   // 캐시 로드
@@ -110,13 +113,13 @@ export default function DexScreen({ navigation }) {
         // 세션 만료 처리 (선택)
         await AsyncStorage.removeItem("authToken");
         Alert.alert("세션 만료", "다시 로그인해주세요.");
-        navigation.navigate("Login"); 
+        navigation.navigate("Login");
         return;
       }
 
       const raw = await res.text();
       console.log("[DEX] /handbooks status:", res.status);
-      console.log("[DEX] /handbooks raw:", raw);
+      // console.log("[DEX] /handbooks raw:", raw); // raw 데이터가 길 수 있으므로 필요시에만 활성화
 
       if (!res.ok) {
         Alert.alert("오류", `GET /handbooks 실패: ${res.status}`);
@@ -161,18 +164,19 @@ export default function DexScreen({ navigation }) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [navigation]); // navigation을 의존성 배열에 추가하는 것이 좋습니다.
 
   useFocusEffect(
     useCallback(() => {
       (async () => {
-        await loadFromCache();
+        const cacheLoaded = await loadFromCache();
+        // 캐시가 성공적으로 로드되었더라도 서버에서 최신 데이터를 가져옵니다.
+        // 만약 캐시 로드 시 서버 호출을 막고 싶다면 조건문을 추가할 수 있습니다.
         await fetchHandbooks();
       })();
     }, [loadFromCache, fetchHandbooks])
   );
 
-  // 그리드 데이터: slots를 직접 사용 (문자열 또는 null)
   const ownedCount = useMemo(() => slots.filter(Boolean).length, [slots]);
   return (
     <View style={styles.container}>
@@ -212,8 +216,8 @@ export default function DexScreen({ navigation }) {
           contentContainerStyle={styles.itemList}
           columnWrapperStyle={styles.rowWrap}
           initialNumToRender={24}
-          maxToRenderPerBatch={11}
-          windowSize={7}
+          maxToRenderPerBatch={12} // 조금 늘려도 괜찮습니다.
+          windowSize={11} // windowSize는 양옆, 현재 화면의 아이템 수를 포함 (3열 기준 5~7 정도면 충분)
           removeClippedSubviews={false}
         />
       )}

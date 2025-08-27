@@ -11,13 +11,17 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from "@env";
-import { characterImageMap } from "../utils/characterImageMap";
-import { storeItemImageMap } from "../utils/storeItemImageMap";
+import { storeItemImageMap } from "../utils/storeItemImageMap"; // ✅ 상점 아이템 맵은 그대로 유지
 import PreviewView from "../utils/PreviewView";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
+
+// ⛔️ 삭제: 캐릭터 이미지 맵은 더 이상 사용하지 않습니다.
+// import { characterImageMap } from "../utils/characterImageMap";
+// ✅ 수정: 캐릭터 이미지를 동적으로 불러오는 함수를 import 합니다.
+import { getCharacterImage } from "../utils/characterImageLoader";
 
 const categories = ["소파", "배경", "벽장식", "바닥장식"];
 const categoryIcons = {
@@ -42,7 +46,8 @@ export default function StoreScreen({ navigation }) {
     벽장식: "WALL",
     바닥장식: "FLOOR",
   };
-  const [characterImage, setCharacterImage] = useState(characterImageMap["default_character.png"]);
+  // ✅ 수정: getCharacterImage 함수를 사용하여 초기 캐릭터 이미지를 설정합니다.
+  const [characterImage, setCharacterImage] = useState(getCharacterImage(null));
   const [previewItems, setPreviewItems] = useState({
     소파: null,
     배경: null,
@@ -83,7 +88,6 @@ export default function StoreScreen({ navigation }) {
       }));
 
       if (response.ok) {
-        // ✅ 데이터를 가격(price) 기준으로 오름차순 정렬합니다.
         const sortedData = data.sort((a, b) => a.price - b.price);
         setItems(data);
       } else {
@@ -132,14 +136,9 @@ export default function StoreScreen({ navigation }) {
       const data = await response.json();
 
       if (response.ok) {
-        // ✅ 캐릭터 이미지 설정
-        if (data.image && characterImageMap[data.image]) {
-          setCharacterImage(characterImageMap[data.image]);
-        } else {
-          setCharacterImage(characterImageMap["default_character.png"]);
-        }
+        // ✅ 수정: getCharacterImage 함수를 사용하여 캐릭터 이미지를 설정합니다.
+        setCharacterImage(getCharacterImage(data.image));
 
-        // ✅ previewItems 상태 초기화
         setPreviewItems({
           소파: data.sofa_img?.includes("none") ? null : data.sofa_img,
           배경: data.background_img?.includes("none") ? null : data.background_img,
@@ -147,7 +146,6 @@ export default function StoreScreen({ navigation }) {
           바닥장식: data.floor_img?.includes("none") ? null : data.floor_img,
         });
 
-        // ✅ 현재 탭에 따라 적용된 이름 저장
         let appliedName = "";
         if (selectedTab === "소파") {
           appliedName = data.sofa_img;
@@ -166,68 +164,15 @@ export default function StoreScreen({ navigation }) {
     }
   };
 
-  // const handleBuyItem = async () => {
-  //   try {
-  //     const token = await AsyncStorage.getItem("authToken");
-
-  //     if (currentItem.buy) {
-  //       handleApplyItem();
-  //       return;
-  //     }
-
-  //     // ✅ 여기 디버깅 로그 추가
-  //     console.log("구매 요청 URL:", `${API_BASE_URL}/store/buy`);
-  //     console.log("요청 body 데이터:", {
-  //       item_type: itemTypeMap[selectedTab],
-  //       name: currentItem.name,
-  //     });
-
-  //     const response = await fetch(`${API_BASE_URL}/store/buy`, {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //         Authorization: `Bearer ${token}`,
-  //       },
-  //       body: JSON.stringify({
-  //         item_type: itemTypeMap[selectedTab],
-  //         name: currentItem.name,
-  //       }),
-  //     });
-  //     const text = await response.text();
-
-  //     // ✅ 응답 받은 결과 로그 추가
-  //     console.log("서버 응답 결과:", text);
-
-  //     if (response.ok) {
-  //       Alert.alert("구매 완료", "아이템을 구매했습니다!");
-  //       setModalVisible(false);
-  //       fetchItems();
-  //       fetchTotalCoin();
-  //       setCurrentItem({ ...currentItem, buy: true });
-  //     } else if (text.includes("코인이 부족합니다")) {
-  //       Alert.alert("구매 실패", "코인이 부족합니다.");
-  //     } else if (text.includes("이미 구매한 아이템입니다")) {
-  //       Alert.alert("구매 실패", "이미 구매한 아이템입니다.");
-  //     } else {
-  //       Alert.alert("에러", text || "예상치 못한 오류가 발생했습니다.");
-  //     }
-  //   } catch (error) {
-  //     console.error("handleBuyItem 오류:", error); // ✅ 여기 추가
-  //     Alert.alert("오류", "네트워크 오류가 발생했습니다.");
-  //   }
-  // };
-
   const handleBuyItem = async () => {
     try {
       const token = await AsyncStorage.getItem("authToken");
 
-      // 1. 이미 구매한 아이템이면, 기존처럼 적용만 실행합니다.
       if (currentItem.buy) {
         handleApplyItem();
         return;
       }
 
-      // 2. (신규 구매) 아이템 구매 API를 호출합니다.
       const buyResponse = await fetch(`${API_BASE_URL}/store/buy`, {
         method: "POST",
         headers: {
@@ -240,7 +185,6 @@ export default function StoreScreen({ navigation }) {
         }),
       });
 
-      // 3. 구매에 실패하면, 원인을 알리고 함수를 종료합니다.
       if (!buyResponse.ok) {
         const text = await buyResponse.text();
         if (text.includes("코인이 부족합니다")) {
@@ -250,10 +194,9 @@ export default function StoreScreen({ navigation }) {
         } else {
           Alert.alert("구매 에러", text || "예상치 못한 오류가 발생했습니다.");
         }
-        return; // 여기서 함수를 중단합니다.
+        return;
       }
 
-      // 4. 구매 성공! 이어서 아이템 적용 API를 호출합니다.
       const applyResponse = await fetch(`${API_BASE_URL}/store/set`, {
         method: "POST",
         headers: {
@@ -266,11 +209,9 @@ export default function StoreScreen({ navigation }) {
         }),
       });
 
-      // 5. 적용까지 성공했을 때의 처리
       if (applyResponse.ok) {
         Alert.alert("구매 및 적용 완료", "아이템을 구매하고 바로 적용했습니다!");
       } else {
-        // 6. 구매는 성공했지만 적용에 실패했을 때의 처리
         const text = await applyResponse.text();
         Alert.alert(
           "구매 완료, 적용 실패",
@@ -278,11 +219,10 @@ export default function StoreScreen({ navigation }) {
         );
       }
 
-      // 7. 모든 과정이 끝나면 모달을 닫고, 최신 정보를 다시 불러옵니다.
       setModalVisible(false);
-      fetchItems();       // 아이템 목록 갱신 (구매 상태 변경)
-      fetchTotalCoin();   // 코인 갱신
-      fetchAppliedItem(); // 적용 상태 갱신
+      fetchItems();
+      fetchTotalCoin();
+      fetchAppliedItem();
 
     } catch (error) {
       console.error("handleBuyItem 오류:", error);
@@ -322,7 +262,6 @@ export default function StoreScreen({ navigation }) {
   };
 
   const renderItem = ({ item }) => {
-    // ✅ 1단계: 가짜 아이템(spacer)일 경우, 보이지 않는 View를 렌더링
     if (item.spacer) {
       return <View style={[styles.itemBox, { borderWidth: 0 }]} />;
     }
@@ -340,29 +279,26 @@ export default function StoreScreen({ navigation }) {
         style={[styles.itemBox, selectedItem === item.storeId && styles.itemBoxSelected]}
         onPress={() => handleItemPress(item)}
       >
-        {/* ✅ 아이템 이미지 + 체크 아이콘 감싸는 View */}
         <View style={{ position: "relative", width: 35, height: 35 }}>
           {isNoneItem ? (
-            <Text style={styles.noneText}>없음</Text> // ← 글자 표시
+            <Text style={styles.noneText}>없음</Text>
           ) : (
             <Image source={imageSource} style={styles.itemImage} />
           )}
-          {/* ✅ 현재 적용된 아이템이면 체크 아이콘 표시 */}
           {currentAppliedName === item.name && (
             <Image
-              source={require("../assets/storeItems/check.png")} // 체크 아이콘 경로
+              source={require("../assets/storeItems/check.png")}
               style={{
                 position: "absolute",
                 width: 16,
                 height: 16,
-                bottom: -5, // 아이템 이미지 바로 아래 살짝
-                right: -5,  // 오른쪽
+                bottom: -5,
+                right: -5,
               }}
             />
           )}
         </View>
 
-        {/* 구매 안했으면 가격 표시 */}
         {!item.buy && (
           <View style={styles.priceTag}>
             <Image source={require("../assets/icons/coin.png")} style={styles.coinIcon} />
@@ -373,13 +309,12 @@ export default function StoreScreen({ navigation }) {
     );
   };
 
-  // ✅ 2단계: FlatList에 데이터를 전달하기 전, 가짜 아이템을 추가하는 로직
   const numColumns = 3;
   const formatData = (data, numColumns) => {
     const numberOfFullRows = Math.floor(data.length / numColumns);
     let numberOfElementsLastRow = data.length - (numberOfFullRows * numColumns);
     while (numberOfElementsLastRow !== numColumns && numberOfElementsLastRow !== 0) {
-      data.push({ storeId: `spacer-${numberOfElementsLastRow}`, spacer: true }); // 가짜 아이템 추가
+      data.push({ storeId: `spacer-${numberOfElementsLastRow}`, spacer: true });
       numberOfElementsLastRow++;
     }
     return data;
@@ -400,16 +335,6 @@ export default function StoreScreen({ navigation }) {
 
       <View style={styles.backgroundArea}>
         <PreviewView characterImage={characterImage} appliedItems={previewItems} />
-        {/* <View style={styles.rightButtons}>
-          <TouchableOpacity onPress={() => setSelectedTopButton("background")}>
-            <Image source={require("../assets/bg_Icon.png")}
-              style={[styles.smallIcon, selectedTopButton === "background" && styles.selectedSmallIcon]} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => setSelectedTopButton("character")}>
-            <Image source={require("../assets/ch_Icon.png")}
-              style={[styles.smallIcon, selectedTopButton === "character" && styles.selectedSmallIcon]} />
-          </TouchableOpacity>
-        </View> */}
       </View>
 
       <View style={styles.itemContainer}>
@@ -424,12 +349,12 @@ export default function StoreScreen({ navigation }) {
         </View>
 
         <FlatList
-          data={formatData(items, numColumns)} // ✅ 이렇게 수정
+          data={formatData(items, numColumns)}
           renderItem={renderItem}
           keyExtractor={(item) => item.storeId.toString()}
           numColumns={3}
           contentContainerStyle={styles.itemList}
-          columnWrapperStyle={styles.row} // ✅ 이 줄 추가
+          columnWrapperStyle={styles.row}
         />
       </View>
 
@@ -442,13 +367,11 @@ export default function StoreScreen({ navigation }) {
         >
           <View style={styles.modalOverlay}>
             <View style={styles.modalBox}>
-              {/* ✅ 아이템 이미지 + 적용 체크 표시 */}
               <View style={{ position: "relative", width: 80, height: 80, marginBottom: 10 }}>
                 <Image
                   source={storeItemImageMap[currentItem.name.replace(/ /g, "_")] || storeItemImageMap.default}
                   style={{ width: 80, height: 80, resizeMode: "contain" }}
                 />
-                {/* ✅ 현재 적용된 아이템이면 체크 이미지 띄우기 */}
                 {currentAppliedName === currentItem.name && (
                   <Image
                     source={require("../assets/storeItems/check.png")}
@@ -463,7 +386,6 @@ export default function StoreScreen({ navigation }) {
                 )}
               </View>
 
-              {/* 가격 표시 */}
               {!currentItem.buy && (
                 <View style={[styles.priceTag, { marginBottom: 12 }]}>
                   <Image source={require("../assets/icons/coin.png")} style={styles.coinIcon} />
@@ -471,7 +393,6 @@ export default function StoreScreen({ navigation }) {
                 </View>
               )}
 
-              {/* 버튼들 */}
               <View style={styles.modalButtonRow}>
                 <TouchableOpacity style={styles.modalButton} onPress={handleBuyItem}>
                   <Text style={styles.modalButtonText}>
@@ -489,7 +410,7 @@ export default function StoreScreen({ navigation }) {
     </View>
   );
 }
-
+// 스타일 코드는 생략 (이전과 동일)
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#B9D7F1" },
   header: {

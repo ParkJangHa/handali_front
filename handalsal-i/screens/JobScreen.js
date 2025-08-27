@@ -3,12 +3,17 @@ import React, { useState, useEffect } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from '@env';
-import { characterImageMap } from "../utils/characterImageMap";
 import LottieView from "lottie-react-native";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
+
+// ⛔️ 삭제: 메모리 문제를 유발하는 이전 방식입니다.
+// import { characterImageMap } from "../utils/characterImageMap";
+// ✅ 수정: 필요할 때만 이미지를 불러오는 함수를 import 합니다. (파일 경로는 실제 위치에 맞게 조정하세요)
+import { getCharacterImage } from "../utils/characterImageLoader";
+
 
 const JobScreen = ({ navigation }) => {
   const [nickname, setNickname] = useState();
@@ -17,8 +22,10 @@ const JobScreen = ({ navigation }) => {
   const [startDate, setStartDate] = useState();
   const [imageSource, setImageSource] = useState(require("../assets/character/0,0,0.png"));
 
+  // ✅ 수정: characterImageMap 객체 조회 대신 getCharacterImage 함수를 호출합니다.
   const setImageSourceByName = (imageName) => {
-    const mapped = characterImageMap[imageName] || require("../assets/character/0,0,0.png");
+    // getCharacterImage 함수가 imageName이 유효하지 않을 때 기본 이미지를 알아서 반환해줍니다.
+    const mapped = getCharacterImage(imageName);
     setImageSource(mapped);
   };
 
@@ -62,7 +69,7 @@ const JobScreen = ({ navigation }) => {
     };
 
     fetchJobDetails();
-  }, []);
+  }, [navigation]); // navigation을 의존성 배열에 추가하는 것이 좋습니다.
 
   return (
     <View style={styles.container}>
@@ -199,13 +206,13 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 0, left: 0, right: 0, bottom: 0,
     pointerEvents: "none",
-    zIndex: 2,                 
+    zIndex: 2,
   },
   handaliImage: {
     width: "90%",
-    height: "100%",         
+    height: "100%",
     resizeMode: "contain",
-    zIndex: 1,                 
+    zIndex: 1,
   },
 
   // divider + rows

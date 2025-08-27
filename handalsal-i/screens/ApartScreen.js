@@ -14,8 +14,13 @@ import {
 import { useFocusEffect } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from "@env";
-import { characterImageMap } from "../utils/characterImageMap";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
+
+// ⛔️ 삭제: 메모리 문제를 유발하는 이전 방식입니다.
+// import { characterImageMap } from "../utils/characterImageMap";
+// ✅ 수정: 필요할 때만 이미지를 불러오는 함수를 import 합니다. (파일 경로는 실제 위치에 맞게 조정하세요)
+import { getCharacterImage } from "../utils/characterImageLoader";
+
 
 // 층 배경 (열림/잠금 공통)
 const floorImages = {
@@ -27,8 +32,6 @@ const floorImages = {
 const arrowLeft = require("../assets/icons/arrow_left.png");
 const arrowRight = require("../assets/icons/arrow_right.png");
 
-// (선택) 메인 네비게이션 바가 별도 컴포넌트라면 이렇게 사용
-// import MainBottomNav from "../components/MainBottomNav";
 
 const ApartScreen = ({ navigation }) => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -175,8 +178,10 @@ const ApartScreen = ({ navigation }) => {
   };
 
   // ---------- 캐릭터 / 층 배경 ----------
-  const getImageSource = (imageName) =>
-    characterImageMap[imageName] || require("../assets/character/0,0,0.png");
+  // ✅ 수정: characterImageMap 객체 조회 대신 getCharacterImage 함수를 직접 호출합니다.
+  // 이 함수는 imageName이 null이거나 목록에 없을 경우, 내부적으로 default 이미지를 반환하므로 코드가 더 간결해집니다.
+  const getImageSource = (imageName) => getCharacterImage(imageName);
+
   const getFloorBg = (item) => (item?.nickname ? floorImages.occupied : floorImages.locked);
 
   return (

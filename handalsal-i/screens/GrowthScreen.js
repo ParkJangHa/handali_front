@@ -2,13 +2,16 @@ import { StyleSheet, Text, View, TouchableOpacity, Image, ImageBackground } from
 import React, { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from "@env";
-import { characterImageMap } from "../utils/characterImageMap";
 import LottieView from "lottie-react-native";
-import { useRoute } from "@react-navigation/native"; // ✅ Import useRoute
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
+
+// ⛔️ 삭제: 메모리 문제를 유발하는 이전 방식입니다.
+// import { characterImageMap } from "../utils/characterImageMap";
+// ✅ 수정: 필요할 때만 이미지를 불러오는 함수를 import 합니다. (파일 경로는 실제 위치에 맞게 조정하세요)
+import { getCharacterImage } from "../utils/characterImageLoader";
 
 const CATEGORY_ICON = {
   ACTIVITY: require("../assets/icons/activity.png"),
@@ -24,9 +27,6 @@ const CATEGORY_COLOR = {
 const THRESHOLDS = [10, 25, 45, 70, 100];
 
 const GrowthScreen = ({ navigation }) => {
-  const route = useRoute();
-  const { grownCategory } = route.params || {}; // 이전 화면에서 넘겨준 grownCategory 값을 받습니다.
-
   const [nickname, setNickname] = useState();
   const [imageSource, setImageSource] = useState(require("../assets/character/0,0,0.png"));
   const [stats, setStats] = useState({
@@ -35,8 +35,10 @@ const GrowthScreen = ({ navigation }) => {
     art_value: 0,
   });
 
+  // ✅ 수정: characterImageMap 객체 조회 대신 getCharacterImage 함수를 호출합니다.
   const setImageSourceByName = (imageName) => {
-    const mapped = (imageName && characterImageMap[imageName]) || require("../assets/character/0,0,0.png");
+    // getCharacterImage 함수가 imageName이 유효하지 않을 때 기본 이미지를 알아서 반환해줍니다.
+    const mapped = getCharacterImage(imageName);
     setImageSource(mapped);
   };
 
@@ -83,20 +85,14 @@ const GrowthScreen = ({ navigation }) => {
     return { level, percent };
   };
 
-  const StatBar = ({ label, value, icon, barColor, isGrownCategory }) => {
+  const StatBar = ({ label, value, icon, barColor }) => {
     const { level, percent } = getLevelProgressByValue(value);
-
-    // ✅ isGrownCategory가 true일 경우, 글자색을 해당 카테고리 색상으로 변경
-    const titleStyle = [
-      styles.statTitle,
-      isGrownCategory && { color: '#ff5a5a' }
-    ];
 
     return (
       <View style={styles.statBarRow}>
         <Image source={icon} style={styles.statIcon} resizeMode="contain" />
         <View style={styles.statRight}>
-          <Text style={titleStyle}> {/* ✅ 수정된 스타일 적용 */}
+          <Text style={styles.statTitle}>
             {label} Lv.{level}
           </Text>
           <View style={styles.expBarBackground}>
@@ -141,21 +137,18 @@ const GrowthScreen = ({ navigation }) => {
             value={stats.activity_value}
             icon={CATEGORY_ICON.ACTIVITY}
             barColor={CATEGORY_COLOR.ACTIVITY}
-            isGrownCategory={grownCategory === 'ACTIVITY'} // ✅ 추가
           />
           <StatBar
             label="지능"
             value={stats.intelligence_value}
             icon={CATEGORY_ICON.INTELLIGENCE}
             barColor={CATEGORY_COLOR.INTELLIGENCE}
-            isGrownCategory={grownCategory === 'INTELLIGENT'} // ✅ 추가
           />
           <StatBar
             label="예술"
             value={stats.art_value}
             icon={CATEGORY_ICON.ART}
             barColor={CATEGORY_COLOR.ART}
-            isGrownCategory={grownCategory === 'ART'} // ✅ 추가
           />
         </View>
       </View>
@@ -289,7 +282,7 @@ const styles = StyleSheet.create({
   },
   memoText: {
     fontSize: wp("6%"),
-    color: "black",
+    color: "#ff8851",
     fontFamily: "Jua-Regular",
     textAlign: "center",
   },

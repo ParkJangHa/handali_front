@@ -2,15 +2,20 @@ import React, { useEffect, useState, useCallback } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Image, Alert, ActivityIndicator, Pressable } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from '@env';
-import { characterImageMap } from "../utils/characterImageMap";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 
+// ⛔️ 삭제: 메모리 문제를 유발하는 이전 방식입니다.
+// import { characterImageMap } from "../utils/characterImageMap";
+// ✅ 수정: 필요할 때만 이미지를 불러오는 함수를 import 합니다. (파일 경로는 실제 위치에 맞게 조정하세요)
+import { getCharacterImage } from "../utils/characterImageLoader";
+
+
 export default function HabitCategoryScreen({ navigation }) {
-  const [selectedType, setSelectedType] = useState(null); // ← 제네릭 제거
+  const [selectedType, setSelectedType] = useState(null);
   const [imageSource, setImageSource] = useState(require("../assets/character/default_character.png"));
   const [loading, setLoading] = useState(false);
 
-  const getImageSource = () => {
+  const getCategoryImage = () => { // 함수 이름 변경: getCategoryImage
     switch (selectedType) {
       case "활동":
         return require('../assets/activityLogo.png');
@@ -19,7 +24,7 @@ export default function HabitCategoryScreen({ navigation }) {
       case "예술":
         return require('../assets/artLogo.png');
       default:
-        return imageSource;
+        return imageSource; // 기본 한달이 이미지
     }
   };
 
@@ -33,10 +38,12 @@ export default function HabitCategoryScreen({ navigation }) {
 
       if (response.status === 412) {
         Alert.alert("세션 만료", "로그인이 만료되었습니다. 다시 로그인해주세요.", [
-          { text: "확인", onPress: async () => {
-            await AsyncStorage.removeItem("authToken");
-            navigation.navigate("Login");
-          }}
+          {
+            text: "확인", onPress: async () => {
+              await AsyncStorage.removeItem("authToken");
+              navigation.navigate("Login");
+            }
+          }
         ]);
         return;
       }
@@ -50,9 +57,8 @@ export default function HabitCategoryScreen({ navigation }) {
 
       if (response.ok) {
         const data = await response.json();
-        setImageSource(
-          characterImageMap[data.handali_img] ?? require("../assets/character/default_character.png")
-        );
+        // ✅ 수정: characterImageMap 객체 조회 대신 getCharacterImage 함수를 호출합니다.
+        setImageSource(getCharacterImage(data.handali_img));
         console.log("습관 기록 화면, 이미지 호출:", data.handali_img);
       }
     } catch (error) {
@@ -74,10 +80,12 @@ export default function HabitCategoryScreen({ navigation }) {
 
       if (res.status === 412) {
         Alert.alert("세션 만료", "다시 로그인해 주세요.", [
-          { text: "확인", onPress: async () => {
-            await AsyncStorage.removeItem("authToken");
-            navigation.navigate("Login");
-          }}
+          {
+            text: "확인", onPress: async () => {
+              await AsyncStorage.removeItem("authToken");
+              navigation.navigate("Login");
+            }
+          }
         ]);
         return;
       }
@@ -134,7 +142,7 @@ export default function HabitCategoryScreen({ navigation }) {
           ]}
         >
           <Image
-            source={getImageSource()}
+            source={getCategoryImage()}
             style={[styles.categoryImage, selectedType === null && { width: hp("30%"), height: hp("30%") }]}
             resizeMode="contain"
           />
@@ -193,7 +201,7 @@ const styles = StyleSheet.create({
   },
   speechTriangle: {
     position: "absolute",
-    bottom: -15,   
+    bottom: -15,
     left: "50%",
     marginLeft: -5,
     width: 0,
@@ -203,11 +211,11 @@ const styles = StyleSheet.create({
     borderTopWidth: 15,
     borderLeftColor: "transparent",
     borderRightColor: "transparent",
-    borderTopColor: "white",   
+    borderTopColor: "white",
   },
   speechTriangleBorder: {
     position: "absolute",
-    bottom: -17,   
+    bottom: -17,
     left: "50%",
     marginLeft: -7,
     width: 0,
@@ -217,7 +225,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 17,
     borderLeftColor: "transparent",
     borderRightColor: "transparent",
-    borderTopColor: "black",   
+    borderTopColor: "black",
   },
   categoryImage: { width: hp("25%"), height: hp("25%") },
   todayHabitRecord: { flex: 0.4 },

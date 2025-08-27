@@ -14,7 +14,8 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from "@env";
 import { useFocusEffect } from "@react-navigation/native";
-import { characterImageMap } from "../utils/characterImageMap";
+// import { characterImageMap } from "../utils/characterImageMap";
+import { getCharacterImage } from "../utils/characterImageLoader";
 import { storeItemImageMap } from "../utils/storeItemImageMap";
 import {
   widthPercentageToDP as wp,
@@ -25,9 +26,8 @@ export default function MainScreen({ navigation }) {
   const [nickname, setNickname] = useState("");
   const [daysSinceCreated, setDaysSinceCreated] = useState(0);
   const [totalCoin, setTotalCoin] = useState(0);
-  const [handaliImage, setHandaliImage] = useState(
-    characterImageMap["default_character.png"]
-  );
+  // ✅ 수정: getCharacterImage 함수를 사용하여 초기 이미지를 설정합니다.
+  const [handaliImage, setHandaliImage] = useState(getCharacterImage(null));
   const [appliedItems, setAppliedItems] = useState({
     소파: null,
     배경: null,
@@ -229,11 +229,13 @@ export default function MainScreen({ navigation }) {
         setDaysSinceCreated(data.days_since_created);
         setTotalCoin(data.total_coin);
 
-        if (data.handali_img && characterImageMap[data.handali_img]) {
-          setHandaliImage(characterImageMap[data.handali_img]);
-        } else {
-          setHandaliImage(characterImageMap["default_character.png"]);
-        }
+        // if (data.handali_img && characterImageMap[data.handali_img]) {
+        //   setHandaliImage(characterImageMap[data.handali_img]);
+        // } else {
+        //   setHandaliImage(characterImageMap["default_character.png"]);
+        // }
+        // ✅ 수정: getCharacterImage 함수를 사용하여 이미지를 설정합니다.
+        setHandaliImage(getCharacterImage(data.handali_img));
 
         const applied = {
           소파: data.sofa_img?.includes("none") ? null : data.sofa_img,
