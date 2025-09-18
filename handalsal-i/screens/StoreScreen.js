@@ -496,7 +496,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     padding: wp("4%"),
-    marginTop: hp("6%"),
+    marginTop: hp("3%"),
   },
   closeIcon: { width: wp("6%"), height: wp("6%") },
   coinWrapper: {
@@ -513,6 +513,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#B9D7F1",
     marginHorizontal: wp("4%"),
     borderRadius: wp("5%"),
+    top: hp("-2%"),
     position: "relative",
   },
   rightButtons: {
@@ -533,12 +534,13 @@ const styles = StyleSheet.create({
   },
   selectedSmallIcon: { tintColor: "#002D73" },
   itemContainer: {
-    height: hp("50%"),
+    height: hp("44%"),
     backgroundColor: "#fff",
     borderTopLeftRadius: wp("8%"),
     borderTopRightRadius: wp("8%"),
     paddingTop: wp("4%"),
     paddingHorizontal: wp("6%"),
+    top: hp("3%"),
   },
   tabContainer: {
     flexDirection: "row",

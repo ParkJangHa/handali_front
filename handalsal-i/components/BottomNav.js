@@ -59,7 +59,7 @@ export default function BottomNav({
 const styles = StyleSheet.create({
   bottomNav: {
     position: "absolute",
-    bottom: hp("1.5%"),
+    bottom: hp("3%"),
     width: "85%",
     height: hp("7%"),
     flexDirection: "row",

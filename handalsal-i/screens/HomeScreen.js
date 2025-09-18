@@ -30,7 +30,25 @@ const HomeScreen = ({ navigation }) => {
         if (response.ok) {
           navigation.navigate("MainScreen");
         } else if (response.status === 404) {
-          navigation.navigate("Category");
+       // view 없음 → 최근 생성된 한달이가 있는지 확인해서
+       // 있으면 직업 획득 화면으로, 없으면 카테고리 선택으로 보냄
+       try {
+         const recentRes = await fetch(`${API_BASE_URL}/handalis/recent`, {
+           method: "GET",
+           headers: { Authorization: `Bearer ${token}` },
+         });
+         if (recentRes.ok) {
+           const recent = await recentRes.json();
+           navigation.navigate("JobScreen", { handaliId: recent.handali_id });
+         } else if (recentRes.status === 404) {
+           navigation.navigate("Category");
+         } else {
+           await AsyncStorage.removeItem("authToken");
+         }
+       } catch (e) {
+         console.error("최근 한달이 조회 오류:", e);
+         navigation.navigate("Category");
+       }
         } else {
           await AsyncStorage.removeItem("authToken");
         }

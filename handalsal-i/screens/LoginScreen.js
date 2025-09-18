@@ -48,14 +48,39 @@ const LoginScreen = ({ navigation }) => {
       });
 
       if (handaliViewResponse.ok) {
+        // 현재 한달이가 있으면 메인으로
         navigation.navigate("MainScreen");
-      } else {
-        const seenTutorial = await AsyncStorage.getItem("tutorial_seen");
-        if (seenTutorial === "true") {
-          navigation.navigate("Category");
-        } else {
-          navigation.navigate("TutorialScreen");
+      } else if (handaliViewResponse.status === 404) {
+        // 2) 최근 생성된 한달이 존재하면 JobScreen(handaliId)으로
+        try {
+          const recentRes = await fetch(`${API_BASE_URL}/handalis/recent`, {
+            method: "GET",
+            headers: { Authorization: `Bearer ${data.Bearer}` },
+          });
+          if (recentRes.ok) {
+            const recent = await recentRes.json();
+            navigation.navigate("JobScreen", { handaliId: recent.handali_id });
+          } else if (recentRes.status === 404) {
+            // 3) 최근 것도 없으면: 튜토리얼 시청 여부로 분기
+            const seenTutorial = await AsyncStorage.getItem("tutorial_seen");
+            if (seenTutorial === "true") {
+              navigation.navigate("Category"); // 라우트 이름 쓰던 것 유지
+            } else {
+              navigation.navigate("TutorialScreen");
+            }
+          } else {
+            // 그 외 서버 오류 케이스
+            Alert.alert("오류", "서버 응답이 올바르지 않습니다.");
+          }
+        } catch (e) {
+          console.error("최근 한달이 조회 오류:", e);
+          const seenTutorial = await AsyncStorage.getItem("tutorial_seen");
+          navigation.navigate(seenTutorial === "true" ? "Category" : "TutorialScreen");
         }
+      } else {
+        // 인증 만료/기타 오류
+        await AsyncStorage.removeItem("authToken");
+        Alert.alert("오류", "세션이 만료되었어요. 다시 로그인해주세요.");
       }
     } catch (error) {
       console.error("로그인 오류:", error);
