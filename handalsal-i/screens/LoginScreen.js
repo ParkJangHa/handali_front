@@ -7,7 +7,7 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from "@env";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
-
+import { SafeAreaView } from "react-native-safe-area-context";
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -90,7 +90,7 @@ const LoginScreen = ({ navigation }) => {
 
   return (
     <>
-      <StatusBar hidden={true} />
+      <StatusBar hidden={false}/>
       <KeyboardAwareScrollView
         style={{ flex: 1 }}
         contentContainerStyle={styles.container}
@@ -104,32 +104,31 @@ const LoginScreen = ({ navigation }) => {
           <Image source={require("../assets/LoginScreen/Weve.png")} style={styles.img} resizeMode="stretch" />
           <Image source={require("../assets/LoginScreen/Blue.png")} style={styles.catIcon} />
           <Image source={require("../assets/LoginScreen/turtle.png")} style={styles.turuleImg} />
-          <Image source={require("../assets/LoginScreen/crab.png")} style={styles.crabImg} />
-
-          <View style={styles.bContainer} />
+          
+        <View style={styles.bContainer} />
 
           <View style={styles.inputWithIconEmail}>
-            <Image source={require("../assets/LoginScreen/Email_icon.png")} style={styles.icon} />
+            <Image source={require("../assets/LoginScreen/Email_icon.png")} style={styles.emailIcon} />
             <TextInput
               style={styles.inputField}
-              placeholder="email"
+              placeholder="이메일"
               keyboardType="email-address"
               value={email}
               onChangeText={setEmail}
-              placeholderTextColor="#000000"
+              placeholderTextColor="#868686"
               returnKeyType="next"
             />
           </View>
 
           <View style={styles.inputWithIconPassword}>
-            <Image source={require("../assets/LoginScreen/Password_icon.png")} style={styles.icon} />
+            <Image source={require("../assets/LoginScreen/Password_icon.png")} style={styles.passwordIcon} />
             <TextInput
               style={styles.inputField}
-              placeholder="password"
+              placeholder="비밀번호"
               secureTextEntry
               value={password}
               onChangeText={setPassword}
-              placeholderTextColor="#000000"
+              placeholderTextColor="#868686"
               returnKeyType="done"
             />
           </View>
@@ -165,18 +164,18 @@ const styles = StyleSheet.create({
     flexGrow: 1,                 
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#8BE1FC",
-    paddingBottom: hp("2%"),    
+    backgroundColor: "#EDFEFF",
+    paddingTop: hp("1%"),    
   },
-  bContainer: { marginBottom: hp("30%") },
+  bContainer: { marginBottom: hp("4%") },
   img: {
-    top: 0, position: "absolute",
+    bottom: -16, position: "absolute",
     width: wp("100%"), height: hp("45%"),
     zIndex: 0,
   },
   catIcon: {
     position: "absolute",
-    top: hp("3%"),
+    top: hp("0%"),
     width: wp("55%"), height: hp("25%"),
     resizeMode: "contain",
     alignSelf: "center",
@@ -185,41 +184,36 @@ const styles = StyleSheet.create({
     position: "absolute",
     width: wp("14%"), height: hp("9%"),
     resizeMode: "contain",
-    top: hp("0%"), left: wp("0%"),
-  },
-  crabImg: {
-    position: "absolute",
-    width: wp("14%"), height: hp("9%"),
-    resizeMode: "contain",
-    top: hp("25%"), left: wp("60%"),
+    top: hp("18%"), left: wp("0%"),
   },
   inputWithIconEmail: {
     flexDirection: "row",
     alignItems: "center",
-    width: wp("65%"),
-    paddingVertical: hp("0.8%"),
+    width: wp("73%"),
+    paddingVertical: hp("1.2%"),
     paddingHorizontal: wp("20%"),
-    borderRadius: 30,
-    borderWidth: 3,
-    borderColor: "#76D6F4",
+    borderRadius: 10,
     marginBottom: hp("2.5%"),
-    marginTop: hp("5%"),
+    marginTop: hp("8%"),
     backgroundColor: "#FFFFFF",
   },
   inputWithIconPassword: {
     flexDirection: "row",
     alignItems: "center",
-    width: wp("65%"),
-    paddingVertical: hp("0.8%"),
+    width: wp("73%"),
+    paddingVertical: hp("1.2%"),
     paddingHorizontal: wp("20%"),
-    borderRadius: 30,
-    borderWidth: 3,
-    borderColor: "#76D6F4",
+    borderRadius: 10,
     marginBottom: hp("2.5%"),
     backgroundColor: "#FFFFFF",
   },
-  icon: {
-    width: wp("3.8%"), height: hp("2.5%"),
+  emailIcon: {
+    width: wp("4%"), height: hp("1.5%"),
+    marginRight: wp("2%"),
+    right: wp("10%"),
+  },
+  passwordIcon: {
+    width: wp("4%"), height: hp("2%"),
     marginRight: wp("2%"),
     right: wp("10%"),
   },
@@ -235,25 +229,25 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: wp("80%"),
     gap: wp("4%"),
-    marginTop: hp("3%"),
+    marginTop: hp("1%"),
   },
   button: {
-    backgroundColor: "#FFF5CB",
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
     paddingVertical: 12, paddingHorizontal: 65,
-    borderRadius: 30, borderWidth: 3, borderColor: "#76D6F4",
+    borderRadius: 30,
     marginTop: 10,
   },
   buttonText: {
-    color: "#000", fontSize: 20, fontFamily: "Jua-Regular",
+    color: "#000", fontSize: 16, fontFamily: "Jua-Regular",
   },
   signupButton: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
     paddingVertical: 12, paddingHorizontal: 30,
-    borderRadius: 30, borderWidth: 3, borderColor: "#76D6F4",
+    borderRadius: 30,
     marginTop: 10,
   },
   signupText: {
-    color: "#2D5D6B", fontSize: 17, fontFamily: "Jua-Regular",
+    color: "#000", fontSize: 16, fontFamily: "Jua-Regular",
   },
   resetTutorialButton: {
     backgroundColor: "#FFDDDD",

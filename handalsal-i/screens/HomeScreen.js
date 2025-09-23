@@ -1,12 +1,14 @@
-import { StatusBar } from "expo-status-bar";
+import React, { useCallback, useState, useRef, useEffect } from "react";
 import {
   StyleSheet,
   Text,
   View,
-  TouchableOpacity,
   Image,
+  Pressable,
+  ActivityIndicator,
+  Alert,
+  Animated
 } from "react-native";
-import React, { useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from "@env";
 import {
@@ -14,61 +16,113 @@ import {
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
 
-
 const HomeScreen = ({ navigation }) => {
+  const [busy, setBusy] = useState(false);
+
+  const blinkAnim = useRef(new Animated.Value(1)).current;
   useEffect(() => {
-    const checkLoginStatus = async () => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(blinkAnim, { toValue: 0.25, duration: 600, useNativeDriver: true }),
+        Animated.timing(blinkAnim, { toValue: 1, duration: 600, useNativeDriver: true }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [blinkAnim]);
+
+  const checkLoginAndRoute = useCallback(async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
       const token = await AsyncStorage.getItem("authToken");
-      if (!token) return;
-
-      try {
-        const response = await fetch(`${API_BASE_URL}/handalis/view`, {
-          method: "GET",
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (response.ok) {
-          navigation.navigate("MainScreen");
-        } else if (response.status === 404) {
-       // view 없음 → 최근 생성된 한달이가 있는지 확인해서
-       // 있으면 직업 획득 화면으로, 없으면 카테고리 선택으로 보냄
-       try {
-         const recentRes = await fetch(`${API_BASE_URL}/handalis/recent`, {
-           method: "GET",
-           headers: { Authorization: `Bearer ${token}` },
-         });
-         if (recentRes.ok) {
-           const recent = await recentRes.json();
-           navigation.navigate("JobScreen", { handaliId: recent.handali_id });
-         } else if (recentRes.status === 404) {
-           navigation.navigate("Category");
-         } else {
-           await AsyncStorage.removeItem("authToken");
-         }
-       } catch (e) {
-         console.error("최근 한달이 조회 오류:", e);
-         navigation.navigate("Category");
-       }
-        } else {
-          await AsyncStorage.removeItem("authToken");
-        }
-      } catch (error) {
-        console.error("자동 로그인 확인 오류:", error);
+      if (!token) {
+        navigation.navigate("Login");
+        return;
       }
-    };
 
-    checkLoginStatus();
-  }, []);
+      // 현재 한달이 뷰 존재 확인
+      const res = await fetch(`${API_BASE_URL}/handalis/view`, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (res.ok) {
+        navigation.navigate("MainScreen");
+        return;
+      }
+
+      if (res.status === 404) {
+        // view 없음 → 최근 한달이 확인
+        try {
+          const recentRes = await fetch(`${API_BASE_URL}/handalis/recent`, {
+            method: "GET",
+            headers: { Authorization: `Bearer ${token}` },
+          });
+
+          if (recentRes.ok) {
+            const recent = await recentRes.json();
+            navigation.navigate("JobScreen", { handaliId: recent.handali_id });
+            return;
+          }
+
+          if (recentRes.status === 404) {
+            navigation.navigate("Category");
+            return;
+          }
+
+          // 기타 에러면 토큰 정리 후 로그인으로
+          await AsyncStorage.removeItem("authToken");
+          navigation.navigate("Login");
+          return;
+        } catch (err) {
+          console.error("최근 한달이 조회 오류:", err);
+          navigation.navigate("Category");
+          return;
+        }
+      }
+
+      // 기타 상태코드 → 토큰 제거 후 로그인
+      await AsyncStorage.removeItem("authToken");
+      navigation.navigate("Login");
+    } catch (error) {
+      console.error("진입 분기 오류:", error);
+      Alert.alert("네트워크 오류", "잠시 후 다시 시도해 주세요.");
+    } finally {
+      setBusy(false);
+    }
+  }, [busy, navigation]);
 
   return (
-    <View style={styles.wrapper}>
-      <StatusBar style="dark" />
+    <Pressable style={styles.wrapper} onPress={checkLoginAndRoute}>
+      <Image
+        source={require("../assets/HomeScreen/Weve.png")}
+        style={styles.background}
+        resizeMode="stretch"
+      />
       <View style={styles.container}>
         {/* 상단 이미지 */}
         <View style={styles.imgCon}>
+          <Pressable
+            onLongPress={async (e) => {
+              e.stopPropagation();
+              try {
+                await AsyncStorage.removeItem("authToken");
+                Alert.alert("개발용", "토큰이 제거되었습니다!");
+              } catch (err) {
+                console.error("토큰 제거 오류:", err);
+              }
+            }}
+          >
+            <Image
+              source={require("../assets/HomeScreen/Blue.png")}
+              style={styles.catIcon}
+              resizeMode="contain"
+            />
+          </Pressable>
           <Image
-            source={require("../assets/HomeScreen/calendarImg.png")}
-            style={styles.calendarImg}
+            source={require("../assets/HomeScreen/crab.png")}
+            style={styles.crabImg}
           />
           <Image
             source={require("../assets/HomeScreen/turtle.png")}
@@ -76,59 +130,34 @@ const HomeScreen = ({ navigation }) => {
           />
         </View>
 
-        {/* 타이틀 및 버튼 */}
-        <View style={styles.titeCon}>
-          <TouchableOpacity
-            style={styles.buttonlogin}
-            onPress={() => navigation.navigate("Login")}
-          >
-            <Image
-              source={require("../assets/HomeScreen/Assign_icon.png")}
-              style={styles.icon}
-            />
-            <Text style={styles.buttonText}>login</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => navigation.navigate("Signup")}
-          >
-            <Image
-              source={require("../assets/HomeScreen/Login_icon.png")}
-              style={styles.icon}
-            />
-            <Text style={styles.buttonText}>assign</Text>
-          </TouchableOpacity>
+        {/* (버튼 제거) 타이틀/간단 안내 문구만 유지 가능 */}
+        <View style={styles.titleCon}>
+          <Animated.Text style={[styles.tapText, { opacity: blinkAnim }]}>
+            화면을 터치해주세요!
+          </Animated.Text>
+          <Text style={styles.engText}>Touch The Screen!</Text>
         </View>
       </View>
 
-      {/* 고양이 이미지 */}
-      <Image
-        source={require("../assets/HomeScreen/Yellow.png")}
-        style={styles.catIcon}
-      />
-
-      {/* 하단 배경 이미지 */}
-      <Image
-        source={require("../assets/HomeScreen/Weve.png")}
-        style={styles.background}
-        resizeMode="stretch"
-      />
-
-      {/**하단 버전 정보 */}
+      {/* 하단 버전 정보 */}
       <View style={styles.versionBox}>
         <Text style={styles.versionText}>v1.0.0</Text>
       </View>
 
-    </View>
-
+      {/* 로딩 오버레이 */}
+      {busy && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" />
+        </View>
+      )}
+    </Pressable>
   );
 };
 
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    backgroundColor: "#FFF5CB",
+    backgroundColor: "#8BE1FC",
   },
   container: {
     flex: 1,
@@ -139,69 +168,50 @@ const styles = StyleSheet.create({
   },
   background: {
     position: "absolute",
-    bottom: 0,
+    top: 0,
     width: wp("100%"),
-    height: hp("38%"),
+    height: hp("75%"),
     zIndex: 0,
   },
   imgCon: {
     height: hp("20%"),
     marginTop: hp("5%"),
   },
-  calendarImg: {
-    width: wp("50%"),
-    height: hp("25%"),
-    resizeMode: "contain",
-  },
   turtleImg: {
     width: wp("14%"),
     height: hp("9%"),
     resizeMode: "contain",
-    top: hp("-4%"),
-    left: wp("-15%"),
+    top: hp("-10%"),
+    left: wp("-35%"),
   },
-  titeCon: {
-    height: hp("66%"),
+  crabImg: {
+    width: wp("14%"),
+    height: hp("9%"),
+    resizeMode: "contain",
+    top: hp("27%"),
+    left: wp("35%"),
+  },
+  titleCon: {
+    height: hp("18%"),
     alignItems: "center",
+    justifyContent: "flex-start",
     gap: hp("2%"),
-    marginTop: hp("15%"),
   },
-  buttonlogin: {
-    borderWidth: 2,
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    borderColor: "#76D6F4",
-    paddingVertical: hp("0.8%"),
-    paddingHorizontal: wp("20%"),
-    borderRadius: 30,
-    width: wp("60%"),
-    gap: wp("2.5%"),
-  },
-  button: {
-    borderWidth: 2,
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    borderColor: "#76D6F4",
-    paddingVertical: hp("0.8%"),
-    paddingHorizontal: wp("20%"),
-    borderRadius: 30,
-    width: wp("60%"),
-    gap: wp("2.5%"),
-  },
-  icon: {
-    width: wp("3.8%"),
-    height: hp("2.5%"),
-  },
-  buttonText: {
-    fontSize: 15,
-    color: "#2D5D6B",
+  tapText: {
+    fontSize: 16,
+    color: "#4F4F4F",
     fontFamily: "Jua-Regular",
+    opacity: 1,
+  },
+  engText: {
+    fontSize: 14,
+    color: "#FFF4F4",
+    fontFamily: "Jua-Regular",
+    opacity: 1,
   },
   catIcon: {
     position: "absolute",
-    bottom: hp("5%"),
+    top: hp("5%"),
     width: wp("55%"),
     height: hp("25%"),
     resizeMode: "contain",
@@ -209,14 +219,19 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   versionBox: {
-    position: 'absolute',
+    position: "absolute",
     bottom: hp("1.5%"),
-    width: '100%',
-    alignItems: 'center',
+    width: "100%",
+    alignItems: "center",
   },
   versionText: {
-    color: '#999',
+    color: "#999",
     fontSize: 12,
+  },
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 

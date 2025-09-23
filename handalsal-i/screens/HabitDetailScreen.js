@@ -1,380 +1,315 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Image, FlatList, Modal, TouchableWithoutFeedback, ActivityIndicator, Alert } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Image, Modal, TouchableWithoutFeedback, Platform, Alert, ScrollView, TextInput, KeyboardAvoidingView, Keyboard  } from "react-native";
 import Slider from "@react-native-community/slider";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Platform } from "react-native";
-import { API_BASE_URL } from '@env';
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from "react-native-responsive-screen";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
+import BottomNav from "../components/BottomNav";
+
+const categoryThemes = {
+    '활동': {
+        themeImage: require('../assets/record/activity_w.png'),
+        backgroundColor: 'rgba(194,227,255,0.8)', 
+        buttonColor: 'rgba(81,127,255,0.5)',
+    },
+    '지능': {
+        themeImage: require('../assets/record/intelligence_w.png'),
+        backgroundColor: '#D1FFCD', 
+        buttonColor: 'rgba(81,255,185,0.7)',
+    },
+    '예술': {
+        themeImage: require('../assets/record/art_w.png'),
+        backgroundColor: 'rgba(255,224,201,0.8)', 
+        buttonColor: 'rgba(255,143,81,0.5)',
+    }
+};
 
 export default function HabitDetailScreen({ route, navigation }) {
+    const { categoryType } = route.params;
+    const selectedHabitFromRoute = route.params?.selectedHabit;
 
-    const currentMonth = new Date().getMonth() + 1; // 현재 날짜에서 월 가져오기 (1~12)
-    const [habits, setHabits] = useState([]); // 세부 습관 (API 응답 데이터)
-    const [loading, setLoading] = useState(true); // api 응답 데이터가 로딩중인지 아닌지
-    const [selectedHabit, setSelectedHabit] = useState(null); // 선택된 습관
-    const [satisfaction, setSatisfaction] = useState(50); //성취만족도
-    const [showPicker, setShowPicker] = useState(false); //습관 시간, datetimepicker
+    const theme = categoryThemes[categoryType] || categoryThemes['활동'];
+
+    const [selectedHabit, setSelectedHabit] = useState(null);
+    const [satisfaction, setSatisfaction] = useState(50);
+    const [showPicker, setShowPicker] = useState(false);
     const [time, setTime] = useState(() => {
         const initialTime = new Date();
-        initialTime.setHours(0); // 시간 0 설정
-        initialTime.setMinutes(0); // 분 0 설정
+        initialTime.setHours(0);
+        initialTime.setMinutes(0);
         return initialTime;
-    });  //습관 시간
-
-    //카테고리명 영문화
-    const { categoryType } = route.params;
-    let convertedCategoryType;
-    if (categoryType == "활동")
-        convertedCategoryType = "ACTIVITY"
-    else if (categoryType == "지능")
-        convertedCategoryType = "INTELLIGENT"
-    else
-        convertedCategoryType = "ART"
-
-    // 만족도 3색 분기
-    const dynamicTextColor = (satisfaction) => {
-        if (satisfaction == 100) {
-            return { color: '#00bc61' }
-        }
-        else if (satisfaction >= 75) {
-            return { color: '#3076f7' };
-        } else if (satisfaction >= 50) {
-            return { color: 'black' };
-        } else {
-            return { color: '#e1e4e1' };
-        }
-    };
-
-    // api 호출 
-    const fetchHabits = async () => {
-        try {
-            const token = await AsyncStorage.getItem("authToken");
-
-            const response = await fetch(
-                `${API_BASE_URL}/habits/category-month?category=${convertedCategoryType}&month=${currentMonth}`,
-                {
-                    method: "GET",
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
-
-            if (response.status === 412) {
-                Alert.alert(
-                    "세션 만료",
-                    "로그인이 만료되었습니다. 다시 로그인해주세요.",
-                    [{
-                        text: "확인", onPress: async () => {
-                            await AsyncStorage.removeItem("authToken");
-                            navigation.navigate("Login");
-                        }
-                    }],
-                    { cancelable: false }
-                );
-                return;
-            }
-
-            if (response.ok) {
-                const data = await response.json();
-                if (data.habits.length === 0) {
-                    Alert.alert(`알림`, `이번 달에 ${categoryType}의 세부습관이 없습니다.`,
-                        [{ text: "확인", onPress: () => navigation.goBack() }],
-                        { cancelable: false }
-                    );
-                } else {
-                    setHabits(data.habits);
-                    console.log("습관 : " + JSON.stringify(data.habits, null, 2));
-                }
-            } else {
-                console.error("API 응답 오류:", data);
-            }
-        } catch (error) {
-            console.error("습관 데이터 가져오기 실패:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
+    });
+    const [comment, setComment] = useState("");
+    const [isKeyboardVisible, setKeyboardVisible] = useState(false);
 
     useEffect(() => {
-        fetchHabits();
-    }, []);
+            const keyboardDidShowListener = Keyboard.addListener(
+                'keyboardDidShow',
+                () => setKeyboardVisible(true) 
+            );
+            const keyboardDidHideListener = Keyboard.addListener(
+                'keyboardDidHide',
+                () => setKeyboardVisible(false) 
+            );
+
+            return () => {
+                keyboardDidHideListener.remove();
+                keyboardDidShowListener.remove();
+            };
+        }, []);
+    // SelectHabitScreen에서 습관을 선택하고 돌아왔을 때 상태를 업데이트합니다.
+    useEffect(() => {
+        if (selectedHabitFromRoute) {
+            setSelectedHabit(selectedHabitFromRoute);
+        }
+    }, [selectedHabitFromRoute]);
+
+    const dynamicTextColor = (satisfaction) => {
+        if (satisfaction === 100) return { color: '#00bc61' };
+        if (satisfaction >= 75) return { color: '#3076f7' };
+        if (satisfaction >= 50) return { color: 'black' };
+        return { color: '#e1e4e1' };
+    };
 
     return (
         <View style={styles.container}>
-            {/**뒤로가기 버튼 */}
-            <View style={styles.backButton}>
-                <TouchableOpacity
-                    onPress={() => { navigation.goBack() }}>
-                    <Image
-                        source={require('../assets/backButton.png')}>
-                    </Image>
+            {/* 상단 테마 영역 */}
+            <View style={[styles.headerContainer]}>
+                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                    <Image source={require('../assets/record/back.png')} />
                 </TouchableOpacity>
+                <Image source={theme.themeImage} style={styles.themeImage} />
             </View>
 
-            <View style={styles.containerRecord}>
-
-                {/**카테고리명 */}
-                <View style={styles.categoryName}>
-                    <Text style={styles.categoryNameText}>{categoryType}</Text>
-                </View>
-
-                {/**세부습관 */}
-                <View style={styles.detailHabitCon}>
-                    <View style={styles.labels}>
-                        <Text style={styles.labelsText}>세부습관</Text>
-                    </View>
-
-                    {loading ? (
-                        <ActivityIndicator size="large" color="#FF9730" /> // 로딩중임을 알리는 스피너
-                    ) : (
-                        <FlatList
-                            data={habits}
-                            keyExtractor={(item) => item.habit_id.toString()}
-                            renderItem={({ item }) => (
-                                <TouchableOpacity
-                                    style={[styles.detailHabitButton, selectedHabit === item.detail && styles.selectedButton]}
-                                    onPress={() => setSelectedHabit(item.detail)}
-                                >
-                                    <Text style={[styles.contentText, selectedHabit === item.detail && styles.selectedText]}>{item.detail}</Text>
-                                </TouchableOpacity>
-                            )}
-                            ListEmptyComponent={<Text style={styles.contentText}>세부습관이 없습니다.</Text>}
-                            style={styles.scrollView}
-                        />
-                    )}
-                </View>
-
-
-                {/**습관 시간*/}
-                <View style={styles.habitTimeCon}>
-                    <View style={styles.labels}>
-                        <Text style={styles.labelsText}>습관시간</Text>
-                    </View>
-
-                    <TouchableOpacity onPress={() => setShowPicker(true)} style={styles.timeButton}>
-                        <View>
-                            <Text style={styles.contentText} >{time.getHours()}시간 {time.getMinutes()}분</Text>
+            {/* 하단 정보 입력 패널 */}
+            <View style={[styles.bottomSheet, { backgroundColor: theme.backgroundColor }]}>
+                <Image source={require('../assets/record/header.png')} style={styles.panelHandle} />
+                
+                <ScrollView 
+                    style={{ flex: 1 }}
+                    contentContainerStyle={{ paddingBottom: hp('22%') }}
+                >
+                {/* 1. 세부 습관 표시 */}
+                <View style={styles.sectionContainer}>
+                    <Text style={styles.labelText}>세부습관</Text>
+                        <View style={styles.displayBox}> 
+                            <Text style={styles.contentText}>
+                                {selectedHabit ? selectedHabit.detail : '습관을 선택해주세요'}
+                            </Text>
                         </View>
+                </View>
+                {/* 2. 습관 시간 설정 */}
+                <View style={styles.sectionContainer}>
+                    <Text style={styles.labelText}>습관시간</Text>
+                    <TouchableOpacity onPress={() => setShowPicker(true)} style={styles.displayBox}>
+                        <Text style={styles.contentText}>{time.getHours()}시간 {time.getMinutes()}분</Text>
                     </TouchableOpacity>
-
-                    {
-                        Platform.OS === 'android' && showPicker && (
-                            <DateTimePicker
-                                value={time}
-                                mode="time"
-                                display="spinner"
-                                themeVariant="light"
-                                is24Hour={true}
-                                onChange={(event, selectedTime) => {
-                                    if (selectedTime) {
-                                        setTime(selectedTime);
-                                    }
-                                    setShowPicker(false);
-                                }}
-                            ></DateTimePicker>
-                        )
-                    }
-
-                    {
-                        Platform.OS === 'ios' && (
-                            <Modal
-                                visible={showPicker}
-                                transparent={true}
-                                animationType="slide"
-                                onRequestClose={() => setShowPicker(false)}
-                            >
-                                <TouchableWithoutFeedback onPress={() => setShowPicker(false)}>
-                                    <View style={styles.modalContainer}>
-                                        <View style={styles.pickerContainer}>
-                                            <DateTimePicker
-                                                value={time}
-                                                mode="time"
-                                                locale="en-GB"
-                                                display="spinner"
-                                                themeVariant="light"
-                                                onChange={(event, selectedTime) => { //시간 또는 분이 바뀔 경우
-                                                    if (selectedTime) {
-                                                        setTime(selectedTime);
-                                                    }
-                                                    setShowPicker(false);
-                                                }} />
-                                        </View>
-                                    </View>
-                                </TouchableWithoutFeedback>
-                            </Modal>
-                        )
-                    }
-
-
                 </View>
 
-
-                {/**성취만족도 */}
-                <View style={styles.satisfactionCon}>
-                    <View style={styles.labels}>
-                        <Text style={styles.labelsText}>성취만족도 </Text>
-                        <Text style={[dynamicTextColor(satisfaction), styles.labelsText]}>{satisfaction}</Text>
+                {/* 3. 성취 만족도 설정 */}
+                <View style={styles.sectionContainer}>
+                    <View style={styles.satisfactionLabel}>
+                        <Text style={styles.labelText}>성취만족도</Text>
+                        <Text style={[styles.satisfactionValue, dynamicTextColor(satisfaction)]}>{satisfaction}</Text>
                     </View>
-
                     <Slider
-                        thumbTintColor="black"
-                        minimumTrackTintColor="#3076f7" // 최소 트랙 색상
-                        maximumTrackTintColor="white"
+                        thumbTintColor="#515151"
+                        minimumTrackTintColor={theme.buttonColor}
+                        maximumTrackTintColor="rgba(255,255,255,0.5)"
                         minimumValue={1}
                         maximumValue={100}
                         step={1}
                         value={satisfaction}
-                        onValueChange={(value) => setSatisfaction(value)
-                        }
+                        onValueChange={(value) => setSatisfaction(Math.round(value))}
                     />
-
                 </View>
+                 <View style={styles.sectionContainer}>
+                        <Text style={styles.labelText}>한마디</Text>
+                        <TextInput
+                            style={styles.memoInput}
+                            placeholder="오늘의 습관에 대한 코멘트를 남겨보세요. (선택)"
+                            placeholderTextColor="#777"
+                            value={comment}
+                            onChangeText={setComment}
+                            multiline={true} // 여러 줄 입력 가능하도록
+                        />
+                    </View>
+                </ScrollView>
 
-                {/**기록하기 버튼*/}
-                <View style={styles.recordCon}>
-                    <TouchableOpacity
-                        style={styles.recordButton}
-                        onPress={() => {
-                            if (selectedHabit) {
-                                navigation.navigate('HabitCheck', {
-                                    categoryName: categoryType,
-                                    detailedHabit: selectedHabit,
-                                    habitTime: `${time.getHours()}시간 ${time.getMinutes()}분`,
-                                    satisfaction: satisfaction,
-                                });
-                            } else {
-                                Alert.alert("알림", '세부습관을 선택해주세요!', [{ text: "확인" }], { cancelable: false });
-                            }
+                {/* 기록하기 버튼 */}
+                <TouchableOpacity
+                    style={[
+                            styles.recordButton, 
+                            { backgroundColor: theme.buttonColor },
+                            isKeyboardVisible ? styles.buttonKeyboardVisible : styles.buttonKeyboardHidden
+                        ]}
+                    onPress={() => {
+                        if (time.getHours() === 0 && time.getMinutes() === 0) {
+                            Alert.alert("알림", "습관 시간은 0시간 0분 이상으로 설정해야 합니다.");
+                            return; // 함수를 여기서 중단
+                        }
+                        if (selectedHabit) {
+                            navigation.navigate('HabitCheck', {
+                                categoryName: categoryType,
+                                detailedHabit: selectedHabit.detail,
+                                habitTime: `${time.getHours()}시간 ${time.getMinutes()}분`,
+                                satisfaction: satisfaction,
+                            });
+                        } else {
+                            Alert.alert("알림", '세부습관을 선택해주세요!');
+                        }
+                    }}
+                >
+                    <Text style={styles.recordButtonText}>기록하기</Text>
+                </TouchableOpacity>
 
-                        }}>
-                        <Text style={styles.recordText}>기록하기</Text>
-                    </TouchableOpacity>
-                </View>
+                {/* DateTimePicker Modal (iOS용) */}
+                { Platform.OS === 'ios' && (
+                    <Modal visible={showPicker} transparent={true} onRequestClose={() => setShowPicker(false)}>
+                        <TouchableWithoutFeedback onPress={() => setShowPicker(false)}>
+                            <View style={styles.modalContainer}>
+                                <View style={styles.pickerContainer}>
+                                    <DateTimePicker
+                                        value={time}
+                                        mode="time"
+                                        display="spinner"
+                                        onChange={(event, selectedTime) => {
+                                            if (selectedTime) setTime(selectedTime);
+                                            setShowPicker(false);
+                                        }}
+                                    />
+                                </View>
+                            </View>
+                        </TouchableWithoutFeedback>
+                    </Modal>
+                )}
+                {/* DateTimePicker (Android용) */}
+                { Platform.OS === 'android' && showPicker && (
+                    <DateTimePicker
+                        value={time}
+                        mode="time"
+                        display="spinner"
+                        onChange={(event, selectedTime) => {
+                            setShowPicker(false);
+                            if (selectedTime) setTime(selectedTime);
+                        }}
+                    />
+                )}
+            </View>
+            <View style={isKeyboardVisible ? { height: 0, overflow: 'hidden' } : {}}>
+                <BottomNav navigation={navigation} mode="record" active="Record" />
             </View>
         </View>
-    );
+    ); 
 }
 
-
-
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#FFFFFF",
-  },
-  backButton: {
-    marginTop: hp("6%"),
-    marginLeft: wp("6%"),
-  },
-  containerRecord: {
-    flex: 1,
-    backgroundColor: "#76D6F4",
-    borderTopLeftRadius: 50,
-    borderTopRightRadius: 50,
-    padding: hp("4%"),
-    marginTop: hp("3%"),
-  },
-  categoryName: {
-    flex: 0.1,
-    marginBottom: hp("3%"),
-  },
-  detailHabitCon: {
-    flex: 0.5,
-    marginBottom: hp("3%"),
-  },
-  habitTimeCon: {
-    flex: 0.3,
-    marginBottom: hp("3%"),
-  },
-  satisfactionCon: {
-    flex: 0.3,
-    marginBottom: hp("3%"),
-  },
-  recordCon: {
-    flex: 0.2,
-    justifyContent: "center",
-  },
-
-  scrollView: {
-    maxHeight: hp("20%"),
-  },
-
-  modalContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-  },
-  pickerContainer: {
-    width: wp("80%"),
-    backgroundColor: "#fdfaeb",
-    borderRadius: 20,
-    padding: 20,
-    alignItems: "center",
-  },
-
-  detailHabitButton: {
-    backgroundColor: "white",
-    opacity: 0.8,
-    padding: hp("2%"),
-    marginVertical: hp("1%"),
-    borderRadius: 20,
-    alignItems: "center",
-  },
-  selectedButton: {
-    backgroundColor: "#3076f7",
-  },
-  recordButton: {
-    backgroundColor: "#FFE98A",
-    padding: hp("2%"),
-    borderRadius: 30,
-    alignItems: "center",
-  },
-  timeButton: {
-    backgroundColor: "white",
-    opacity: 0.8,
-    padding: hp("2%"),
-    marginVertical: hp("1%"),
-    borderRadius: 20,
-    alignItems: "center",
-  },
-  timeModalButton: {
-    backgroundColor: "black",
-    width: "100%",
-    borderRadius: 20,
-    padding: 12,
-  },
-
-  categoryNameText: {
-    fontSize: wp("7.5%"),
-    fontFamily: "Jua-Regular",
-  },
-  labelsText: {
-    fontSize: wp("5%"),
-    fontFamily: "Jua-Regular",
-  },
-  recordText: {
-    fontSize: wp("5%"),
-    color: "black",
-    fontFamily: "Jua-Regular",
-  },
-  contentText: {
-    fontSize: wp("5%"),
-    fontFamily: "Jua-Regular",
-  },
-  modalText: {
-    fontSize: wp("5%"),
-    color: "white",
-    alignSelf: "center",
-    fontFamily: "Jua-Regular",
-  },
-  selectedText: {
-    fontFamily: "Jua-Regular",
-  },
+    container: {
+        flex: 1,
+        backgroundColor: "#FFFFFF",
+    },
+    headerContainer: {
+        height: hp('35%'),
+        paddingTop: hp("6%"),
+        paddingHorizontal: wp("6%"),
+        alignItems: 'center',
+    },
+    backButton: {
+        position: 'absolute',
+        left: wp('6%'),
+        top: hp('6%'),
+        zIndex: 1,
+    },
+    themeImage: {
+        width: wp('85%'),
+        height: hp('22%'),
+        resizeMode: 'contain',
+        marginTop: hp('3%'),
+    },
+    bottomSheet: {
+        flex: 1,
+        marginTop: -hp("5%"), // 헤더와 겹치게 설정
+        borderTopLeftRadius: 30,
+        borderTopRightRadius: 30,
+        paddingHorizontal: wp("8%"),
+    },
+    panelHandle: {
+        width: wp('22%'),
+        height: hp('1%'),
+        resizeMode: 'contain',
+        alignSelf: 'center',
+        marginTop: hp('1.5%'),
+        marginBottom: hp('2%'),
+    },
+    sectionContainer: {
+        marginBottom: hp('1.5%'),
+    },
+    labelText: {
+        fontSize: wp("5%"),
+        fontFamily: "Jua-Regular",
+        color: '#000000',
+        marginBottom: hp('1%'),
+    },
+    displayBox: {
+        backgroundColor: "#FBFBFB",
+        padding: hp("1.5%"),
+        borderRadius: 20,
+        alignItems: "center",
+    },
+    contentText: {
+        fontSize: wp("4%"),
+        fontFamily: "Jua-Regular",
+        color: '#515151',
+    },
+    satisfactionLabel: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    satisfactionValue: {
+        fontSize: wp("5%"),
+        fontFamily: "Jua-Regular",
+    },
+    memoInput: {
+        backgroundColor: "#FBFBFB",
+        borderRadius: 20,
+        padding: hp("1%"),
+        fontSize: wp("4%"),
+        fontFamily: "Jua-Regular",
+        color: '#515151',
+        minHeight: hp('1%'), // 최소 높이 지정
+        textAlignVertical: 'top', // 안드로이드에서 텍스트가 위에서부터 시작
+    },
+    recordButton: {
+        alignSelf: "center",
+        width: wp("43%"),
+        padding: hp("2%"),
+        borderRadius: 30,
+        alignItems: "center",
+        marginTop: hp('2%'),   
+        marginBottom: hp('2%'),
+    },
+    buttonKeyboardHidden: {
+        bottom: hp('15%'), // 하단바가 있을 때의 위치 (위쪽)
+    },
+    buttonKeyboardVisible: {
+        bottom: hp('0%'),  // 하단바가 없을 때의 위치 (아래쪽)
+    },
+    recordButtonText: {
+        fontSize: wp("5%"),
+        fontFamily: "Jua-Regular",
+        color: '#2D5D6B',
+    },
+    modalContainer: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+    },
+    pickerContainer: {
+        width: wp("80%"),
+        backgroundColor: "#fdfaeb",
+        borderRadius: 20,
+        padding: 20,
+        alignItems: "center",
+    },
 });
-

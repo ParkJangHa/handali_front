@@ -10,6 +10,7 @@ import {
   ScrollView,
   Platform,
   ImageBackground,
+  Image,
 } from "react-native";
 import { API_BASE_URL } from "@env";
 import {
@@ -129,83 +130,95 @@ const SignupScreen = ({ navigation }) => {
           contentContainerStyle={styles.scrollContainer}
           keyboardShouldPersistTaps="handled"
         >
-          <Text style={styles.title}>회원가입</Text>
+          <Text style={styles.title}>
+            Let's
+          </Text>
+          <Text style={styles.title}>
+            Start!
+          </Text>
+          <Text style={styles.subTitle}>한달이를 만나기 전, 간단한 정보가 필요해요.</Text>
 
+          <Text style={styles.inputTitle}>이메일</Text>
           <TextInput
             style={styles.input}
             placeholder="이메일"
             keyboardType="email-address"
             value={email}
             onChangeText={setEmail}
+            placeholderTextColor="#aaa"
           />
+          <Text style={styles.inputTitle}>비밀번호</Text>
           <View style={styles.passwordContainer}>
-  <TextInput
-    style={styles.passwordInput}
-    placeholder="비밀번호"
-    secureTextEntry={!showPassword}
-    value={password}
-    onChangeText={setPassword}
-    placeholderTextColor="#aaa"
-  />
-  <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-    <Text style={styles.eyeText}>
-      {showPassword ? "숨기기" : "보기"}
-    </Text>
-  </TouchableOpacity>
-</View>
+            <TextInput
+              style={styles.passwordInput}
+              placeholder="비밀번호"
+              secureTextEntry={!showPassword}
+              value={password}
+              onChangeText={setPassword}
+              placeholderTextColor="#aaa"
+            />
+            <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+              <Text style={styles.eyeText}>
+                {showPassword ? "숨기기" : "보기"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+          {confirmPasswordMessage !== "" && (
+            <Text
+              style={{
+                alignSelf: "flex-start",
+                marginLeft: wp("8%"),
+                marginTop: -hp("1%"),
+                marginBottom: hp("2%"),
+                color: password === confirmPassword ? "green" : "red",
+                marginBottom: 5,
+              }}
+            >
+              {confirmPasswordMessage}
+            </Text>
+          )}
+          <Text style={styles.inputTitle}>비밀번호 확인</Text>
+          <View style={styles.passwordContainer}>
+            <TextInput
+              style={styles.passwordInput}
+              placeholder="비밀번호 확인"
+              secureTextEntry={!showConfirmPassword}
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              placeholderTextColor="#aaa"
+            />
+            <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+              <Text style={styles.eyeText}>
+                {showConfirmPassword ? "숨기기" : "보기"}
+              </Text>
+            </TouchableOpacity>
+          </View>
 
-{confirmPasswordMessage !== "" && (
-  <Text
-    style={{
-      alignSelf: "flex-start",
-      marginLeft: wp("8%"),
-      marginTop: -hp("1%"),
-      marginBottom: hp("2%"),
-      color: password === confirmPassword ? "green" : "red",
-      marginBottom: 5,
-    }}
-  >
-    {confirmPasswordMessage}
-  </Text>
-)}
 
-<View style={styles.passwordContainer}>
-  <TextInput
-    style={styles.passwordInput}
-    placeholder="비밀번호 확인"
-    secureTextEntry={!showConfirmPassword}
-    value={confirmPassword}
-    onChangeText={setConfirmPassword}
-    placeholderTextColor="#aaa"
-  />
-  <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
-    <Text style={styles.eyeText}>
-      {showConfirmPassword ? "숨기기" : "보기"}
-    </Text>
-  </TouchableOpacity>
-</View>
-
-
-          
-
+          <Text style={styles.inputTitle}>이름</Text>
           <TextInput
             style={styles.input}
             placeholder="이름"
             value={name}
             onChangeText={setName}
+            placeholderTextColor="#aaa"
           />
+          <Text style={styles.inputTitle}>전화번호</Text>
           <TextInput
             style={styles.input}
-            placeholder="전화번호 (숫자만 입력)"
+            placeholder="전화번호"
             keyboardType="numeric"
             value={phone}
             onChangeText={(text) => setPhone(text.replace(/[^0-9]/g, ""))}
+            placeholderTextColor="#aaa"
           />
+          <Text style={styles.inputTitle}>생년월일</Text>
           <TextInput
             style={styles.input}
-            placeholder="생년월일 (YYYY-MM-DD)"
+            placeholder="생년월일"
             keyboardType="numeric"
             value={birthdate}
+            placeholderTextColor="#aaa"
             onChangeText={(text) => {
               let formatted = text.replace(/[^0-9]/g, "").slice(0, 8);
               if (formatted.length >= 4) {
@@ -217,8 +230,18 @@ const SignupScreen = ({ navigation }) => {
               setBirthdate(formatted);
             }}
           />
-          <TouchableOpacity style={styles.button} onPress={handleSignup}>
-            <Text style={styles.buttonText}>회원가입</Text>
+          
+          <TouchableOpacity
+            style={styles.arrowButton}
+            onPress={handleSignup}
+            activeOpacity={0.8}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Image
+              source={require("../assets/Arrow_r.png")} // ← 화살표 이미지 경로
+              style={styles.arrowIcon}
+              resizeMode="contain"
+            />
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -236,60 +259,81 @@ const styles = StyleSheet.create({
   scrollContainer: {
     justifyContent: "center",
     alignItems: "center",
-    paddingVertical: hp("5%"),
   },
   title: {
     fontSize: wp("9%"),
-    marginBottom: hp("2%"),
-    color: "#333",
+    color: "#000000",
     fontFamily: "Jua-Regular",
+    alignSelf: "flex-start",
+    left: wp("9%"),
+    marginTop: hp("-0.3%"),
+  },
+  subTitle:{
+    fontSize: wp("3%"),
+    color: "#B1B1B1",
+    fontFamily: "Jua-Regular",
+    alignSelf: "flex-start",
+    left: wp("9%"),
+    marginTop: hp("1%"),
+  },
+  inputTitle:{
+    fontSize: wp("3.4"),
+    color: "#000",
+    fontFamily: "Jua-Regular",
+    alignSelf: "flex-start",
+    left: wp("9%"),
+    marginTop: hp("1%"),
+    marginBottom: hp("1%"),
+    
   },
   input: {
     width: wp("85%"),
-    height: hp("6.5%"),
+    height: hp("4%"),
     borderWidth: 1,
     borderColor: "#ddd",
-    marginBottom: hp("2%"),
     paddingHorizontal: wp("4%"),
-    borderRadius: 15,
-    backgroundColor: "#FFF",
-    fontFamily: "Jua-Regular",
-  },
-  button: {
-    backgroundColor: "#FFF",
-    paddingVertical: hp("2%"),
-    paddingHorizontal: wp("10%"),
     borderRadius: 10,
-    marginTop: hp("1.5%"),
-  },
-  buttonText: {
-    color: "#000",
-    fontSize: wp("4.5%"),
+    backgroundColor: "#FFF",
     fontFamily: "Jua-Regular",
+    fontSize: wp("3%"),
+  },
+  arrowButton: {
+    alignSelf: "center",
+    marginTop: hp("5%"),
+    backgroundColor: "#0099FF",
+    borderRadius: 999,      
+    width: hp("10%"),
+    height: hp("10%"),
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  arrowIcon: {
+    width: wp("8%"),
+    height: wp("8%"),
   },
   passwordContainer: {
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
     borderColor: "#ddd",
-    borderRadius: 15,
+    borderRadius: 10,
     paddingHorizontal: 15,
-    marginBottom: 15,
     backgroundColor: "#FFF",
     width: wp("85%"),
-    height: 50,
+    height: hp("4%"),
   },
 
   passwordInput: {
     flex: 1,
-    fontSize: 16,
+    fontSize: wp("3%"),
+    color: "#000",
     fontFamily: "Jua-Regular",
   },
 
   eyeText: {
     marginLeft: 10,
-    fontSize: 14,
-    color: "#555",
+    fontSize: 13,
+    color: "#B1B1B1",
     fontFamily: "Jua-Regular",
   },
 });

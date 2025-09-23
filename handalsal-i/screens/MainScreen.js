@@ -21,6 +21,7 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
+import BottomNav from "../components/BottomNav";
 
 const SCREEN_W = Dimensions.get("window").width;
 const CARD_W = SCREEN_W * 0.6;         
@@ -1038,8 +1039,8 @@ export default function MainScreen({ navigation }) {
 
                         {/* 블록 4: 주급 */}
                         <View style={styles.block}>
-                          <Text style={styles.blockTitle}>주급</Text>
-                          <Text style={styles.blockValue}>
+                          <Text style={styles.blocktitleSalary}>주급</Text>
+                          <Text style={styles.blockvalueSalary}>
                             {(it.salary ?? 0).toLocaleString()} 코인
                           </Text>
                         </View>
@@ -1071,40 +1072,7 @@ export default function MainScreen({ navigation }) {
             </View>
           </>
         )}
-
-        {/* 하단 네비: 좌=상점 / 중=기록 / 우=아파트 */}
-        <View
-          key={`nav-${modalVisible ? 'on' : 'off'}`}
-          collapsable={false}
-          style={styles.bottomNav}
-        >
-          <TouchableOpacity
-            style={styles.navButton}
-            onPress={() => navigation.navigate("Store")}
-          >
-            <Image source={require("../assets/icons/store.png")} style={styles.navIcon} />
-            <Text style={styles.navText}>상점</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.recordButton}
-            onPress={() => navigation.navigate("Record")}
-            activeOpacity={0.9}
-          >
-            <Image source={require("../assets/icons/record.png")} style={styles.recordIcon} />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.navButton}
-            onPress={() => navigation.navigate("ApartScreen")}
-          >
-            <Image
-              source={require("../assets/icons/apartment_nav.png")}
-              style={styles.navIcon}
-            />
-            <Text style={styles.navText}>아파트</Text>
-          </TouchableOpacity>
-        </View>
+        <BottomNav navigation={navigation} mode="default" active="Main" />
       </View>
     </ImageBackground>
   );
@@ -1123,7 +1091,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     position: "relative",
-    marginBottom: hp("2%"),
   },
   topBar: {
     flexDirection: "row",
@@ -1282,48 +1249,6 @@ const styles = StyleSheet.create({
     resizeMode: "contain",
   },
 
-  /* 하단 네비 */
-  bottomNav: {
-    position: "absolute",
-    bottom: hp("1.5%"),
-    width: "85%",
-    height: hp("7%"),
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: wp("15%"),
-    paddingVertical: hp("2%"),
-    zIndex: 49,
-    elevation: 14,
-    backgroundColor: "rgba(255,255,255,0.9)",
-    borderTopLeftRadius: wp("7%"),
-    borderTopRightRadius: wp("7%"),
-    borderBottomLeftRadius: wp("7%"),
-    borderBottomRightRadius: wp("7%"),
-    marginBottom: hp("3%"),
-    alignSelf: "center",
-  },
-  navButton: {
-    alignItems: "center",
-  },
-  navIcon: {
-    width: wp("7%"),
-    height: wp("7%"),
-  },
-  navText: {
-    fontSize: wp("4%"),
-    color: "#2D5D6B",
-    fontFamily: "Jua-Regular",
-  },
-  recordButton: {
-    alignItems: "center",
-  },
-  recordIcon: {
-    width: wp("19%"),
-    height: wp("17%"),
-    marginBottom: hp("4%"),
-  },
-
   /* 캐릭터 말풍선 */
   speechBubble: {
     position: "absolute",
@@ -1368,6 +1293,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 6,
+    marginBottom: hp("2%"),
   },
   fabMainIcon: {
     width: wp("9%"),
@@ -1381,6 +1307,7 @@ const styles = StyleSheet.create({
     bottom: hp("22%"),
     zIndex: 20,           // ✅ 네비보다 위, 메인FAB 아래
     alignItems: "flex-end",
+    marginBottom: hp("2%"),
   },
   fabActionItem: {
     position: "absolute",
@@ -1427,6 +1354,7 @@ const styles = StyleSheet.create({
     zIndex: 31,
     elevation: 12,
     alignItems: "flex-end",
+    marginBottom: hp("2%"),
   },
   questIcon: {
     width: wp("9%"),
@@ -1728,11 +1656,25 @@ const styles = StyleSheet.create({
     marginBottom: hp("0.2%"),
     left: wp("9.5%"),
   },
+   blocktitleSalary: {
+    fontSize: wp("3.4%"),
+    color: "#6B7B83",
+    fontFamily: "Jua-Regular",
+    marginBottom: hp("0.2%"),
+    left: wp("9.5%"),
+  },
 
   blockValue: {
     fontSize: wp("4.2%"),
     color: "#1D1D1D",
     fontFamily: "Jua-Regular",
+  },
+  blockvalueSalary: {
+    fontSize: wp("4.2%"),
+    color: "#1D1D1D",
+    fontFamily: "Jua-Regular",
+    alignSelf: "center",
+    right: wp("1%"),
   },
 
   blockStatRow: {
