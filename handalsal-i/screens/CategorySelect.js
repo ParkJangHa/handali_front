@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Image,} from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Image, Alert } from "react-native";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from "@env";
@@ -28,52 +28,72 @@ const CategorySelect = ({ navigation, route }) => {
     }
   };
   const handleKeepLastMonth = async () => {
-  if (isKeeping) return;          // 빠른 연타 방지
-  setIsKeeping(true);
+    if (isKeeping) return;          // 빠른 연타 방지
+    setIsKeeping(true);
 
-  try {
-    // 프로젝트에서 쓰는 토큰 키에 맞춰 하나라도 있으면 사용
-    const token =
-      (await AsyncStorage.getItem("accessToken")) ||
-      (await AsyncStorage.getItem("token")) ||
-      (await AsyncStorage.getItem("authToken"));
-
-    if (!token) {
-      alert("로그인이 필요합니다.");
-      setIsKeeping(false);
-      return;
-    }
-
-    const res = await fetch(`${API_BASE_URL}/habits/refresh-last-month`, {
-      method: "PATCH",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
-
-    // 서버 메시지(있으면 표시)
-    let msg = "";
     try {
-      const data = await res.json();
-      msg = typeof data === "string" ? data : (data.message || "");
-    } catch (_) {}
+      // 프로젝트에서 쓰는 토큰 키에 맞춰 하나라도 있으면 사용
+      const token =
+        (await AsyncStorage.getItem("accessToken")) ||
+        (await AsyncStorage.getItem("token")) ||
+        (await AsyncStorage.getItem("authToken"));
 
-    if (res.ok) {
-      alert(msg || "이번달 습관이 지난달 습관으로 갱신되었습니다.");
-      navigation.navigate("HandalStart");      // 다음 화면으로 이동
-    } else if (res.status === 404) {
-      alert(msg || "지난달 습관이 존재하지 않습니다.");
-    } else {
-      alert(msg || `갱신 실패(code: ${res.status})`);
+      if (!token) {
+        alert("로그인이 필요합니다.");
+        setIsKeeping(false);
+        return;
+      }
+
+      const res = await fetch(`${API_BASE_URL}/habits/refresh-last-month`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      // 서버 메시지(있으면 표시)
+      let msg = "";
+      try {
+        const data = await res.json();
+        msg = typeof data === "string" ? data : (data.message || "");
+      } catch (_) { }
+
+      if (res.ok) {
+
+        Alert.alert(
+          "습관 설정 완료",
+          "이번달 습관이 지난달 습관으로 갱신되었습니다.",
+          [
+            {
+              text: "확인",
+              onPress: () => navigation.navigate("HandalStart")
+            }
+          ],
+          { cancelable: false }
+        );
+
+      } else if (res.status === 404) {
+        Alert.alert(
+          "습관 설정 불가",
+          "지난달 습관이 존재하지 않습니다. 새로 습관을 선택해주세요.",
+          [
+            {
+              text: "확인",
+            }
+          ],
+          { cancelable: false }
+        );
+      } else {
+        alert(msg || `갱신 실패(code: ${res.status})`);
+      }
+    } catch (e) {
+      console.log(e);
+      alert("네트워크 오류가 발생했습니다.");
+    } finally {
+      setIsKeeping(false);
     }
-  } catch (e) {
-    console.log(e);
-    alert("네트워크 오류가 발생했습니다.");
-  } finally {
-    setIsKeeping(false);
-  }
-};
+  };
 
 
   return (
@@ -222,12 +242,12 @@ const styles = StyleSheet.create({
     fontFamily: "Jua-Regular",
   },
   keepButton: {
-  width: "80%",
-  backgroundColor: "#FFD36B",
-  paddingVertical: hp('2%'),
-  borderRadius: wp('5%'),
-  alignItems: "center",
-  marginBottom: hp('25%'),
+    width: "80%",
+    backgroundColor: "#FFD36B",
+    paddingVertical: hp('2%'),
+    borderRadius: wp('5%'),
+    alignItems: "center",
+    marginBottom: hp('25%'),
   },
   keepButtonText: {
     color: "#2D5D6B",

@@ -24,8 +24,8 @@ import {
 import BottomNav from "../components/BottomNav";
 
 const SCREEN_W = Dimensions.get("window").width;
-const CARD_W = SCREEN_W * 0.6;         
-const CARD_GAP = SCREEN_W * 0.03  ;      
+const CARD_W = SCREEN_W * 0.6;
+const CARD_GAP = SCREEN_W * 0.03;
 const SNAP = CARD_W + CARD_GAP;
 
 export default function MainScreen({ navigation }) {
@@ -384,7 +384,7 @@ export default function MainScreen({ navigation }) {
         art_level: x.art_level ?? null,
       }));
       items.sort((a, b) => new Date(b.start_date) - new Date(a.start_date));
-      
+
       setWeeklyData({
         totalSalary: Number(json?.total_salary ?? 0),       // ← API 총합 사용
         totalCount: Number(json?.total_handali ?? items.length),
@@ -407,7 +407,7 @@ export default function MainScreen({ navigation }) {
 
       // 데이터 프리페치
       fetchWeeklySalary();
-    } catch (e) {}
+    } catch (e) { }
   };
 
   const openWeeklyPanel = async () => {
@@ -582,14 +582,14 @@ export default function MainScreen({ navigation }) {
           <View style={styles.topLeftCluster}>
             {/* 코인 알약 */}
             <TouchableOpacity style={styles.coinPill} onPress={openWeeklyPanel} onLongPress={resetTodayQuest}>
-                <Image
-                  source={
-                    weeklyBadge && new Date().getDay() === 1
-                      ? require("../assets/icons/exclamation.png")
-                      : require("../assets/icons/coin.png")
-                  }
-                  style={styles.coinIcon}
-                />
+              <Image
+                source={
+                  weeklyBadge && new Date().getDay() === 1
+                    ? require("../assets/icons/exclamation.png")
+                    : require("../assets/icons/coin.png")
+                }
+                style={styles.coinIcon}
+              />
               <Text style={styles.coinValue}>{totalCoin}</Text>
               <Text style={styles.coinLabel}>coin</Text>
             </TouchableOpacity>
@@ -739,7 +739,7 @@ export default function MainScreen({ navigation }) {
             style={styles.characterContainer}
             onPress={() => {
               setQuoteVisible(true);
-              setTimeout(() => setQuoteVisible(false), 5000);
+              setTimeout(() => setQuoteVisible(false), 7000);
             }}
           >
             {quoteVisible && (
@@ -966,16 +966,16 @@ export default function MainScreen({ navigation }) {
               {/* 상단 요약 */}
               <Text style={styles.weeklyHeader}>
                 주급내역   <Text style={styles.weeklyHeaderYM}>{ym} </Text>
-              <Text style={styles.weeklyWeekEmph}>{week}</Text>
+                <Text style={styles.weeklyWeekEmph}>{week}</Text>
               </Text>
               <View style={styles.sep} />
               <View style={styles.weeklySummaryWrap}>
-              <Text style={styles.weeklySub}>
-                보유 한달이 수: {weeklyLoading ? "-" : weeklyData.totalCount}
-              </Text>
-              <Text style={styles.weeklySub}>
-                총 주급: {weeklyLoading ? "-" : `${weeklyData.totalSalary.toLocaleString()} 코인`}
-              </Text>
+                <Text style={styles.weeklySub}>
+                  보유 한달이 수: {weeklyLoading ? "-" : weeklyData.totalCount}
+                </Text>
+                <Text style={styles.weeklySub}>
+                  총 주급: {weeklyLoading ? "-" : `${weeklyData.totalSalary.toLocaleString()} 코인`}
+                </Text>
               </View>
               <View style={styles.sep} />
 
@@ -1049,14 +1049,14 @@ export default function MainScreen({ navigation }) {
 
                       {/* 하단 메모 */}
                       <Text style={styles.weeklyFootNote}>시작일: {it.start_date ?? "-"}</Text>
-                  </View>
+                    </View>
                   ))}
                 </Animated.ScrollView>
                 <TouchableOpacity
                   onPress={goPrev}
                   disabled={page === 0}
                   style={[styles.arrowBtn, styles.arrowLeft, page === 0 && styles.arrowDisabled]}
-                  hitSlop={{ top:12, bottom:12, left:12, right:12 }}
+                  hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
                 >
                   <Image source={require("../assets/icons/arrow_l_week.png")} style={styles.arrowIcon} />
                 </TouchableOpacity>
@@ -1064,7 +1064,7 @@ export default function MainScreen({ navigation }) {
                   onPress={goNext}
                   disabled={page === pageMax}
                   style={[styles.arrowBtn, styles.arrowRight, page === pageMax && styles.arrowDisabled]}
-                  hitSlop={{ top:12, bottom:12, left:12, right:12 }}
+                  hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
                 >
                   <Image source={require("../assets/icons/arrow_r_week.png")} style={styles.arrowIcon} />
                 </TouchableOpacity>
@@ -1619,9 +1619,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     zIndex: 2,
   },
-  arrowLeft:  { left: wp("-5%") },
+  arrowLeft: { left: wp("-5%") },
   arrowRight: { right: wp("-5%") },
-  arrowIcon:  { width: wp("4%"), height: wp("4%"), resizeMode: "contain" },
+  arrowIcon: { width: wp("4%"), height: wp("4%"), resizeMode: "contain" },
   arrowDisabled: { opacity: 0.35 },
 
   cardGrid: {
@@ -1634,14 +1634,14 @@ const styles = StyleSheet.create({
 
   block: {
     width: "48%",                      // ← 항상 2열 유지
-   flexGrow: 0,
-   flexShrink: 0,
-   paddingVertical: hp("0.8%"),
-   paddingHorizontal: 0,              
-   backgroundColor: "transparent",   
-   borderRadius: 0,
-   marginBottom: hp("0.5%"),         
- },
+    flexGrow: 0,
+    flexShrink: 0,
+    paddingVertical: hp("0.8%"),
+    paddingHorizontal: 0,
+    backgroundColor: "transparent",
+    borderRadius: 0,
+    marginBottom: hp("0.5%"),
+  },
 
   blockTitle: {
     fontSize: wp("3.4%"),
@@ -1656,7 +1656,7 @@ const styles = StyleSheet.create({
     marginBottom: hp("0.2%"),
     left: wp("9.5%"),
   },
-   blocktitleSalary: {
+  blocktitleSalary: {
     fontSize: wp("3.4%"),
     color: "#6B7B83",
     fontFamily: "Jua-Regular",
