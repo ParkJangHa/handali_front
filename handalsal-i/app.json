@@ -24,10 +24,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.anonymous.handalsali",
-      "compileSdkVersion": 35,
-      "targetSdkVersion": 35,
-      "buildToolsVersion": "34.0.0"
+      "package": "com.anonymous.handalsali"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -36,6 +33,18 @@
       "eas": {
         "projectId": "5757eefc-43c5-4697-bbcf-e95a1fffe556"
       }
-    }
+    },
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35,
+            "buildToolsVersion": "35.0.0"
+          }
+        }
+      ]
+    ]
   }
 }

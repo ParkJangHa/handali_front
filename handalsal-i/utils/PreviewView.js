@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
     left: 0,
     top: 0,
     width: "100%",
-    height: "70%"
+    height: "60%"
   },
 
   wall: {

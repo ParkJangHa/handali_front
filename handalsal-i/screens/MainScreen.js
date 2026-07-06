@@ -10,6 +10,7 @@ import {
   ImageBackground,
   Animated,
   Pressable,
+  Dimensions,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from "@env";
@@ -20,6 +21,12 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
+import BottomNav from "../components/BottomNav";
+
+const SCREEN_W = Dimensions.get("window").width;
+const CARD_W = SCREEN_W * 0.6;
+const CARD_GAP = SCREEN_W * 0.03;
+const SNAP = CARD_W + CARD_GAP;
 import { authFetch, clearTokens } from "../utils/authFetch";
 
 export default function MainScreen({ navigation }) {
@@ -29,6 +36,66 @@ export default function MainScreen({ navigation }) {
   const [handaliImage, setHandaliImage] = useState(
     characterImageMap["default_character.png"]
   );
+  // ===== 공통 유틸 =====
+  const toDateStr = (d) => {
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  };
+  const getThisMonday = () => {
+    const now = new Date();
+    const day = now.getDay(); // 0=일,1=월,...6=토
+    const diffToMon = (day + 6) % 7; // 월:0
+    const mon = new Date(now);
+    mon.setHours(0, 0, 0, 0);
+    mon.setDate(now.getDate() - diffToMon);
+    return mon;
+  };
+  // "YYYY년 M월 N주차" 타이틀
+  const getWeekTitle = () => {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = now.getMonth() + 1;
+    const first = new Date(y, m - 1, 1);
+    const firstDay = first.getDay();
+    const offset = (firstDay + 6) % 7;
+    const weekNo = Math.ceil((offset + now.getDate()) / 7);
+    return `${y}년 ${m}월 ${weekNo}주차`;
+  };
+  const getWeekParts = () => {
+    const full = getWeekTitle(); // 예: "2025년 9월 2주차"
+    const m = full.match(/^(.*\s)(\d+주차)$/);
+    if (m) return { ym: m[1].trim(), week: m[2] };
+    return { ym: full, week: "" };
+  };
+
+  // ===== 주급 패널 상태 =====
+  const [weeklyPanelOpen, setWeeklyPanelOpen] = useState(false);
+  const [weeklyLoading, setWeeklyLoading] = useState(false);
+  const [weeklyBadge, setWeeklyBadge] = useState(false); // 월요일 + 미확인 시 true
+  const [weeklyData, setWeeklyData] = useState({
+    totalSalary: 0,
+    totalCount: 0,
+    items: [],
+  });
+
+  const scrollRef = useRef(null);
+  const [page, setPage] = useState(0);
+  const pageMax = Math.max(0, (weeklyData.items?.length || 1) - 1);
+
+  const goPrev = () => {
+    const p = Math.max(0, page - 1);
+    setPage(p);
+    scrollRef.current?.scrollTo({ x: p * SNAP, animated: true });
+  };
+  const goNext = () => {
+    const p = Math.min(pageMax, page + 1);
+    setPage(p);
+    scrollRef.current?.scrollTo({ x: p * SNAP, animated: true });
+  };
+  React.useEffect(() => setPage(0), [weeklyData.items]);
+
   const [appliedItems, setAppliedItems] = useState({
     소파: null,
     배경: null,
@@ -40,12 +107,32 @@ export default function MainScreen({ navigation }) {
     intelligence_value: 0,
     art_value: 0,
   });
+
   const getSeatType = (rawName) => {
     if (!rawName) return "unknown";
     const norm = String(rawName).trim().replace(/ /g, "_");
     if (/_Chair$/i.test(norm)) return "chair";
     if (/_Sofa$/i.test(norm)) return "sofa";
     return "unknown";
+  };
+
+  // === D-day 유틸: 다음달 1일까지 남은 일수 계산 (로컬 타임존 기준) ===
+  const getNextMonthFirstInfo = () => {
+    const now = new Date();
+    const target = new Date(now.getFullYear(), now.getMonth() + 1, 1); // 다음달 1일 00:00
+    target.setHours(0, 0, 0, 0);
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const msPerDay = 24 * 60 * 60 * 1000;
+    const diffDays = Math.max(0, Math.ceil((target - today) / msPerDay));
+
+    const yyyy = target.getFullYear();
+    const mm = String(target.getMonth() + 1).padStart(2, "0");
+    const dd = String(target.getDate()).padStart(2, "0");
+
+    return { dday: diffDays, dateStr: `${yyyy}-${mm}-${dd}` };
   };
 
   // 설정 모달
@@ -255,6 +342,64 @@ export default function MainScreen({ navigation }) {
       navigation.navigate("CategorySelectScreen");
     }
   };
+  const fetchWeeklySalary = async () => {
+    try {
+      setWeeklyLoading(true);
+      const token = await AsyncStorage.getItem("authToken");
+      const res = await fetch(`${API_BASE_URL}/handalis/week-salary`, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error(`status ${res.status}`);
+
+      const json = await res.json();
+      const arr = Array.isArray(json?.handalis_salary) ? json.handalis_salary : [];
+      const items = arr.map((x) => ({
+        nickname: x.nickname,
+        job: x.job ?? null,                                 // ← job_name → job
+        salary: Number(x.salary ?? 0),
+        start_date: x.start_date,
+        activity_level: x.activity_level ?? null,
+        intelligent_level: x.intelligent_level ?? null,     // ← 철자 변경
+        art_level: x.art_level ?? null,
+      }));
+      items.sort((a, b) => new Date(b.start_date) - new Date(a.start_date));
+
+      setWeeklyData({
+        totalSalary: Number(json?.total_salary ?? 0),       // ← API 총합 사용
+        totalCount: Number(json?.total_handali ?? items.length),
+        items,
+      });
+    } catch (e) {
+      console.log("week-salary error", e);
+    } finally {
+      setWeeklyLoading(false);
+    }
+  };
+  const updateWeeklyBadge = async () => {
+    try {
+      const monStr = toDateStr(getThisMonday());
+      const seenKey = `weekly_seen_${monStr}`;
+      const seen = await AsyncStorage.getItem(seenKey);
+
+      const isMonday = new Date().getDay() === 1;
+      setWeeklyBadge(isMonday && !seen);
+
+      // 데이터 프리페치
+      fetchWeeklySalary();
+    } catch (e) { }
+  };
+
+  const openWeeklyPanel = async () => {
+    // 월요일 아니어도 언제든 열 수 있음
+    const monStr = toDateStr(getThisMonday());
+    const seenKey = `weekly_seen_${monStr}`;
+    await AsyncStorage.setItem(seenKey, "1");
+    setWeeklyBadge(false);
+
+    if (!weeklyData.items?.length) await fetchWeeklySalary();
+    setWeeklyPanelOpen(true);
+  };
 
   // ===== 화면 포커스 시 데이터 갱신 =====
   const intervalRef = useRef(null);
@@ -263,6 +408,7 @@ export default function MainScreen({ navigation }) {
       fetchHandaliStatus();
       loadOrCreateTodayQuest();
       refreshQuestFromStorage();
+      updateWeeklyBadge();
       intervalRef.current = setInterval(fetchHandaliStatus, 60000);
       return () => clearInterval(intervalRef.current);
     }, [])
@@ -397,7 +543,7 @@ export default function MainScreen({ navigation }) {
       Alert.alert("에러", "네트워크 오류가 발생했습니다.");
     }
   };
-
+  const { ym, week } = getWeekParts();
   return (
     <ImageBackground
       source={require("../assets/storeItems/배경없음.png")}
@@ -408,21 +554,42 @@ export default function MainScreen({ navigation }) {
       <View style={styles.container}>
         {/* 상단바: 코인 + 설정 */}
         <View style={styles.topBar}>
-          {/* 왼쪽 묶음: 코인 + 프로필 */}
+          {/* 왼쪽 묶음: 코인 + D-day */}
           <View style={styles.topLeftCluster}>
             {/* 코인 알약 */}
-            <TouchableOpacity style={styles.coinPill} onLongPress={resetTodayQuest}>
-              <Image source={require("../assets/icons/coin.png")} style={styles.coinIcon} />
+            <TouchableOpacity style={styles.coinPill} onPress={openWeeklyPanel} onLongPress={resetTodayQuest}>
+              <Image
+                source={
+                  weeklyBadge && new Date().getDay() === 1
+                    ? require("../assets/icons/exclamation.png")
+                    : require("../assets/icons/coin.png")
+                }
+                style={styles.coinIcon}
+              />
               <Text style={styles.coinValue}>{totalCoin}</Text>
               <Text style={styles.coinLabel}>coin</Text>
             </TouchableOpacity>
 
-            {/* n일차/닉네임 박스 */}
-            <View style={styles.profilePill}>
+            {/* D-day 박스 (탭 시 안내) */}
+            <TouchableOpacity
+              style={styles.profilePill}
+              activeOpacity={0.9}
+              onPress={() => {
+                const { dday, dateStr } = getNextMonthFirstInfo();
+                const display = dday === 0 ? "D-DAY" : `D-${dday}`;
+                Alert.alert(
+                  "독립 예정",
+                  `다음달 1일에 독립해요!\n(${dateStr})\n남은 일수: ${display}`
+                );
+              }}
+            >
               <Text style={styles.profileText}>
-                {daysSinceCreated}일차
+                {(() => {
+                  const { dday } = getNextMonthFirstInfo();
+                  return dday === 0 ? "D-DAY" : `D-${dday}`;
+                })()}
               </Text>
-            </View>
+            </TouchableOpacity>
           </View>
 
           {/* 설정 알약 */}
@@ -459,19 +626,19 @@ export default function MainScreen({ navigation }) {
         >
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 onPress={() => { setModalVisible(false); navigation.navigate("JobScreen"); }}
                 style={styles.button}
               >
                 <Text style={styles.buttonText}>[개발용]직업 화면</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
 
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 onPress={() => { setModalVisible(false); navigation.navigate("GrowthScreen"); }}
                 style={styles.button}
               >
                 <Text style={styles.buttonText}>[개발용]성장 화면</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
 
               <TouchableOpacity
                 onPress={async () => {
@@ -548,7 +715,7 @@ export default function MainScreen({ navigation }) {
             style={styles.characterContainer}
             onPress={() => {
               setQuoteVisible(true);
-              setTimeout(() => setQuoteVisible(false), 5000);
+              setTimeout(() => setQuoteVisible(false), 7000);
             }}
           >
             {quoteVisible && (
@@ -767,39 +934,121 @@ export default function MainScreen({ navigation }) {
 
         </Animated.View>
 
-        {/* 하단 네비: 좌=상점 / 중=기록 / 우=아파트 */}
-        <View
-          key={`nav-${modalVisible ? 'on' : 'off'}`}
-          collapsable={false}
-          style={styles.bottomNav}
-        >
-          <TouchableOpacity
-            style={styles.navButton}
-            onPress={() => navigation.navigate("Store")}
-          >
-            <Image source={require("../assets/icons/store.png")} style={styles.navIcon} />
-            <Text style={styles.navText}>상점</Text>
-          </TouchableOpacity>
+        {/* === 주급 확인 오버레이 === */}
+        {weeklyPanelOpen && (
+          <>
+            <Pressable pointerEvents="auto" style={styles.weeklyBackdrop} onPress={() => setWeeklyPanelOpen(false)} />
+            <View style={styles.weeklyPanel}>
+              {/* 상단 요약 */}
+              <Text style={styles.weeklyHeader}>
+                주급내역   <Text style={styles.weeklyHeaderYM}>{ym} </Text>
+                <Text style={styles.weeklyWeekEmph}>{week}</Text>
+              </Text>
+              <View style={styles.sep} />
+              <View style={styles.weeklySummaryWrap}>
+                <Text style={styles.weeklySub}>
+                  보유 한달이 수: {weeklyLoading ? "-" : weeklyData.totalCount}
+                </Text>
+                <Text style={styles.weeklySub}>
+                  총 주급: {weeklyLoading ? "-" : `${weeklyData.totalSalary.toLocaleString()} 코인`}
+                </Text>
+              </View>
+              <View style={styles.sep} />
 
-          <TouchableOpacity
-            style={styles.recordButton}
-            onPress={() => navigation.navigate("Record")}
-            activeOpacity={0.9}
-          >
-            <Image source={require("../assets/icons/record.png")} style={styles.recordIcon} />
-          </TouchableOpacity>
+              {/* 중앙: 한 달이 1명 = 1페이지 (좌/우 스와이프 페이징) */}
+              <View style={styles.weeklyPagerFrame}>
+                <Animated.ScrollView
+                  ref={scrollRef}
+                  horizontal
+                  snapToInterval={SNAP}
+                  decelerationRate="fast"
+                  snapToAlignment="start"
+                  showsHorizontalScrollIndicator={false}
+                  onMomentumScrollEnd={({ nativeEvent }) => {
+                    const p = Math.round(nativeEvent.contentOffset.x / SNAP);
+                    setPage(Math.max(0, Math.min(pageMax, p)));
+                  }}
+                  contentContainerStyle={{
+                    alignItems: "stretch",
+                    paddingLeft: CARD_GAP,
+                    paddingRight: CARD_GAP / 2, // 양끝 여백
+                  }}
+                >
+                  {(weeklyData.items?.length ? weeklyData.items : [{
+                    nickname: "한달이",
+                    salary: 0,
+                    start_date: "-",
+                    activity_level: null, intelligent_level: null, art_level: null, job: null,
+                  }]).map((it, idx) => (
+                    <View key={`${it.nickname}-${idx}`} style={styles.oneHandaliCard}>
+                      <View style={styles.cardGrid}>
+                        {/* 블록 1: 별명 */}
+                        <View style={styles.block}>
+                          <Text style={styles.blockTitle}>별명</Text>
+                          <Text style={styles.blockValue} numberOfLines={1}>
+                            {it.nickname ?? "-"}
+                          </Text>
+                        </View>
 
-          <TouchableOpacity
-            style={styles.navButton}
-            onPress={() => navigation.navigate("ApartScreen")}
-          >
-            <Image
-              source={require("../assets/icons/apartment_nav.png")}
-              style={styles.navIcon}
-            />
-            <Text style={styles.navText}>아파트</Text>
-          </TouchableOpacity>
-        </View>
+                        {/* 블록 2: 활동/지능/예술 (2행 구조: 라벨행 / 값행) */}
+                        <View style={styles.block}>
+                          <Text style={styles.blocktitleStat}>스탯</Text>
+                          <View style={styles.blockStatRow}>
+                            <Text style={styles.statLabel}>활동</Text>
+                            <Text style={styles.statLabel}>지능</Text>
+                            <Text style={styles.statLabel}>예술</Text>
+                          </View>
+                          <View style={styles.blockStatRow}>
+                            <Text style={styles.statValue}>{it.activity_level ?? "-"}</Text>
+                            <Text style={styles.statValue}>{it.intelligent_level ?? "-"}</Text>
+                            <Text style={styles.statValue}>{it.art_level ?? "-"}</Text>
+                          </View>
+                        </View>
+
+                        {/* 블록 3: 직업 */}
+                        <View style={styles.block}>
+                          <Text style={styles.blockTitle}>직업</Text>
+                          <Text style={styles.blockValue} numberOfLines={1}>
+                            {it.job ?? "-"}
+                          </Text>
+                        </View>
+
+                        {/* 블록 4: 주급 */}
+                        <View style={styles.block}>
+                          <Text style={styles.blocktitleSalary}>주급</Text>
+                          <Text style={styles.blockvalueSalary}>
+                            {(it.salary ?? 0).toLocaleString()} 코인
+                          </Text>
+                        </View>
+
+                      </View>
+
+                      {/* 하단 메모 */}
+                      <Text style={styles.weeklyFootNote}>시작일: {it.start_date ?? "-"}</Text>
+                    </View>
+                  ))}
+                </Animated.ScrollView>
+                <TouchableOpacity
+                  onPress={goPrev}
+                  disabled={page === 0}
+                  style={[styles.arrowBtn, styles.arrowLeft, page === 0 && styles.arrowDisabled]}
+                  hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                >
+                  <Image source={require("../assets/icons/arrow_l_week.png")} style={styles.arrowIcon} />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={goNext}
+                  disabled={page === pageMax}
+                  style={[styles.arrowBtn, styles.arrowRight, page === pageMax && styles.arrowDisabled]}
+                  hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                >
+                  <Image source={require("../assets/icons/arrow_r_week.png")} style={styles.arrowIcon} />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </>
+        )}
+        <BottomNav navigation={navigation} mode="default" active="Main" />
       </View>
     </ImageBackground>
   );
@@ -818,7 +1067,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     position: "relative",
-    marginBottom: hp("2%"),
   },
   topBar: {
     flexDirection: "row",
@@ -932,7 +1180,7 @@ const styles = StyleSheet.create({
   },
   characterContainer: {
     position: "absolute",
-    top: hp("3%"),
+    top: hp("8%"),
     left: wp("6%"),
     transform: [{ translateX: wp("11%") }, { translateY: wp("35%") }],
     zIndex: 2,
@@ -946,7 +1194,7 @@ const styles = StyleSheet.create({
     width: wp("80%"),
     height: wp("60%"),
     position: "absolute",
-    top: hp("18%"),
+    top: hp("22%"),
     left: wp("30%"),
     zIndex: 1,
     resizeMode: "contain",
@@ -955,7 +1203,7 @@ const styles = StyleSheet.create({
     width: wp("50%"),
     height: wp("40%"),
     position: "absolute",
-    top: hp("22%"),
+    top: hp("25%"),
     left: wp("55%"),
     zIndex: 1,
     resizeMode: "contain",
@@ -972,51 +1220,9 @@ const styles = StyleSheet.create({
     width: wp("45%"),
     height: wp("45%"),
     position: "absolute",
-    top: hp("20%"),
+    top: hp("25%"),
     left: wp("-5%"),
     resizeMode: "contain",
-  },
-
-  /* 하단 네비 */
-  bottomNav: {
-    position: "absolute",
-    bottom: hp("1.5%"),
-    width: "85%",
-    height: hp("7%"),
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: wp("15%"),
-    paddingVertical: hp("2%"),
-    zIndex: 49,
-    elevation: 14,
-    backgroundColor: "rgba(255,255,255,0.9)",
-    borderTopLeftRadius: wp("7%"),
-    borderTopRightRadius: wp("7%"),
-    borderBottomLeftRadius: wp("7%"),
-    borderBottomRightRadius: wp("7%"),
-    marginBottom: hp("3%"),
-    alignSelf: "center",
-  },
-  navButton: {
-    alignItems: "center",
-  },
-  navIcon: {
-    width: wp("7%"),
-    height: wp("7%"),
-  },
-  navText: {
-    fontSize: wp("4%"),
-    color: "#2D5D6B",
-    fontFamily: "Jua-Regular",
-  },
-  recordButton: {
-    alignItems: "center",
-  },
-  recordIcon: {
-    width: wp("19%"),
-    height: wp("17%"),
-    marginBottom: hp("4%"),
   },
 
   /* 캐릭터 말풍선 */
@@ -1063,6 +1269,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 6,
+    marginBottom: hp("2%"),
   },
   fabMainIcon: {
     width: wp("9%"),
@@ -1076,6 +1283,7 @@ const styles = StyleSheet.create({
     bottom: hp("22%"),
     zIndex: 20,           // ✅ 네비보다 위, 메인FAB 아래
     alignItems: "flex-end",
+    marginBottom: hp("2%"),
   },
   fabActionItem: {
     position: "absolute",
@@ -1122,6 +1330,7 @@ const styles = StyleSheet.create({
     zIndex: 31,
     elevation: 12,
     alignItems: "flex-end",
+    marginBottom: hp("2%"),
   },
   questIcon: {
     width: wp("9%"),
@@ -1294,4 +1503,192 @@ const styles = StyleSheet.create({
     color: "#2D5D6B",
     fontFamily: "Jua-Regular",
   },
+  //주급 관련 스타일
+  weeklyBackdrop: {
+    position: "absolute",
+    left: 0, right: 0, top: 0, bottom: 0,
+    backgroundColor: "transparent",
+    zIndex: 60,
+  },
+  weeklyPanel: {
+    position: "absolute",
+    left: wp("5%"),
+    right: wp("20%"),
+    top: hp("11%"),
+    bottom: hp("50%"),
+    backgroundColor: "#fff",
+    borderRadius: wp("3%"),
+    padding: wp("4%"),
+    zIndex: 61,
+    elevation: 20,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 6 },
+    shadowRadius: 12,
+  },
+  weeklyHeader: {
+    fontSize: wp("5%"),
+    fontFamily: "Jua-Regular",
+    marginBottom: hp("0.6%"),
+  },
+  weeklyHeaderYM: {
+    fontSize: wp("3%"),
+    color: "#1D1D1D",        // 기본색
+    fontFamily: "Jua-Regular",
+  },
+  weeklyWeekEmph: {
+    fontSize: wp("3%"),
+    color: "#FF3B30",        // ← 주차만 빨강
+    fontFamily: "Jua-Regular",
+  },
+  weeklySummaryWrap: {
+    marginTop: hp("0.4%"),   // 헤더와 살짝 띄우기
+    marginBottom: hp("0.2%"),
+  },
+  weeklySub: {
+    fontSize: wp("4%"),
+    fontFamily: "Jua-Regular",
+    marginBottom: hp("0.2%"),
+  },
+  sep: {
+    width: "100%",
+    height: 1,
+    backgroundColor: "#EDEDED",
+    marginTop: hp("0.6%"),
+    marginBottom: hp("1%"),
+  },
+
+  weeklyPagerFrame: { flex: 1, marginTop: hp("1%") },
+  oneHandaliCard: {
+    width: CARD_W,
+    marginHorizontal: CARD_GAP / 2,
+    alignSelf: "center",
+  },
+
+  weeklyFootNote: {
+    marginTop: hp("0.4%"),
+    fontSize: wp("3.2%"),
+    color: "#666",
+    fontFamily: "Jua-Regular",
+    textAlign: "center",
+  },
+  closeBtn: {
+    marginTop: hp("1.2%"),
+    padding: hp("1.1%"),
+    backgroundColor: "#84CBFE",
+    borderRadius: wp("2%"),
+    alignItems: "center",
+  },
+  closeBtnText: {
+    color: "#fff",
+    fontSize: wp("4%"),
+    fontFamily: "Jua-Regular",
+  },
+  arrowBtn: {
+    position: "absolute",
+    top: "40%",
+    transform: [{ translateY: -hp("3%") }],
+    width: wp("10%"),
+    height: wp("10%"),
+    borderRadius: wp("5%"),
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 2,
+  },
+  arrowLeft: { left: wp("-5%") },
+  arrowRight: { right: wp("-5%") },
+  arrowIcon: { width: wp("4%"), height: wp("4%"), resizeMode: "contain" },
+  arrowDisabled: { opacity: 0.35 },
+
+  cardGrid: {
+    width: "100%",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+
+  },
+
+  block: {
+    width: "48%",                      // ← 항상 2열 유지
+    flexGrow: 0,
+    flexShrink: 0,
+    paddingVertical: hp("0.8%"),
+    paddingHorizontal: 0,
+    backgroundColor: "transparent",
+    borderRadius: 0,
+    marginBottom: hp("0.5%"),
+  },
+
+  blockTitle: {
+    fontSize: wp("3.4%"),
+    color: "#6B7B83",
+    fontFamily: "Jua-Regular",
+    marginBottom: hp("0.2%"),
+  },
+  blocktitleStat: {
+    fontSize: wp("3.4%"),
+    color: "#6B7B83",
+    fontFamily: "Jua-Regular",
+    marginBottom: hp("0.2%"),
+    left: wp("9.5%"),
+  },
+  blocktitleSalary: {
+    fontSize: wp("3.4%"),
+    color: "#6B7B83",
+    fontFamily: "Jua-Regular",
+    marginBottom: hp("0.2%"),
+    left: wp("9.5%"),
+  },
+
+  blockValue: {
+    fontSize: wp("4.2%"),
+    color: "#1D1D1D",
+    fontFamily: "Jua-Regular",
+  },
+  blockvalueSalary: {
+    fontSize: wp("4.2%"),
+    color: "#1D1D1D",
+    fontFamily: "Jua-Regular",
+    alignSelf: "center",
+    right: wp("1%"),
+  },
+
+  blockStatRow: {
+    width: "100%",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: hp("0.2%"),
+    right: wp("2%"),
+  },
+
+  statLabel: {
+    flex: 1,
+    textAlign: "center",
+    fontSize: wp("3.4%"),
+    color: "#2D5D6B",
+    fontFamily: "Jua-Regular",
+  },
+
+  statValue: {
+    flex: 1,
+    textAlign: "center",
+    fontSize: wp("4%"),
+    color: "#1D1D1D",
+    fontFamily: "Jua-Regular",
+  },
+
+  // ─ 페이지 도트 ─
+  dotsRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: hp("1%"),
+  },
+  dot: {
+    width: 6, height: 6, borderRadius: 3,
+    backgroundColor: "#D6D6D6",
+    marginHorizontal: 3,
+  },
+  dotActive: { backgroundColor: "#84CBFE" },
 });

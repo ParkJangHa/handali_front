@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Alert, ScrollView, ImageBackground } from 'react-native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from '@env';
 import {
@@ -7,9 +7,26 @@ import {
     heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
 import { authFetch, clearTokens } from "../utils/authFetch";
+import BottomNav from "../components/BottomNav";
+
+const categoryThemes = {
+    '활동': {
+        backgroundColor: 'rgba(194,227,255,0.8)',
+        buttonColor: 'rgba(81,127,255,0.5)',
+    },
+    '지능': {
+        backgroundColor: '#D1FFCD',
+        buttonColor: 'rgba(81,255,185,0.7)',
+    },
+    '예술': {
+        backgroundColor: 'rgba(255,224,201,0.8)',
+        buttonColor: 'rgba(255,143,81,0.5)',
+    }
+};
 
 export default function HabitCheckScreen({ route, navigation }) {
     const { categoryName, detailedHabit, habitTime, satisfaction } = route.params;
+    const theme = categoryThemes[categoryName] || categoryThemes['활동'];
 
     // ✅ 기록 성공 시: 오늘 퀘스트가 ANY_RECORD + ACCEPTED 이면 COMPLETABLE로 전환
     const markDailyQuestCompletable = async () => {
@@ -155,151 +172,119 @@ export default function HabitCheckScreen({ route, navigation }) {
 
     return (
         <View style={styles.container}>
-
-            <View style={styles.backButton}>
-                <TouchableOpacity
-                    onPress={() => { navigation.goBack() }}>
-                    <Image
-                        source={require('../assets/backButton.png')}>
-                    </Image>
-                </TouchableOpacity>
-            </View>
-
-            <View style={styles.mainContainer}>
-                {/**타이틀 */}
-                <View style={styles.mainTitleCon}>
-                    <Text style={styles.mainTitleText}>기록할 내용을 확인해주세요</Text>
-                    <Text style={styles.mainSubTitleText}>같은 습관에 대한 기록은 하루에 한번만 할 수 있어요!</Text>
-                    <Text style={styles.mainSubTitleText}> 수정이 불가하니 신중히 기록해주세요!</Text>
-                </View>
-
-                {/**카테고리명 */}
-                <View style={styles.categoryNameCon}>
-                    <View style={styles.card}>
-                        <Text style={styles.labelsText}>카테고리명</Text>
-                        <Text style={styles.contentText}> {categoryName}</Text>
+            {/* 뒤로가기 버튼 */}
+            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                <Image source={require('../assets/record/back.png')} />
+            </TouchableOpacity>
+            <View style={{ flex: 1 }}>
+                {/* 테마 색상이 적용된 메인 카드 */}
+                <ScrollView style={[styles.cardContainer, { backgroundColor: theme.backgroundColor }]}>
+                    {/* 타이틀 */}
+                    <View style={styles.titleContainer}>
+                        <Text style={styles.mainTitleText}>기록할 내용을 확인해주세요</Text>
+                        <Text style={styles.mainSubTitleText}>같은 습관에 대한 기록은 하루에 한번만 할 수 있어요!</Text>
+                        <Text style={styles.mainSubTitleText}>저장 후 수정이 불가하니 신중히 기록해주세요!</Text>
                     </View>
-                </View>
 
-                {/**세부습관 */}
-                <View style={styles.detailedHabitNameCon}>
-                    <View style={styles.card}>
-                        <Text style={styles.labelsText}>세부습관</Text>
-                        <Text style={styles.contentText}>{detailedHabit}</Text>
-                    </View>
-                </View>
+                    {/* 정보 표시 영역 */}
+                    <InfoBox label="카테고리명" value={categoryName} />
+                    <InfoBox label="세부습관" value={detailedHabit} />
+                    <InfoBox label="습관 시간" value={habitTime} />
+                    <InfoBox label="성취 만족도" value={String(satisfaction)} />
 
-                {/**습관 시간 */}
-                <View style={styles.timeCon}>
-                    <View style={styles.card}>
-                        <Text style={styles.labelsText}>습관 시간</Text>
-                        <Text style={styles.contentText}>{habitTime}</Text>
-                    </View>
-                </View>
 
-                {/**성취만족도 */}
-                <View style={styles.satisfactionCon}>
-                    <View style={styles.card}>
-                        <Text style={styles.labelsText}>성취 만족도</Text>
-                        <Text style={styles.contentText}>{satisfaction}</Text>
-                    </View>
-                </View>
 
-                {/**기록하기 버튼*/}
-                <View style={styles.recordCon}>
                     <TouchableOpacity
-                        style={styles.recordButton}
-                        onPress={handleRecord}>
-                        <Text style={styles.recordText}>기록하기</Text>
+                        style={[styles.recordButton, { backgroundColor: theme.buttonColor }]}
+                        onPress={handleRecord}
+                    >
+                        <Text style={styles.recordText}>완료</Text>
                     </TouchableOpacity>
-                </View>
+                </ScrollView>
+
+
             </View>
+            <BottomNav navigation={navigation} mode="record" active="Record" />
         </View>
     );
 }
+const InfoBox = ({ label, value }) => (
+    <ImageBackground
+        source={require('../assets/record/infobox.png')}
+        style={styles.infoBox}
+        imageStyle={{ borderRadius: 20 }}
+    >
+        <Text style={styles.infoLabel}>{label}</Text>
+        <Text style={styles.infoValue}>{value}</Text>
+    </ImageBackground>
+);
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#76D6F4",
+        backgroundColor: "#FFFFFF",
     },
     backButton: {
-        marginTop: hp("6%"),
-        marginLeft: wp("6%"),
+        position: 'absolute',
+        top: hp("6%"),
+        left: wp("6%"),
+        zIndex: 10,
     },
-    mainContainer: {
-        flex: 1,
-        paddingTop: wp("3%"),
-        paddingLeft: wp("7%"),
-        paddingRight: wp("7%"),
-        paddingBottom: wp("7%"),
-    },
-    mainTitleCon: {
-        flex: 0.8,
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    categoryNameCon: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    detailedHabitNameCon: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    timeCon: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    satisfactionCon: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    recordCon: {
-        flex: 0.6,
-        justifyContent: "center",
-    },
-    card: {
-        backgroundColor: "white",
-        width: "100%",
-        padding: wp("5%"),
-        borderRadius: 20,
-    },
-    recordButton: {
-        backgroundColor: "#FFE98A",
-        padding: hp("2%"),
+    cardContainer: {
         borderRadius: 30,
-        alignItems: "center",
+        padding: wp('6%'),
+        marginTop: hp('12%'),
+        marginHorizontal: wp("5%"),
+        marginBottom: hp("17%"),
+    },
+    titleContainer: {
+        alignItems: 'center',
+        marginBottom: hp('1%'),
     },
     mainTitleText: {
-        fontSize: wp("7%"),
-        color: "black",
+        fontSize: wp("6%"),
         fontFamily: "Jua-Regular",
+        color: '#000000',
+        marginBottom: hp('1%'),
     },
     mainSubTitleText: {
-        fontSize: wp("3.7%"),
-        color: "#3076f7",
+        fontSize: wp("3.5%"),
         fontFamily: "Jua-Regular",
+        color: '#0037FF',
+        marginBottom: hp("1%"),
     },
-    labelsText: {
-        fontSize: wp("4%"),
-        color: "black",
-        fontFamily: "Jua-Regular",
-    },
-    contentText: {
-        fontSize: wp("9%"),
-        fontWeight: "400",
+    infoBox: {
         alignSelf: "center",
-        color: "black",
+        borderRadius: 20,
+        paddingVertical: hp('1%'),
+        paddingHorizontal: wp('5%'),
+        marginBottom: hp('2%'),
+        width: wp("70%"),
+        height: hp("9%"),
+    },
+    infoLabel: {
+        fontSize: wp("4%"),
         fontFamily: "Jua-Regular",
+        color: '#000000',
+    },
+    infoValue: {
+        fontSize: wp("6%"),
+        fontFamily: "Jua-Regular",
+        color: '#000000',
+        textAlign: 'center',
+        marginTop: hp('0.5%'),
+    },
+    recordButton: {
+        alignSelf: "center",
+        padding: hp("1.8%"),
+        borderRadius: 30,
+        alignItems: "center",
+        marginTop: hp("1%"),
+        width: wp("30%"),
     },
     recordText: {
         fontSize: wp("5%"),
-        color: "black",
         fontFamily: "Jua-Regular",
+        color: '#2D5D6B',
     },
 });

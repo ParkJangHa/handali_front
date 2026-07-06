@@ -1,4 +1,5 @@
 import React from "react";
+import { StatusBar } from 'react-native';
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 
@@ -12,6 +13,7 @@ import UserHabitAppendScreen from "./screens/UserHabitAppendScreen";
 import HandalStart from "./screens/HandalStart";
 import MainScreen from "./screens/MainScreen";
 import HabitCategoryScreen from "./screens/HabitCategoryScreen";
+import SelectHabitScreen from "./screens/SelectHabitScreen";
 import HabitDetailScreen from "./screens/HabitDetailScreen";
 import HabitCheckScreen from "./screens/HabitCheckScreen";
 import ApartScreen from "./screens/ApartScreen";
@@ -26,6 +28,7 @@ const Stack = createStackNavigator();
 const App = () => {
   return (
     <NavigationContainer>
+      <StatusBar hidden={true} />
       <Stack.Navigator
         initialRouteName="Home"
         //initialRouteName="GrowthScreen"
@@ -50,7 +53,7 @@ const App = () => {
         <Stack.Screen name="Login" component={LoginScreen}
           options={{
             headerStyle: {
-              backgroundColor: "#FFF5CB", // 헤더 배경색
+              backgroundColor: "#EDFEFF", // 헤더 배경색
 
             },
           }}
@@ -58,7 +61,7 @@ const App = () => {
         <Stack.Screen name="Signup" component={SignupScreen}
           options={{
             headerStyle: {
-              backgroundColor: "#FFF5CB", // 헤더 배경색
+              backgroundColor: "#FFFFFF", // 헤더 배경색
 
             },
           }}
@@ -113,6 +116,12 @@ const App = () => {
         <Stack.Screen name="Record" component={HabitCategoryScreen}
           options={{
             headerShown: false, gestureEnabled: true
+          }}
+        />
+        <Stack.Screen name="SelectHabit" component={SelectHabitScreen}
+          options={{
+            headerShown: false,
+            gestureEnabled: true 
           }}
         />
         <Stack.Screen name="HabitDetail" component={HabitDetailScreen}
