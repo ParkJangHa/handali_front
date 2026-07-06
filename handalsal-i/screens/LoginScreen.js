@@ -90,7 +90,7 @@ const LoginScreen = ({ navigation }) => {
 
   return (
     <>
-      <StatusBar hidden={false}/>
+      <StatusBar hidden={false} />
       <KeyboardAwareScrollView
         style={{ flex: 1 }}
         contentContainerStyle={styles.container}
@@ -104,8 +104,8 @@ const LoginScreen = ({ navigation }) => {
           <Image source={require("../assets/LoginScreen/Weve.png")} style={styles.img} resizeMode="stretch" />
           <Image source={require("../assets/LoginScreen/Blue.png")} style={styles.catIcon} />
           <Image source={require("../assets/LoginScreen/turtle.png")} style={styles.turuleImg} />
-          
-        <View style={styles.bContainer} />
+
+          <View style={styles.bContainer} />
 
           <View style={styles.inputWithIconEmail}>
             <Image source={require("../assets/LoginScreen/Email_icon.png")} style={styles.emailIcon} />
@@ -149,7 +149,7 @@ const LoginScreen = ({ navigation }) => {
               Alert.alert("튜토리얼 기록 삭제됨", "앱 재실행 시 튜토리얼이 다시 표시됩니다.");
             }}
           >
-            <Text style={styles.resetTutorialText}>튜토리얼 다시 보기 (개발용)</Text>
+            {/* <Text style={styles.resetTutorialText}>튜토리얼 다시 보기 (개발용)</Text> */}
           </TouchableOpacity>
 
           <View style={{ height: hp("8%") }} />
@@ -161,11 +161,11 @@ const LoginScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,                 
+    flexGrow: 1,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#EDFEFF",
-    paddingTop: hp("1%"),    
+    paddingTop: hp("1%"),
   },
   bContainer: { marginBottom: hp("4%") },
   img: {

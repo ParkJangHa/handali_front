@@ -650,19 +650,19 @@ export default function MainScreen({ navigation }) {
         >
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 onPress={() => { setModalVisible(false); navigation.navigate("JobScreen"); }}
                 style={styles.button}
               >
                 <Text style={styles.buttonText}>[개발용]직업 화면</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
 
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 onPress={() => { setModalVisible(false); navigation.navigate("GrowthScreen"); }}
                 style={styles.button}
               >
                 <Text style={styles.buttonText}>[개발용]성장 화면</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
 
               <TouchableOpacity
                 onPress={async () => {
