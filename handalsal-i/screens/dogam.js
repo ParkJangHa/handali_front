@@ -19,6 +19,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from "@env";
 import { useFocusEffect, useIsFocused } from "@react-navigation/native";
 import { characterImageMap } from "../utils/characterImageMap";
+import { authFetch, clearTokens } from "../utils/authFetch";
 
 const SHADOW_IMG = require("../assets/character/shadow.png");
 const TOTAL_SLOTS = 216;
@@ -101,19 +102,9 @@ export default function DexScreen({ navigation }) {
   const fetchHandbooks = useCallback(async () => {
     try {
       setLoading(true);
-      const token = await AsyncStorage.getItem("authToken");
+      const res = await authFetch(`${API_BASE_URL}/handbooks`, { method: "GET" }, navigation);
 
-      const res = await fetch(`${API_BASE_URL}/handbooks`, {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.status === 401) {
-        // 세션 만료 처리 (선택)
-        await AsyncStorage.removeItem("authToken");
-        Alert.alert("세션 만료", "다시 로그인해주세요.");
-        navigation.navigate("Login"); 
-        return;
-      }
+      if (res.status === 401) return;
 
       const raw = await res.text();
       console.log("[DEX] /handbooks status:", res.status);

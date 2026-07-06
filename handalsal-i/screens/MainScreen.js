@@ -20,6 +20,7 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
+import { authFetch, clearTokens } from "../utils/authFetch";
 
 export default function MainScreen({ navigation }) {
   const [nickname, setNickname] = useState("");
@@ -168,15 +169,13 @@ export default function MainScreen({ navigation }) {
 
     try {
       setQuestLoading(true);
-      const token = await AsyncStorage.getItem("authToken");
-      const res = await fetch(`${API_BASE_URL}/quest-award`, {
+      const res = await authFetch(`${API_BASE_URL}/quest-award`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ coin: quest.coin }),
-      });
+      }, navigation);
+
+      if (res.status === 401) { setQuestLoading(false); return; }
 
       if (!res.ok) {
         Alert.alert("보상 실패", `상태코드: ${res.status}`);
@@ -198,24 +197,9 @@ export default function MainScreen({ navigation }) {
   // ===== 서버 연동 =====
   const fetchHandaliStatus = async () => {
     try {
-      const token = await AsyncStorage.getItem("authToken");
-      if (!token) {
-        Alert.alert("세션 만료", "다시 로그인해주세요.");
-        navigation.navigate("Login");
-        return;
-      }
+      const response = await authFetch(`${API_BASE_URL}/handalis/view`, { method: "GET" }, navigation);
 
-      const response = await fetch(`${API_BASE_URL}/handalis/view`, {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (response.status === 401) {
-        await AsyncStorage.removeItem("authToken");
-        Alert.alert("세션 만료", "로그인이 만료되었습니다. 다시 로그인해주세요.");
-        navigation.navigate("Login");
-        return;
-      }
+      if (response.status === 401) return;
 
       if (response.ok) {
         const data = await response.json();
@@ -256,11 +240,7 @@ export default function MainScreen({ navigation }) {
 
   const checkLastHandali = async () => {
     try {
-      const token = await AsyncStorage.getItem("authToken");
-      const response = await fetch(`${API_BASE_URL}/handalis/recent`, {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await authFetch(`${API_BASE_URL}/handalis/recent`, { method: "GET" }, navigation);
 
       if (response.ok) {
         const data = await response.json();
@@ -376,7 +356,7 @@ export default function MainScreen({ navigation }) {
               });
             }
           } catch (e) { }
-          await AsyncStorage.removeItem("authToken");
+          await AsyncStorage.multiRemove(["authToken", "refreshToken"]);
           navigation.reset({ index: 0, routes: [{ name: "Login" }] });
         },
       },
@@ -399,18 +379,14 @@ export default function MainScreen({ navigation }) {
     if (!confirm) return;
 
     try {
-      const token = await AsyncStorage.getItem("authToken");
-      const response = await fetch(`${API_BASE_URL}/delete`, {
+      const response = await authFetch(`${API_BASE_URL}/delete`, {
         method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+        headers: { "Content-Type": "application/json" },
+      }, navigation);
 
       if (response.ok) {
         Alert.alert("탈퇴 완료", "정상적으로 탈퇴되었습니다.");
-        await AsyncStorage.removeItem("authToken");
+        await AsyncStorage.multiRemove(["authToken", "refreshToken"]);
         navigation.reset({ index: 0, routes: [{ name: "Login" }] });
       } else {
         const text = await response.text();

@@ -18,6 +18,7 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
+import { authFetch, clearTokens } from "../utils/authFetch";
 
 const categories = ["소파", "배경", "벽장식", "바닥장식"];
 const categoryIcons = {
@@ -60,17 +61,9 @@ export default function StoreScreen({ navigation }) {
 
   const fetchItems = async () => {
     try {
-      const token = await AsyncStorage.getItem("authToken");
       const mappedType = itemTypeMap[selectedTab];
-      const response = await fetch(`${API_BASE_URL}/store/view?itemType=${mappedType}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (response.status === 401) {
-        await AsyncStorage.removeItem("authToken");
-        Alert.alert("세션 만료", "로그인이 만료되었습니다. 다시 로그인해주세요.");
-        navigation.navigate("Login");
-        return;
-      }
+      const response = await authFetch(`${API_BASE_URL}/store/view?itemType=${mappedType}`, {}, navigation);
+      if (response.status === 401) return;
 
       const text = await response.text();
       const data = JSON.parse(text);
@@ -99,12 +92,10 @@ export default function StoreScreen({ navigation }) {
 
   const fetchTotalCoin = async () => {
     try {
-      const token = await AsyncStorage.getItem("authToken");
-      const response = await fetch(`${API_BASE_URL}/handalis/view`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await authFetch(`${API_BASE_URL}/handalis/view`, {}, navigation);
+      if (!response.ok) return;
       const data = await response.json();
-      if (response.ok) setTotalCoin(data.total_coin);
+      setTotalCoin(data.total_coin);
     } catch (error) {
       console.error("코인 조회 실패:", error);
     }
@@ -125,13 +116,11 @@ export default function StoreScreen({ navigation }) {
 
   const fetchAppliedItem = async () => {
     try {
-      const token = await AsyncStorage.getItem("authToken");
-      const response = await fetch(`${API_BASE_URL}/handalis/view`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await authFetch(`${API_BASE_URL}/handalis/view`, {}, navigation);
+      if (!response.ok) return;
       const data = await response.json();
 
-      if (response.ok) {
+      if (true) {
         // ✅ 캐릭터 이미지 설정
         if (data.image && characterImageMap[data.image]) {
           setCharacterImage(characterImageMap[data.image]);
@@ -219,8 +208,6 @@ export default function StoreScreen({ navigation }) {
 
   const handleBuyItem = async () => {
     try {
-      const token = await AsyncStorage.getItem("authToken");
-
       // 1. 이미 구매한 아이템이면, 기존처럼 적용만 실행합니다.
       if (currentItem.buy) {
         handleApplyItem();
@@ -228,17 +215,14 @@ export default function StoreScreen({ navigation }) {
       }
 
       // 2. (신규 구매) 아이템 구매 API를 호출합니다.
-      const buyResponse = await fetch(`${API_BASE_URL}/store/buy`, {
+      const buyResponse = await authFetch(`${API_BASE_URL}/store/buy`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           item_type: itemTypeMap[selectedTab],
           name: currentItem.name,
         }),
-      });
+      }, navigation);
 
       // 3. 구매에 실패하면, 원인을 알리고 함수를 종료합니다.
       if (!buyResponse.ok) {
@@ -254,17 +238,14 @@ export default function StoreScreen({ navigation }) {
       }
 
       // 4. 구매 성공! 이어서 아이템 적용 API를 호출합니다.
-      const applyResponse = await fetch(`${API_BASE_URL}/store/set`, {
+      const applyResponse = await authFetch(`${API_BASE_URL}/store/set`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           item_type: itemTypeMap[selectedTab],
           name: currentItem.name,
         }),
-      });
+      }, navigation);
 
       // 5. 적용까지 성공했을 때의 처리
       if (applyResponse.ok) {
@@ -292,18 +273,14 @@ export default function StoreScreen({ navigation }) {
 
   const handleApplyItem = async () => {
     try {
-      const token = await AsyncStorage.getItem("authToken");
-      const response = await fetch(`${API_BASE_URL}/store/set`, {
+      const response = await authFetch(`${API_BASE_URL}/store/set`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           item_type: itemTypeMap[selectedTab],
           name: currentItem.name,
         }),
-      });
+      }, navigation);
 
       const text = await response.text();
 

@@ -5,6 +5,7 @@ import { API_BASE_URL } from "@env";
 import { storeItemImageMap } from "./storeItemImageMap";
 import { characterImageMap } from "./characterImageMap";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
+import { authFetch } from "./authFetch";
 
 const STAGE_RATIO = 9 / 16; // ← 필요 시 조정
 
@@ -21,17 +22,8 @@ export default function PreviewView({ characterImage, appliedItems, navigation }
   useEffect(() => {
     (async () => {
       try {
-        const token = await AsyncStorage.getItem("authToken");
-        const res = await fetch(`${API_BASE_URL}/handalis/view`, {
-          method: "GET",
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (res.status === 401) {
-          await AsyncStorage.removeItem("authToken");
-          Alert.alert("세션 만료", "로그인이 만료되었습니다. 다시 로그인해주세요.");
-          navigation?.navigate("Login");
-          return;
-        }
+        const res = await authFetch(`${API_BASE_URL}/handalis/view`, { method: "GET" }, navigation);
+        if (res.status === 401) return;
         if (res.ok) {
           const data = await res.json();
           if (data.handali_img && characterImageMap[data.handali_img]) {

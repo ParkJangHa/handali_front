@@ -15,6 +15,7 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
+import { authFetch } from "../utils/authFetch";
 
 const UserHabitAppendScreen = ({ route, navigation }) => {
   const { category, categoryData } = route.params; // 전달된 데이터
@@ -45,8 +46,6 @@ const UserHabitAppendScreen = ({ route, navigation }) => {
     setLoading(true); // 로딩 시작
 
     try {
-      const token = await AsyncStorage.getItem("authToken");
-
       // 카테고리 변환: 한글 → 대문자 영어 변환
       const categoryMap = {
         "활동": "ACTIVITY",
@@ -65,14 +64,11 @@ const UserHabitAppendScreen = ({ route, navigation }) => {
 
       console.log("📌 서버로 전송할 JSON:", JSON.stringify(requestBody, null, 2));
 
-      const response = await fetch(`${API_BASE_URL}/habits`, {
+      const response = await authFetch(`${API_BASE_URL}/habits`, {
         method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestBody),
-      });
+      }, navigation);
 
       const data = await response.json();
       console.log("📌 습관 추가 응답:", data);

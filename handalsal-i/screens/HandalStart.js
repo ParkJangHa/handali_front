@@ -7,6 +7,7 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from '@env';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
+import { authFetch } from "../utils/authFetch";
 
 const HandalStart = ({ navigation }) => {
   const today = new Date();
@@ -20,12 +21,6 @@ const HandalStart = ({ navigation }) => {
   const createHandali = async () => {
     try {
       setLoading(true);
-      const token = await AsyncStorage.getItem("authToken");
-      if (!token) {
-        Alert.alert("세션 만료", "다시 로그인해주세요.");
-        navigation.navigate("LoginScreen");
-        return;
-      }
       if (!nicknameInput.trim()) {
         Alert.alert("알림", "한달이의 별명을 입력해주세요!");
         setLoading(false);
@@ -33,14 +28,13 @@ const HandalStart = ({ navigation }) => {
       }
 
       const handaliData = { nickname: nicknameInput.trim() };
-      const handaliResponse = await fetch(`${API_BASE_URL}/handalis`, {
+      const handaliResponse = await authFetch(`${API_BASE_URL}/handalis`, {
         method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(handaliData),
-      });
+      }, navigation);
+
+      if (handaliResponse.status === 401) { setLoading(false); return; }
 
       const responseText = await handaliResponse.text();
       let handaliResult;

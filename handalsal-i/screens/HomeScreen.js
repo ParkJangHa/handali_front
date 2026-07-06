@@ -13,6 +13,7 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
+import { authFetch } from "../utils/authFetch";
 
 
 const HomeScreen = ({ navigation }) => {
@@ -22,17 +23,14 @@ const HomeScreen = ({ navigation }) => {
       if (!token) return;
 
       try {
-        const response = await fetch(`${API_BASE_URL}/handalis/view`, {
-          method: "GET",
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await authFetch(`${API_BASE_URL}/handalis/view`, { method: "GET" }, navigation);
 
         if (response.ok) {
           navigation.navigate("MainScreen");
         } else if (response.status === 404) {
           navigation.navigate("Category");
-        } else {
-          await AsyncStorage.removeItem("authToken");
+        } else if (response.status !== 401) {
+          await AsyncStorage.multiRemove(["authToken", "refreshToken"]);
         }
       } catch (error) {
         console.error("자동 로그인 확인 오류:", error);

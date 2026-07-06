@@ -10,6 +10,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { API_BASE_URL } from "@env";
+import { authFetch } from "../utils/authFetch";
 const { width, height } = Dimensions.get("window");
 
 const tutorialImages = [
@@ -58,14 +59,8 @@ export default function TutorialScreen({ navigation }) {
               // 튜토리얼 봤음 표시 저장
               await AsyncStorage.setItem("tutorial_seen", "true");
 
-              // authToken 가져오기
-              const token = await AsyncStorage.getItem("authToken");
-
               // 한달이 존재 여부 확인 API 호출
-              const response = await fetch(`${API_BASE_URL}/handalis/view`, {
-                method: "GET",
-                headers: { Authorization: `Bearer ${token}` },
-              });
+              const response = await authFetch(`${API_BASE_URL}/handalis/view`, { method: "GET" }, navigation);
 
               if (response.ok) {
                 // 한달이 있음 → MainScreen 으로 이동

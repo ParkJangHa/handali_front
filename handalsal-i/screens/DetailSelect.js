@@ -13,6 +13,7 @@ import {
 import { API_BASE_URL } from '@env';
 // const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
+import { authFetch } from "../utils/authFetch";
 
 
 const categoryMap = {
@@ -41,13 +42,6 @@ const DetailSelect = ({ route, navigation }) => {
   }, []);
   const fetchHabits = async () => {
     try {
-      const token = await AsyncStorage.getItem("authToken");
-      if (!token) {
-        Alert.alert("세션 만료", "다시 로그인해주세요.");
-        navigation.navigate("LoginScreen");
-        return;
-      }
-
       const mappedCategory = categoryMap[category] || category;
       console.log("📌 선택한 카테고리:", category);
       console.log("📌 변환된 category 값:", mappedCategory);
@@ -57,16 +51,10 @@ const DetailSelect = ({ route, navigation }) => {
       let devHabitsList = [];
 
       // 사용자 추가 습관 조회
-      const userResponse = await fetch(`${API_BASE_URL}/habits/category-user?category=${mappedCategory}`, {
-        method: "GET",
-        headers: { "Authorization": `Bearer ${token}` },
-      });
+      const userResponse = await authFetch(`${API_BASE_URL}/habits/category-user?category=${mappedCategory}`, { method: "GET" }, navigation);
 
       // 개발자가 미리 등록한 습관 조회
-      const devResponse = await fetch(`${API_BASE_URL}/habits/category-dev?category=${mappedCategory}`, {
-        method: "GET",
-        headers: { "Authorization": `Bearer ${token}` },
-      });
+      const devResponse = await authFetch(`${API_BASE_URL}/habits/category-dev?category=${mappedCategory}`, { method: "GET" }, navigation);
 
       const userText = await userResponse.text();
       const devText = await devResponse.text();
@@ -130,8 +118,6 @@ const DetailSelect = ({ route, navigation }) => {
     setLoading(true); // 로딩 시작
 
     try {
-      const token = await AsyncStorage.getItem("authToken");
-
       const categoryMap = {
         "활동": "ACTIVITY",
         "지능": "INTELLIGENT",
@@ -152,14 +138,11 @@ const DetailSelect = ({ route, navigation }) => {
 
       console.log("📌 이번 달 습관 지정 요청:", JSON.stringify(requestBody, null, 2));
 
-      const response = await fetch(`${API_BASE_URL}/habits/set`, {
+      const response = await authFetch(`${API_BASE_URL}/habits/set`, {
         method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestBody),
-      });
+      }, navigation);
 
       const data = await response.json();
       console.log("📌 이번 달 습관 지정 응답:", data);

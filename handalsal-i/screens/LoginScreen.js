@@ -33,18 +33,19 @@ const LoginScreen = ({ navigation }) => {
       const responseText = await response.text();
       let data = responseText.startsWith("{")
         ? JSON.parse(responseText)
-        : { Bearer: responseText };
+        : { accessToken: responseText };
 
       if (!response.ok) {
         Alert.alert("로그인 실패", data.message || "이메일 또는 비밀번호를 확인하세요.");
         return;
       }
 
-      await AsyncStorage.setItem("authToken", data.Bearer);
+      await AsyncStorage.setItem("authToken", data.accessToken);
+      await AsyncStorage.setItem("refreshToken", data.refreshToken);
 
       const handaliViewResponse = await fetch(`${API_BASE_URL}/handalis/view`, {
         method: "GET",
-        headers: { Authorization: `Bearer ${data.Bearer}` },
+        headers: { Authorization: `Bearer ${data.accessToken}` },
       });
 
       if (handaliViewResponse.ok) {

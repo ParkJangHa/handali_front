@@ -9,6 +9,7 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
+import { authFetch } from "../utils/authFetch";
 
 const CATEGORY_ICON = {
   ACTIVITY: require("../assets/icons/activity.png"),
@@ -47,12 +48,8 @@ const GrowthScreen = ({ navigation }) => {
 
   useEffect(() => {
     const fetchGrowthInfo = async () => {
-      const token = await AsyncStorage.getItem("authToken");
       try {
-        const response = await fetch(`${API_BASE_URL}/handalis/view`, {
-          method: "GET",
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await authFetch(`${API_BASE_URL}/handalis/view`, { method: "GET" }, navigation);
         const bodyText = await response.text();
         // console.log("📩 /handalis/view RAW:", bodyText);
         if (!response.ok) return;

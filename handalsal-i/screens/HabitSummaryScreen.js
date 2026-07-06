@@ -16,6 +16,7 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
+import { authFetch, clearTokens } from "../utils/authFetch";
 
 /** === 카테고리/라벨 === */
 const CAT_ORDER = ["ACTIVITY", "INTELLIGENT", "ART"];
@@ -57,17 +58,12 @@ export default function HabitSummaryScreen() {
 
   const fetchSummary = useCallback(async () => {
     try {
-      const token = await AsyncStorage.getItem("authToken");
-      if (!token) throw new Error("no token");
+      const res = await authFetch(`${API_BASE_URL}/habits/summary`, {}, navigation);
 
-      const res = await fetch(`${API_BASE_URL}/habits/summary`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      if (res.status === 401) return;
 
-      if (res.status === 401 || res.status === 412) {
-        await AsyncStorage.removeItem("authToken");
-        Alert.alert("세션 만료", "다시 로그인해주세요.");
-        navigation.reset({ index: 0, routes: [{ name: "Login" }] });
+      if (res.status === 412) {
+        await clearTokens(navigation);
         return;
       }
 

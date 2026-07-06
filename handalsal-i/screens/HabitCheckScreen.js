@@ -6,6 +6,7 @@ import {
     widthPercentageToDP as wp,
     heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
+import { authFetch, clearTokens } from "../utils/authFetch";
 
 export default function HabitCheckScreen({ route, navigation }) {
     const { categoryName, detailedHabit, habitTime, satisfaction } = route.params;
@@ -73,27 +74,19 @@ export default function HabitCheckScreen({ route, navigation }) {
 
         //api 호출
         try {
-            const token = await AsyncStorage.getItem("authToken");
-
-            const response = await fetch(`${API_BASE_URL}/habits/record`, {
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
+            const response = await authFetch(`${API_BASE_URL}/habits/record`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(recordData),
-            });
+            }, navigation);
+
+            if (response.status === 401) return;
 
             if (response.status === 412) {
                 Alert.alert(
                     "세션 만료",
                     "로그인이 만료되었습니다. 다시 로그인해주세요.",
-                    [{
-                        text: "확인", onPress: async () => {
-                            await AsyncStorage.removeItem("authToken");
-                            navigation.navigate("Login");
-                        }
-                    }],
+                    [{ text: "확인", onPress: () => clearTokens(navigation) }],
                     { cancelable: false }
                 );
                 return;
@@ -104,12 +97,7 @@ export default function HabitCheckScreen({ route, navigation }) {
                 await markDailyQuestCompletable();
                 // 외형 변화가 있을 때
                 if (data.appearance_change) {
-                    const response = await fetch(`${API_BASE_URL}/handalis/change`, {
-                        method: "GET",
-                        headers: {
-                            Authorization: `Bearer ${token}`
-                        }
-                    })
+                    const response = await authFetch(`${API_BASE_URL}/handalis/change`, { method: "GET" }, navigation)
 
                     if (response.ok) {
                         const imageData = await response.text();

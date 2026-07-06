@@ -9,6 +9,7 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
+import { authFetch } from "../utils/authFetch";
 
 const JobScreen = ({ navigation }) => {
   const [nickname, setNickname] = useState();
@@ -29,12 +30,8 @@ const JobScreen = ({ navigation }) => {
 
   useEffect(() => {
     const fetchJobDetails = async () => {
-      const token = await AsyncStorage.getItem("authToken");
       try {
-        const response = await fetch(`${API_BASE_URL}/handalis/recent`, {
-          method: "GET",
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const response = await authFetch(`${API_BASE_URL}/handalis/recent`, { method: "GET" }, navigation);
 
         if (response.status === 409) {
           Alert.alert(

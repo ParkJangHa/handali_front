@@ -16,6 +16,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from "@env";
 import { characterImageMap } from "../utils/characterImageMap";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
+import { authFetch, clearTokens } from "../utils/authFetch";
 
 // 층 배경 (열림/잠금 공통)
 const floorImages = {
@@ -40,22 +41,13 @@ const ApartScreen = ({ navigation }) => {
   // ---------- API ----------
   const fetchApartments = async () => {
     try {
-      const token = await AsyncStorage.getItem("authToken");
+      const response = await authFetch(`${API_BASE_URL}/apartments`, { method: "GET" }, navigation);
 
-      const response = await fetch(`${API_BASE_URL}/apartments`, {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      if (response.status === 401) return;
 
       if (response.status === 412) {
         Alert.alert("세션 만료", "로그인이 만료되었습니다. 다시 로그인해주세요.", [
-          {
-            text: "확인",
-            onPress: async () => {
-              await AsyncStorage.removeItem("authToken");
-              navigation.navigate("Login");
-            },
-          },
+          { text: "확인", onPress: () => clearTokens(navigation) },
         ]);
         return;
       }

@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Image,} from "react-native";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from "@env";
+import { authFetch } from "../utils/authFetch";
 
 const CategorySelect = ({ navigation, route }) => {
   const { from } = route.params || {};
@@ -33,24 +34,12 @@ const CategorySelect = ({ navigation, route }) => {
 
   try {
     // 프로젝트에서 쓰는 토큰 키에 맞춰 하나라도 있으면 사용
-    const token =
-      (await AsyncStorage.getItem("accessToken")) ||
-      (await AsyncStorage.getItem("token")) ||
-      (await AsyncStorage.getItem("authToken"));
-
-    if (!token) {
-      alert("로그인이 필요합니다.");
-      setIsKeeping(false);
-      return;
-    }
-
-    const res = await fetch(`${API_BASE_URL}/habits/refresh-last-month`, {
+    const res = await authFetch(`${API_BASE_URL}/habits/refresh-last-month`, {
       method: "PATCH",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
+      headers: { "Content-Type": "application/json" },
+    }, navigation);
+
+    if (res.status === 401) { setIsKeeping(false); return; }
 
     // 서버 메시지(있으면 표시)
     let msg = "";

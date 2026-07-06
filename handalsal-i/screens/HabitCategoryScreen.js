@@ -4,6 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from '@env';
 import { characterImageMap } from "../utils/characterImageMap";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
+import { authFetch, clearTokens } from "../utils/authFetch";
 
 export default function HabitCategoryScreen({ navigation }) {
   const [selectedType, setSelectedType] = useState(null); // ← 제네릭 제거
@@ -25,18 +26,13 @@ export default function HabitCategoryScreen({ navigation }) {
 
   const fetchImage = useCallback(async () => {
     try {
-      const token = await AsyncStorage.getItem("authToken");
-      const response = await fetch(`${API_BASE_URL}/handalis/view`, {
-        method: 'GET',
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await authFetch(`${API_BASE_URL}/handalis/view`, { method: "GET" }, navigation);
+
+      if (response.status === 401) return;
 
       if (response.status === 412) {
         Alert.alert("세션 만료", "로그인이 만료되었습니다. 다시 로그인해주세요.", [
-          { text: "확인", onPress: async () => {
-            await AsyncStorage.removeItem("authToken");
-            navigation.navigate("Login");
-          }}
+          { text: "확인", onPress: () => clearTokens(navigation) }
         ]);
         return;
       }
@@ -66,18 +62,16 @@ export default function HabitCategoryScreen({ navigation }) {
     if (loading) return;
     try {
       setLoading(true);
-      const token = await AsyncStorage.getItem("authToken");
-      const res = await fetch(`${API_BASE_URL}/habits/record-delete`, {
+      const res = await authFetch(`${API_BASE_URL}/habits/record-delete`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
-      });
+        headers: { Accept: "application/json" },
+      }, navigation);
+
+      if (res.status === 401) { setLoading(false); return; }
 
       if (res.status === 412) {
         Alert.alert("세션 만료", "다시 로그인해 주세요.", [
-          { text: "확인", onPress: async () => {
-            await AsyncStorage.removeItem("authToken");
-            navigation.navigate("Login");
-          }}
+          { text: "확인", onPress: () => clearTokens(navigation) }
         ]);
         return;
       }
