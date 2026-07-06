@@ -1,8 +1,11 @@
 {
   "expo": {
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "name": "handali",
     "slug": "handalsal-i",
-    "version": "1.0.0",
+    "version": "1.0.4",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -21,7 +24,10 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.anonymous.handalsali"
+      "package": "com.anonymous.handalsali",
+      "compileSdkVersion": 35,
+      "targetSdkVersion": 35,
+      "buildToolsVersion": "34.0.0"
     },
     "web": {
       "favicon": "./assets/favicon.png"

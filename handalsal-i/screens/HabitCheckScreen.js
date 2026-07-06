@@ -1,13 +1,39 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Alert } from 'react-native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from '@env';
-
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+import {
+    widthPercentageToDP as wp,
+    heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
+import { authFetch, clearTokens } from "../utils/authFetch";
 
 export default function HabitCheckScreen({ route, navigation }) {
     const { categoryName, detailedHabit, habitTime, satisfaction } = route.params;
 
+    // ✅ 기록 성공 시: 오늘 퀘스트가 ANY_RECORD + ACCEPTED 이면 COMPLETABLE로 전환
+    const markDailyQuestCompletable = async () => {
+        try {
+            const todayStr = new Date().toISOString().slice(0, 10);
+            const raw = await AsyncStorage.getItem("daily_quest");
+            if (!raw) return;
+            const q = JSON.parse(raw);
+
+            // 오늘 + 수락 상태 + ANY_RECORD 타입만 처리
+            if (q.date !== todayStr) return;
+            if (q.status !== "ACCEPTED") return;
+            if (q.match?.type !== "ANY_RECORD") return;
+
+            const token = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+            const next = {
+                ...q,
+                status: "COMPLETABLE",
+                localToken: token,
+                recordedAt: Date.now(),
+            };
+            await AsyncStorage.setItem("daily_quest", JSON.stringify(next));
+        } catch { }
+    };
     // 기록하기 버튼이 눌렸을 때, 습관 기록 데이터 서버로 전송
     const handleRecord = async () => {
 
@@ -48,27 +74,19 @@ export default function HabitCheckScreen({ route, navigation }) {
 
         //api 호출
         try {
-            const token = await AsyncStorage.getItem("authToken");
-
-            const response = await fetch(`${API_BASE_URL}/habits/record`, {
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
+            const response = await authFetch(`${API_BASE_URL}/habits/record`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(recordData),
-            });
+            }, navigation);
+
+            if (response.status === 401) return;
 
             if (response.status === 412) {
                 Alert.alert(
                     "세션 만료",
                     "로그인이 만료되었습니다. 다시 로그인해주세요.",
-                    [{
-                        text: "확인", onPress: async () => {
-                            await AsyncStorage.removeItem("authToken");
-                            navigation.navigate("Login");
-                        }
-                    }],
+                    [{ text: "확인", onPress: () => clearTokens(navigation) }],
                     { cancelable: false }
                 );
                 return;
@@ -76,15 +94,10 @@ export default function HabitCheckScreen({ route, navigation }) {
 
             if (response.ok) {
                 const data = await response.json();
-
+                await markDailyQuestCompletable();
                 // 외형 변화가 있을 때
                 if (data.appearance_change) {
-                    const response = await fetch(`${API_BASE_URL}/handalis/change`, {
-                        method: "GET",
-                        headers: {
-                            Authorization: `Bearer ${token}`
-                        }
-                    })
+                    const response = await authFetch(`${API_BASE_URL}/handalis/change`, { method: "GET" }, navigation)
 
                     if (response.ok) {
                         const imageData = await response.text();
@@ -96,8 +109,8 @@ export default function HabitCheckScreen({ route, navigation }) {
                         "한달이의 외형이 변화하였습니다.",
                         [
                             {
-                                text: "메인 화면으로 돌아가기",
-                                onPress: () => navigation.navigate("MainScreen"),
+                                text: "성장 화면 바로 가기",
+                                onPress: () => navigation.navigate("GrowthScreen", { grownCategory: convertedCategoryType }),
                             },
                         ],
                         { cancelable: false }
@@ -206,103 +219,87 @@ export default function HabitCheckScreen({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-
-    //container
     container: {
         flex: 1,
-        backgroundColor: '#76D6F4',
+        backgroundColor: "#76D6F4",
     },
     backButton: {
-        marginTop: SCREEN_HEIGHT * 0.06,
-        marginLeft: SCREEN_WIDTH * 0.06,
-        // backgroundColor: 'pink'
+        marginTop: hp("6%"),
+        marginLeft: wp("6%"),
     },
     mainContainer: {
         flex: 1,
-        paddingTop: SCREEN_WIDTH * 0.03,
-        paddingLeft: SCREEN_WIDTH * 0.07,
-        paddingRight: SCREEN_WIDTH * 0.07,
-        paddingBottom: SCREEN_WIDTH * 0.07,
+        paddingTop: wp("3%"),
+        paddingLeft: wp("7%"),
+        paddingRight: wp("7%"),
+        paddingBottom: wp("7%"),
     },
     mainTitleCon: {
         flex: 0.8,
-        justifyContent: 'center',
-        alignItems: 'center',
-        //backgroundColor: 'yellow',
+        justifyContent: "center",
+        alignItems: "center",
     },
     categoryNameCon: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        // backgroundColor: 'red',
+        justifyContent: "center",
+        alignItems: "center",
     },
-
     detailedHabitNameCon: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        // backgroundColor: 'yellow'
+        justifyContent: "center",
+        alignItems: "center",
     },
     timeCon: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        // backgroundColor: 'green'
+        justifyContent: "center",
+        alignItems: "center",
     },
     satisfactionCon: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        // backgroundColor: 'blue'
+        justifyContent: "center",
+        alignItems: "center",
     },
     recordCon: {
         flex: 0.6,
-        justifyContent: 'center',
+        justifyContent: "center",
     },
-
-    //in view
     card: {
-        backgroundColor: 'white',
-        width: '100%',
-        padding: SCREEN_WIDTH * 0.05,
+        backgroundColor: "white",
+        width: "100%",
+        padding: wp("5%"),
         borderRadius: 20,
     },
-
-    //button
     recordButton: {
         backgroundColor: "#FFE98A",
-        padding: SCREEN_HEIGHT * 0.02,
+        padding: hp("2%"),
         borderRadius: 30,
         alignItems: "center",
     },
-
-    //text
     mainTitleText: {
-        fontSize: SCREEN_WIDTH * 0.07,
-        fontWeight: 'bold',
-        color: 'black'
+        fontSize: wp("7%"),
+        color: "black",
+        fontFamily: "Jua-Regular",
     },
     mainSubTitleText: {
-        fontSize: SCREEN_WIDTH * 0.037,
-        color: '#3076f7',
-        fontWeight: 'bold'
+        fontSize: wp("3.7%"),
+        color: "#3076f7",
+        fontFamily: "Jua-Regular",
     },
     labelsText: {
-        fontSize: SCREEN_WIDTH * 0.04,
-        fontWeight: 'bold',
-        color: 'black'
+        fontSize: wp("4%"),
+        color: "black",
+        fontFamily: "Jua-Regular",
     },
     contentText: {
-        fontSize: SCREEN_WIDTH * 0.09,
-        fontWeight: 400,
-        alignSelf: 'center',
-        color: 'black'
+        fontSize: wp("9%"),
+        fontWeight: "400",
+        alignSelf: "center",
+        color: "black",
+        fontFamily: "Jua-Regular",
     },
     recordText: {
-        color: 'white',
-        fontSize: SCREEN_WIDTH * 0.05,
-        fontWeight: 'bold',
-        color: 'black'
+        fontSize: wp("5%"),
+        color: "black",
+        fontFamily: "Jua-Regular",
     },
-
 });

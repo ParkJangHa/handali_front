@@ -1,9 +1,12 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Image, Dimensions } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Image,} from "react-native";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_BASE_URL } from "@env";
+import { authFetch } from "../utils/authFetch";
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
-
-const CategorySelect = ({ navigation }) => {
+const CategorySelect = ({ navigation, route }) => {
+  const { from } = route.params || {};
   const today = new Date();
   const formattedDate = `${today.getFullYear()}-${(today.getMonth() + 1)
     .toString()
@@ -15,6 +18,7 @@ const CategorySelect = ({ navigation }) => {
   const handlePress = (category) => {
     setSelectedButton(category);
   };
+  const [isKeeping, setIsKeeping] = useState(false);
 
   const handleNext = () => {
     if (!selectedButton) {
@@ -24,7 +28,42 @@ const CategorySelect = ({ navigation }) => {
       navigation.navigate("DetailSelect", { category: selectedButton });
     }
   };
-  
+  const handleKeepLastMonth = async () => {
+  if (isKeeping) return;          // 빠른 연타 방지
+  setIsKeeping(true);
+
+  try {
+    // 프로젝트에서 쓰는 토큰 키에 맞춰 하나라도 있으면 사용
+    const res = await authFetch(`${API_BASE_URL}/habits/refresh-last-month`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+    }, navigation);
+
+    if (res.status === 401) { setIsKeeping(false); return; }
+
+    // 서버 메시지(있으면 표시)
+    let msg = "";
+    try {
+      const data = await res.json();
+      msg = typeof data === "string" ? data : (data.message || "");
+    } catch (_) {}
+
+    if (res.ok) {
+      alert(msg || "이번달 습관이 지난달 습관으로 갱신되었습니다.");
+      navigation.navigate("HandalStart");      // 다음 화면으로 이동
+    } else if (res.status === 404) {
+      alert(msg || "지난달 습관이 존재하지 않습니다.");
+    } else {
+      alert(msg || `갱신 실패(code: ${res.status})`);
+    }
+  } catch (e) {
+    console.log(e);
+    alert("네트워크 오류가 발생했습니다.");
+  } finally {
+    setIsKeeping(false);
+  }
+};
+
 
   return (
     <View style={styles.container}>
@@ -72,7 +111,20 @@ const CategorySelect = ({ navigation }) => {
         >
           <Text style={styles.habitButtonText}>예술</Text>
         </TouchableOpacity>
+
+
       </View>
+      {from === "JobScreen" && (
+        <TouchableOpacity
+          style={[styles.keepButton, isKeeping && { opacity: 0.6 }]}
+          onPress={handleKeepLastMonth}
+          disabled={isKeeping}
+        >
+          <Text style={styles.keepButtonText}>
+            {isKeeping ? "갱신 중..." : "저번달 습관 유지하기"}
+          </Text>
+        </TouchableOpacity>
+      )}
       <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
         <Text style={styles.nextButtonText}>카테고리를 선택했어요</Text>
       </TouchableOpacity>
@@ -84,34 +136,33 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: "center",
-    padding: SCREEN_WIDTH * 0.05,
+    padding: wp('5%'),
     backgroundColor: "#FFE98A",
-    marginTop: -SCREEN_WIDTH * 0.07,
   },
   img: {
     top: 0,
     position: "absolute",
-    width: SCREEN_WIDTH * 1,
-    height: SCREEN_HEIGHT * 0.3,
+    width: wp('100%'),
+    height: hp('30%'),
     zIndex: 0,
   },
   dateText: {
-    fontSize: SCREEN_WIDTH * 0.06,
-    fontWeight: "bold",
+    fontSize: wp('6%'),
     color: "#2D5D6B",
     alignSelf: "flex-start",
+    fontFamily: "Jua-Regular",
   },
   title: {
-    fontSize: SCREEN_WIDTH * 0.08,
-    fontWeight: "bold",
+    fontSize: wp('8%'),
     color: "#2D5D6B",
     alignSelf: "flex-start",
+    fontFamily: "Jua-Regular",
   },
   progressBar: {
     width: "100%",
-    height: SCREEN_HEIGHT * 0.01,
+    height: hp('1%'),
     justifyContent: "center",
-    marginVertical: SCREEN_HEIGHT * 0.04,
+    marginVertical: hp('4%'),
   },
   backgroundBar: {
     width: "100%",
@@ -130,23 +181,23 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   subTitle: {
-    fontSize: SCREEN_WIDTH * 0.05,
-    fontWeight: "bold",
+    fontSize: wp('7%'),
     color: "rgba(0, 0, 0, 0.5)",
     alignSelf: "flex-start",
-    marginBottom: SCREEN_WIDTH * 0.13,
+    marginBottom: wp('13%'),
+    fontFamily: "Jua-Regular",
   },
   rowContainer: {
     flexDirection: "row",
     justifyContent: "space-evenly",
     width: "100%",
-    marginBottom: SCREEN_WIDTH * 0.75,
+    marginBottom: hp('3%'),
   },
   habitButton: {
     backgroundColor: "rgba(255, 255, 255, 1)",
-    width: SCREEN_WIDTH * 0.25,
-    height: SCREEN_HEIGHT * 0.1,
-    borderRadius: 20,
+    width: wp('25%'),
+    height: hp('10%'),
+    borderRadius: wp('5%'),
     justifyContent: "center",
     alignItems: "center",
   },
@@ -154,22 +205,36 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(2, 80, 224, 0.5)",
   },
   habitButtonText: {
-    fontSize: SCREEN_WIDTH * 0.04,
+    fontSize: wp('4%'),
     fontWeight: "bold",
     color: "#2D5D6B",
+    fontFamily: "Jua-Regular",
+  },
+  keepButton: {
+  width: "80%",
+  backgroundColor: "#FFD36B",
+  paddingVertical: hp('2%'),
+  borderRadius: wp('5%'),
+  alignItems: "center",
+  marginBottom: hp('25%'),
+  },
+  keepButtonText: {
+    color: "#2D5D6B",
+    fontSize: wp('5%'),
+    fontFamily: "Jua-Regular",
   },
   nextButton: {
     width: "100%",
     backgroundColor: "#76D6F4",
-    paddingVertical: SCREEN_HEIGHT * 0.02,
-    borderRadius: 20,
+    paddingVertical: hp('2%'),
+    borderRadius: wp('5%'),
     alignItems: "center",
-    marginVertical: SCREEN_HEIGHT * 0.02,
+    marginVertical: hp('2%'),
   },
   nextButtonText: {
     color: "#2D5D6B",
-    fontSize: SCREEN_WIDTH * 0.05,
-    fontWeight: "bold",
+    fontSize: wp('5%'),
+    fontFamily: "Jua-Regular",
   },
 });
 

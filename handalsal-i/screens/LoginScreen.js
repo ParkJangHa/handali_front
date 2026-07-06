@@ -1,26 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-  Image,
-  KeyboardAvoidingView,
-  ScrollView,
-  Platform,
-  Dimensions,
-  StatusBar,
+  View, Text, TextInput, TouchableOpacity, StyleSheet,
+  Alert, Image, Platform, StatusBar,
 } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from "@env";
-
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
   const validateInput = () => {
     const emailRegex = /\S+@\S+\.\S+/;
     if (!email || !emailRegex.test(email)) {
@@ -32,7 +23,6 @@ const LoginScreen = ({ navigation }) => {
 
   const handleLogin = async () => {
     if (!validateInput()) return;
-
     try {
       const response = await fetch(`${API_BASE_URL}/login`, {
         method: "POST",
@@ -43,178 +33,212 @@ const LoginScreen = ({ navigation }) => {
       const responseText = await response.text();
       let data = responseText.startsWith("{")
         ? JSON.parse(responseText)
-        : { Bearer: responseText };
+        : { accessToken: responseText };
 
       if (!response.ok) {
         Alert.alert("로그인 실패", data.message || "이메일 또는 비밀번호를 확인하세요.");
         return;
       }
 
-      await AsyncStorage.setItem("authToken", data.Bearer);
+      await AsyncStorage.setItem("authToken", data.accessToken);
+      await AsyncStorage.setItem("refreshToken", data.refreshToken);
 
       const handaliViewResponse = await fetch(`${API_BASE_URL}/handalis/view`, {
         method: "GET",
-        headers: { Authorization: `Bearer ${data.Bearer}` },
+        headers: { Authorization: `Bearer ${data.accessToken}` },
       });
 
       if (handaliViewResponse.ok) {
         navigation.navigate("MainScreen");
-        console.log(API_BASE_URL);
       } else {
-        navigation.navigate("Category");
-        console.log(API_BASE_URL);
+        const seenTutorial = await AsyncStorage.getItem("tutorial_seen");
+        if (seenTutorial === "true") {
+          navigation.navigate("Category");
+        } else {
+          navigation.navigate("TutorialScreen");
+        }
       }
     } catch (error) {
-      console.log(API_BASE_URL);
       console.error("로그인 오류:", error);
       Alert.alert("오류", "네트워크 연결이 원활하지 않습니다.");
-
     }
   };
 
   return (
     <>
       <StatusBar hidden={true} />
-      <KeyboardAvoidingView
+      <KeyboardAwareScrollView
         style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        contentContainerStyle={styles.container}
+        enableOnAndroid
+        keyboardShouldPersistTaps="always"
+        extraScrollHeight={hp("1%")}
+        extraHeight={Platform.OS === "android" ? hp("24%") : 0}
+        enableAutomaticScroll
       >
-        <ScrollView
-          contentContainerStyle={styles.container}
-          keyboardShouldPersistTaps="handled"
-        >
+        <View style={styles.container}>
           <Image source={require("../assets/LoginScreen/Weve.png")} style={styles.img} resizeMode="stretch" />
+          <Image source={require("../assets/LoginScreen/Blue.png")} style={styles.catIcon} />
+          <Image source={require("../assets/LoginScreen/turtle.png")} style={styles.turuleImg} />
+          <Image source={require("../assets/LoginScreen/crab.png")} style={styles.crabImg} />
 
-          <Image
-            source={require("../assets/LoginScreen/Blue.png")}
-            style={styles.catIcon}
-          />
-          <View style={styles.bContainer}>
-          </View>
-          <View style={styles.inputWithIcon}>
-            <Image
-              source={require("../assets/LoginScreen/Email_icon.png")}
-              style={styles.icon}
-            />
+          <View style={styles.bContainer} />
+
+          <View style={styles.inputWithIconEmail}>
+            <Image source={require("../assets/LoginScreen/Email_icon.png")} style={styles.icon} />
             <TextInput
               style={styles.inputField}
               placeholder="email"
               keyboardType="email-address"
               value={email}
               onChangeText={setEmail}
-              placeholderTextColor="#2D5D6B"
+              placeholderTextColor="#000000"
+              returnKeyType="next"
             />
           </View>
-          <View style={styles.inputWithIcon}>
-            <Image
-              source={require("../assets/LoginScreen/Password_icon.png")}
-              style={styles.icon}
-            />
+
+          <View style={styles.inputWithIconPassword}>
+            <Image source={require("../assets/LoginScreen/Password_icon.png")} style={styles.icon} />
             <TextInput
               style={styles.inputField}
               placeholder="password"
               secureTextEntry
               value={password}
               onChangeText={setPassword}
-              placeholderTextColor="#2D5D6B"
+              placeholderTextColor="#000000"
+              returnKeyType="done"
             />
           </View>
+
           <View style={styles.rowContainer}>
-            <TouchableOpacity
-              style={styles.signupButton}
-              onPress={() => navigation.navigate("Signup")}
-            >
+            <TouchableOpacity style={styles.signupButton} onPress={() => navigation.navigate("Signup")}>
               <Text style={styles.signupText}>회원가입</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.button} onPress={handleLogin}>
-              <Text style={styles.buttonText}>로그인.</Text>
+              <Text style={styles.buttonText}>로그인</Text>
             </TouchableOpacity>
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+
+          <TouchableOpacity
+            style={styles.resetTutorialButton}
+            onPress={async () => {
+              await AsyncStorage.removeItem("tutorial_seen");
+              Alert.alert("튜토리얼 기록 삭제됨", "앱 재실행 시 튜토리얼이 다시 표시됩니다.");
+            }}
+          >
+            <Text style={styles.resetTutorialText}>튜토리얼 다시 보기 (개발용)</Text>
+          </TouchableOpacity>
+
+          <View style={{ height: hp("8%") }} />
+        </View>
+      </KeyboardAwareScrollView>
     </>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
+    flexGrow: 1,                 
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#76D6F4",
+    backgroundColor: "#8BE1FC",
+    paddingBottom: hp("2%"),    
   },
-  bContainer: {
-    marginBottom: SCREEN_HEIGHT * 0.4,
-  },
+  bContainer: { marginBottom: hp("30%") },
   img: {
-    top: 0,
-    position: "absolute",
-    width: SCREEN_WIDTH * 1,
-    height: 250,
+    top: 0, position: "absolute",
+    width: wp("100%"), height: hp("45%"),
     zIndex: 0,
   },
   catIcon: {
     position: "absolute",
-    top: SCREEN_HEIGHT * 0.01,
-    width: 209,
-    height: 197,
+    top: hp("3%"),
+    width: wp("55%"), height: hp("25%"),
     resizeMode: "contain",
     alignSelf: "center",
-    zIndex: 2,
   },
-  inputWithIcon: {
+  turuleImg: {
+    position: "absolute",
+    width: wp("14%"), height: hp("9%"),
+    resizeMode: "contain",
+    top: hp("0%"), left: wp("0%"),
+  },
+  crabImg: {
+    position: "absolute",
+    width: wp("14%"), height: hp("9%"),
+    resizeMode: "contain",
+    top: hp("25%"), left: wp("60%"),
+  },
+  inputWithIconEmail: {
     flexDirection: "row",
     alignItems: "center",
-    width: SCREEN_WIDTH * 0.8,
-    height: SCREEN_HEIGHT * 0.07,
-    paddingVertical: 12,
-    paddingHorizontal: 60,
+    width: wp("65%"),
+    paddingVertical: hp("0.8%"),
+    paddingHorizontal: wp("20%"),
     borderRadius: 30,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    marginBottom: 20,
-    backgroundColor: "#FFE98A",
+    borderWidth: 3,
+    borderColor: "#76D6F4",
+    marginBottom: hp("2.5%"),
+    marginTop: hp("5%"),
+    backgroundColor: "#FFFFFF",
+  },
+  inputWithIconPassword: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: wp("65%"),
+    paddingVertical: hp("0.8%"),
+    paddingHorizontal: wp("20%"),
+    borderRadius: 30,
+    borderWidth: 3,
+    borderColor: "#76D6F4",
+    marginBottom: hp("2.5%"),
+    backgroundColor: "#FFFFFF",
   },
   icon: {
-    width: 13.42,
-    height: 20,
-    marginRight: 8,
+    width: wp("3.8%"), height: hp("2.5%"),
+    marginRight: wp("2%"),
+    right: wp("10%"),
   },
   inputField: {
-    flex: 1,
-    fontSize: 14,
-    color: "#2D5D6B",
+    width: wp("50%"),
+    fontSize: 14, color: "#000000",
+    fontFamily: "Jua-Regular",
+    right: wp("10%"),
   },
   rowContainer: {
     flexDirection: "row",
     justifyContent: "space-evenly",
     alignItems: "center",
-    width: SCREEN_WIDTH * 0.8,
-    gap: 15,
+    width: wp("80%"),
+    gap: wp("4%"),
+    marginTop: hp("3%"),
   },
   button: {
-    backgroundColor: "#FFE98A",
-    paddingVertical: 15,
-    paddingHorizontal: 60,
-    borderRadius: 30,
+    backgroundColor: "#FFF5CB",
+    paddingVertical: 12, paddingHorizontal: 65,
+    borderRadius: 30, borderWidth: 3, borderColor: "#76D6F4",
     marginTop: 10,
   },
   buttonText: {
-    color: "#000",
-    fontSize: 20,
-    fontWeight: "bold",
+    color: "#000", fontSize: 20, fontFamily: "Jua-Regular",
   },
   signupButton: {
-    backgroundColor: "#ECF7F7",
-    paddingVertical: 15,
-    paddingHorizontal: 30,
-    borderRadius: 30,
+    backgroundColor: "#FFFFFF",
+    paddingVertical: 12, paddingHorizontal: 30,
+    borderRadius: 30, borderWidth: 3, borderColor: "#76D6F4",
     marginTop: 10,
   },
   signupText: {
-    color: "#2D5D6B",
-    fontSize: 17,
-    fontWeight: "bold",
+    color: "#2D5D6B", fontSize: 17, fontFamily: "Jua-Regular",
+  },
+  resetTutorialButton: {
+    backgroundColor: "#FFDDDD",
+    paddingVertical: 10, paddingHorizontal: 20,
+    borderRadius: 20, borderWidth: 2, borderColor: "#FF8888",
+    marginTop: hp("2%"),
+  },
+  resetTutorialText: {
+    color: "#990000", fontSize: 14, textAlign: "center", fontFamily: "Jua-Regular",
   },
 });
 

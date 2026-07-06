@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,11 +10,12 @@ import {
   ScrollView,
   Platform,
   ImageBackground,
-  Dimensions,
 } from "react-native";
 import { API_BASE_URL } from "@env";
-
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 
 const SignupScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
@@ -23,11 +24,25 @@ const SignupScreen = ({ navigation }) => {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [birthdate, setBirthdate] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [confirmPasswordMessage, setConfirmPasswordMessage] = useState("");
+
+  useEffect(() => {
+    if (confirmPassword.length > 0) {
+      setConfirmPasswordMessage(
+        password === confirmPassword
+          ? "✅ 비밀번호가 일치합니다."
+          : "❌ 비밀번호가 일치하지 않습니다."
+      );
+    } else {
+      setConfirmPasswordMessage("");
+    }
+  }, [password, confirmPassword]);
 
   const validateInput = () => {
     const emailRegex = /\S+@\S+\.\S+/;
-    const passwordRegex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":{}|<>])[a-zA-Z\d!@#$%^&*(),.?":{}|<>]{6,}$/;
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+{}\[\]:;"'<>,.?/~`\\|=-]).{6,}$/;
     const birthdateRegex = /^\d{4}-\d{2}-\d{2}$/;
 
     if (!email || !emailRegex.test(email)) {
@@ -37,7 +52,7 @@ const SignupScreen = ({ navigation }) => {
     if (!password || !passwordRegex.test(password)) {
       Alert.alert(
         "오류",
-        "비밀번호는 최소 6자 이상, 대소문자 및 특수문자를 포함해야 합니다."
+        "비밀번호는 최소 6자 이상, 대소문자, 숫자, 특수문자를 포함해야 합니다."
       );
       return false;
     }
@@ -102,7 +117,7 @@ const SignupScreen = ({ navigation }) => {
 
   return (
     <ImageBackground
-      source={require("../assets/Vector.png")}
+      source={require("../assets/Weve.png")}
       style={styles.background}
       resizeMode="stretch"
     >
@@ -115,6 +130,7 @@ const SignupScreen = ({ navigation }) => {
           keyboardShouldPersistTaps="handled"
         >
           <Text style={styles.title}>회원가입</Text>
+
           <TextInput
             style={styles.input}
             placeholder="이메일"
@@ -122,20 +138,56 @@ const SignupScreen = ({ navigation }) => {
             value={email}
             onChangeText={setEmail}
           />
-          <TextInput
-            style={styles.input}
-            placeholder="비밀번호"
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="비밀번호 확인"
-            secureTextEntry
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-          />
+          <View style={styles.passwordContainer}>
+  <TextInput
+    style={styles.passwordInput}
+    placeholder="비밀번호"
+    secureTextEntry={!showPassword}
+    value={password}
+    onChangeText={setPassword}
+    placeholderTextColor="#aaa"
+  />
+  <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+    <Text style={styles.eyeText}>
+      {showPassword ? "숨기기" : "보기"}
+    </Text>
+  </TouchableOpacity>
+</View>
+
+{confirmPasswordMessage !== "" && (
+  <Text
+    style={{
+      alignSelf: "flex-start",
+      marginLeft: wp("8%"),
+      marginTop: -hp("1%"),
+      marginBottom: hp("2%"),
+      color: password === confirmPassword ? "green" : "red",
+      marginBottom: 5,
+    }}
+  >
+    {confirmPasswordMessage}
+  </Text>
+)}
+
+<View style={styles.passwordContainer}>
+  <TextInput
+    style={styles.passwordInput}
+    placeholder="비밀번호 확인"
+    secureTextEntry={!showConfirmPassword}
+    value={confirmPassword}
+    onChangeText={setConfirmPassword}
+    placeholderTextColor="#aaa"
+  />
+  <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+    <Text style={styles.eyeText}>
+      {showConfirmPassword ? "숨기기" : "보기"}
+    </Text>
+  </TouchableOpacity>
+</View>
+
+
+          
+
           <TextInput
             style={styles.input}
             placeholder="이름"
@@ -177,42 +229,68 @@ const SignupScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   background: {
     flex: 1,
-    width: SCREEN_WIDTH,
-    height: SCREEN_HEIGHT * 0.8,
-    backgroundColor: "#76D6F4"
+    width: wp("100%"),
+    height: hp("80%"),
+    backgroundColor: "#8BE1FC",
   },
   scrollContainer: {
     justifyContent: "center",
     alignItems: "center",
-    paddingVertical: 40,
+    paddingVertical: hp("5%"),
   },
   title: {
-    fontSize: 35,
-    fontWeight: "bold",
-    marginBottom: 20,
+    fontSize: wp("9%"),
+    marginBottom: hp("2%"),
     color: "#333",
+    fontFamily: "Jua-Regular",
   },
   input: {
-    width: SCREEN_WIDTH * 0.85,
-    height: 50,
+    width: wp("85%"),
+    height: hp("6.5%"),
     borderWidth: 1,
     borderColor: "#ddd",
-    marginBottom: 15,
-    paddingHorizontal: 15,
+    marginBottom: hp("2%"),
+    paddingHorizontal: wp("4%"),
     borderRadius: 15,
     backgroundColor: "#FFF",
+    fontFamily: "Jua-Regular",
   },
   button: {
     backgroundColor: "#FFF",
-    paddingVertical: 15,
-    paddingHorizontal: 40,
+    paddingVertical: hp("2%"),
+    paddingHorizontal: wp("10%"),
     borderRadius: 10,
-    marginTop: 10,
+    marginTop: hp("1.5%"),
   },
   buttonText: {
     color: "#000",
+    fontSize: wp("4.5%"),
+    fontFamily: "Jua-Regular",
+  },
+  passwordContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 15,
+    paddingHorizontal: 15,
+    marginBottom: 15,
+    backgroundColor: "#FFF",
+    width: wp("85%"),
+    height: 50,
+  },
+
+  passwordInput: {
+    flex: 1,
     fontSize: 16,
-    fontWeight: "bold",
+    fontFamily: "Jua-Regular",
+  },
+
+  eyeText: {
+    marginLeft: 10,
+    fontSize: 14,
+    color: "#555",
+    fontFamily: "Jua-Regular",
   },
 });
 

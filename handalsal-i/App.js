@@ -17,7 +17,10 @@ import HabitCheckScreen from "./screens/HabitCheckScreen";
 import ApartScreen from "./screens/ApartScreen";
 import JobScreen from "./screens/JobScreen";
 import StoreScreen from "./screens/StoreScreen";
-
+import HabitSummaryScreen from "./screens/HabitSummaryScreen";
+import Dogam from "./screens/dogam";
+import TutorialScreen from "./screens/TutorialScreen";
+import GrowthScreen from "./screens/GrowthScreen";
 const Stack = createStackNavigator();
 
 const App = () => {
@@ -25,6 +28,7 @@ const App = () => {
     <NavigationContainer>
       <Stack.Navigator
         initialRouteName="Home"
+        //initialRouteName="GrowthScreen"
         screenOptions={{
           headerStyle: {
             backgroundColor: "#FFD563", // 헤더 배경색
@@ -37,11 +41,16 @@ const App = () => {
           headerBackTitleVisible: false, // 뒤로가기 버튼 옆 텍스트 숨김
         }}
       >
+        <Stack.Screen
+        name="TutorialScreen"
+        component={TutorialScreen}
+        options={{ headerShown: false }} // 헤더 숨기기
+      />
         <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="Login" component={LoginScreen} 
+        <Stack.Screen name="Login" component={LoginScreen}
           options={{
             headerStyle: {
-              backgroundColor: "#FFE98A", // 헤더 배경색
+              backgroundColor: "#FFF5CB", // 헤더 배경색
 
             },
           }}
@@ -49,7 +58,7 @@ const App = () => {
         <Stack.Screen name="Signup" component={SignupScreen}
           options={{
             headerStyle: {
-              backgroundColor: "#FFE98A", // 헤더 배경색
+              backgroundColor: "#FFF5CB", // 헤더 배경색
 
             },
           }}
@@ -116,9 +125,22 @@ const App = () => {
             headerShown: false, gestureEnabled: true
           }}
         />
+        <Stack.Screen name="GrowthScreen" component={GrowthScreen}
+          options={{
+            headerShown: false, gestureEnabled: true
+          }}
+        />
         <Stack.Screen name="ApartScreen" component={ApartScreen}
           options={{
             headerShown: false, gestureEnabled: true
+          }}
+        />
+        <Stack.Screen name="Summary" component={HabitSummaryScreen}
+          options={{
+            headerStyle: {
+              backgroundColor: "#FFFFFF", // 헤더 배경색
+
+            },
           }}
         />
         <Stack.Screen name="JobScreen" component={JobScreen}
@@ -126,11 +148,12 @@ const App = () => {
             headerShown: false, gestureEnabled: true
           }}
         />
-        {/* <Stack.Screen name="ApartScreen" component={ApartScreen}
-          options={{ headerShown: false }}
-        /> */}
-
         <Stack.Screen name="Store" component={StoreScreen}
+          options={{
+            headerShown: false, gestureEnabled: true
+          }}
+        />
+        <Stack.Screen name="Dogam" component={Dogam}
           options={{
             headerShown: false, gestureEnabled: true
           }}

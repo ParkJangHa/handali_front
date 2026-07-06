@@ -11,7 +11,10 @@ import {
   Alert,
 } from "react-native";
 import { API_BASE_URL } from '@env';
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+// const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
+import { authFetch } from "../utils/authFetch";
+
 
 const categoryMap = {
   "활동": "ACTIVITY",
@@ -39,13 +42,6 @@ const DetailSelect = ({ route, navigation }) => {
   }, []);
   const fetchHabits = async () => {
     try {
-      const token = await AsyncStorage.getItem("authToken");
-      if (!token) {
-        Alert.alert("세션 만료", "다시 로그인해주세요.");
-        navigation.navigate("LoginScreen");
-        return;
-      }
-
       const mappedCategory = categoryMap[category] || category;
       console.log("📌 선택한 카테고리:", category);
       console.log("📌 변환된 category 값:", mappedCategory);
@@ -55,16 +51,10 @@ const DetailSelect = ({ route, navigation }) => {
       let devHabitsList = [];
 
       // 사용자 추가 습관 조회
-      const userResponse = await fetch(`${API_BASE_URL}/habits/category-user?category=${mappedCategory}`, {
-        method: "GET",
-        headers: { "Authorization": `Bearer ${token}` },
-      });
+      const userResponse = await authFetch(`${API_BASE_URL}/habits/category-user?category=${mappedCategory}`, { method: "GET" }, navigation);
 
       // 개발자가 미리 등록한 습관 조회
-      const devResponse = await fetch(`${API_BASE_URL}/habits/category-dev?category=${mappedCategory}`, {
-        method: "GET",
-        headers: { "Authorization": `Bearer ${token}` },
-      });
+      const devResponse = await authFetch(`${API_BASE_URL}/habits/category-dev?category=${mappedCategory}`, { method: "GET" }, navigation);
 
       const userText = await userResponse.text();
       const devText = await devResponse.text();
@@ -128,8 +118,6 @@ const DetailSelect = ({ route, navigation }) => {
     setLoading(true); // 로딩 시작
 
     try {
-      const token = await AsyncStorage.getItem("authToken");
-
       const categoryMap = {
         "활동": "ACTIVITY",
         "지능": "INTELLIGENT",
@@ -150,14 +138,11 @@ const DetailSelect = ({ route, navigation }) => {
 
       console.log("📌 이번 달 습관 지정 요청:", JSON.stringify(requestBody, null, 2));
 
-      const response = await fetch(`${API_BASE_URL}/habits/set`, {
+      const response = await authFetch(`${API_BASE_URL}/habits/set`, {
         method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestBody),
-      });
+      }, navigation);
 
       const data = await response.json();
       console.log("📌 이번 달 습관 지정 응답:", data);
@@ -251,9 +236,9 @@ const DetailSelect = ({ route, navigation }) => {
       </ScrollView>
 
       <View style={styles.habitAppendContainer}>
-        
+
         <TouchableOpacity style={styles.habitAppendButton} onPress={habitAppend}>
-        <Image
+          <Image
             source={require("../assets/Category/Plus.png")}
             style={styles.icon}
           />
@@ -272,34 +257,34 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: "center",
-    padding: SCREEN_WIDTH * 0.05,
+    padding: wp('5%'),
     backgroundColor: "#FFE98A",
-    marginTop: -SCREEN_WIDTH * 0.06,
+    marginTop: -wp('6%'),
   },
   img: {
     top: 0,
     position: "absolute",
-    width: SCREEN_WIDTH * 1,
-    height: SCREEN_HEIGHT * 0.47,
+    width: wp('100%'),
+    height: hp('47%'),
     zIndex: 0,
   },
   dateText: {
-    fontSize: SCREEN_WIDTH * 0.06,
-    fontWeight: "bold",
+    fontSize: wp('6%'),
     color: "#2D5D6B",
     alignSelf: "flex-start",
+    fontFamily: "Jua-Regular",
   },
   title: {
-    fontSize: SCREEN_WIDTH * 0.08,
-    fontWeight: "bold",
+    fontSize: wp('8%'),
     color: "#2D5D6B",
     alignSelf: "flex-start",
+    fontFamily: "Jua-Regular",
   },
   progressBar: {
     width: "100%",
-    height: SCREEN_HEIGHT * 0.01,
+    height: hp('1%'),
     justifyContent: "center",
-    marginVertical: SCREEN_HEIGHT * 0.02,
+    marginVertical: hp('2%'),
   },
   backgroundBar: {
     width: "100%",
@@ -318,41 +303,41 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   subTitle: {
-    fontSize: SCREEN_WIDTH * 0.05,
-    fontWeight: "bold",
+    fontSize: wp('7%'),
     color: "rgba(0, 0, 0, 0.5)",
     alignSelf: "flex-start",
-    marginBottom: SCREEN_WIDTH * 0.06,
+    marginBottom: wp('6%'),
+    fontFamily: "Jua-Regular",
   },
   categoryCon: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    width: SCREEN_WIDTH * 0.9,
-    height: SCREEN_HEIGHT * 0.15,
+    width: wp('90%'),
+    height: hp('15%'),
     backgroundColor: "#FFFFFF",
-    borderRadius: SCREEN_WIDTH * 0.05,
-    marginTop: SCREEN_HEIGHT * 0.03,
-    marginBottom: SCREEN_HEIGHT * 0.05,
+    borderRadius: wp('5%'),
+    marginTop: hp('3%'),
+    marginBottom: hp('5%'),
   },
   categoryImg: {
-    width: SCREEN_WIDTH * 0.4,
-    height: SCREEN_WIDTH * 0.4,
-    marginRight: SCREEN_WIDTH * 0.12,
+    width: wp('40%'),
+    height: wp('40%'),
+    marginRight: wp('12%'),
   },
   categoryText: {
-    fontSize: SCREEN_WIDTH * 0.09,
-    fontWeight: "bold",
+    fontSize: wp('9%'),
     color: "#2D5D6B",
+    fontFamily: "Jua-Regular",
   },
   habitButton: {
-    width: SCREEN_WIDTH * 0.9,
-    height: SCREEN_HEIGHT * 0.08,
+    width: wp('90%'),
+    height: hp('8%'),
     borderWidth: 2,
     borderColor: "#000",
-    marginBottom: SCREEN_HEIGHT * 0.01,
-    paddingHorizontal: SCREEN_WIDTH * 0.03,
-    borderRadius: SCREEN_WIDTH * 0.03,
+    marginBottom: hp('1%'),
+    paddingHorizontal: wp('3%'),
+    borderRadius: wp('3%'),
     backgroundColor: "#FFFDF0",
     justifyContent: "center",
     alignItems: "center",
@@ -361,13 +346,13 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(2, 80, 224, 0.5)",
   },
   habitButtonText: {
-    fontSize: SCREEN_WIDTH * 0.045,
+    fontSize: wp('4.5%'),
     color: "#2D5D6B",
-    fontWeight: "bold",
+    fontFamily: "Jua-Regular",
   },
   habitAppendContainer: {
     alignSelf: "flex-end",
-    marginBottom: SCREEN_HEIGHT * 0.03,
+    marginBottom: hp('3%'),
   },
   habitAppendButton: {
     flexDirection: "row",
@@ -375,29 +360,29 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   icon: {
-    width: 21,
-    height: 24,
-    marginRight: 8,
+    width: wp('5.8%'),
+    height: wp('6.5%'),
+    marginRight: wp('2%'),
   },
   habitAppendButtonText: {
-    fontSize: SCREEN_WIDTH * 0.045,
-    fontWeight: "bold",
+    fontSize: wp('4.5%'),
     color: "#0250E0",
     textAlign: "center",
+    fontFamily: "Jua-Regular",
   },
   nextButton: {
-    width: SCREEN_WIDTH * 0.9,
+    width: wp('90%'),
     backgroundColor: "#76D6F4",
-    paddingVertical: SCREEN_HEIGHT * 0.02,
-    borderRadius: 30,
-    marginTop: SCREEN_HEIGHT * 0.01,
-    marginBottom: SCREEN_HEIGHT * 0.01
+    paddingVertical: hp('2%'),
+    borderRadius: wp('7%'),
+    marginTop: hp('1%'),
+    marginBottom: hp('3%'),
   },
   nextButtonText: {
-    fontSize: SCREEN_WIDTH * 0.045,
+    fontSize: wp('4.5%'),
     color: "#2D5D6B",
-    fontWeight: "bold",
     textAlign: "center",
+    fontFamily: "Jua-Regular",
   },
 });
 

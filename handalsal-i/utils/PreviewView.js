@@ -1,115 +1,168 @@
-import React from "react";
-import { View, Image, StyleSheet, Dimensions } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Image, StyleSheet, Alert } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_BASE_URL } from "@env";
 import { storeItemImageMap } from "./storeItemImageMap";
+import { characterImageMap } from "./characterImageMap";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
+import { authFetch } from "./authFetch";
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
-const scaleRatio = 0.55; // 원하는 크기에 따라 조절 가능 (0.4 ~ 0.6 추천)
+const STAGE_RATIO = 9 / 16; // ← 필요 시 조정
 
-export default function PreviewView({ characterImage, appliedItems }) {
+export default function PreviewView({ characterImage, appliedItems, navigation }) {
+  const [handaliImage, setHandaliImage] = useState(characterImageMap["default_character.png"]);
+
   const getImage = (name) => {
     if (!name) return null;
     const key = name.replace(/ /g, "_");
-    const image = storeItemImageMap[key];
-    return typeof image === "number" ? image : null;
+    const img = storeItemImageMap[key];
+    return typeof img === "number" ? img : null;
   };
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await authFetch(`${API_BASE_URL}/handalis/view`, { method: "GET" }, navigation);
+        if (res.status === 401) return;
+        if (res.ok) {
+          const data = await res.json();
+          if (data.handali_img && characterImageMap[data.handali_img]) {
+            setHandaliImage(characterImageMap[data.handali_img]);
+          } else {
+            setHandaliImage(characterImageMap["default_character.png"]);
+          }
+        }
+      } catch {}
+    })();
+  }, []);
+
+  // 좌석 타입 구분(소파/의자)
+  const getSeatType = (raw) => {
+    if (!raw) return "unknown";
+    const norm = String(raw).trim();
+    if (/의자/i.test(norm) || /_Chair$/i.test(norm.replace(/ /g, "_"))) return "chair";
+    if (/소파/i.test(norm) || /_Sofa$/i.test(norm.replace(/ /g, "_"))) return "sofa";
+    return "unknown";
+  };
+  const seatType = appliedItems["소파"] ? getSeatType(appliedItems["소파"]) : "unknown";
 
   return (
     <View style={styles.previewContainer}>
-      <Image
-      source={require("../assets/storeItems/room.png")}
-      style={styles.backgroundImage}
-      />
-      {/* 벽장식 */}
-      {appliedItems["벽장식"] && getImage(appliedItems["벽장식"]) && (
-        <Image source={getImage(appliedItems["벽장식"])} style={styles.window} />
-      )}
+      {/* Stage는 메인 화면 비율을 유지하며, 미리보기 안에서 가운데 정렬됩니다 */}
+      <View style={styles.stageWrapper}>
+        <View style={styles.stage}>
+          {/* 배경 (필요시 교체) */}
+          <Image
+            source={require("../assets/storeItems/배경없음.png")}
+            style={styles.bg}
+            resizeMode="cover"
+          />
 
-      {/* 바닥장식 */}
-      {appliedItems["바닥장식"] && getImage(appliedItems["바닥장식"]) && (
-        <Image source={getImage(appliedItems["바닥장식"])} style={styles.floor} />
-      )}
+          {/* 벽장식: 메인과 동일한 % 좌표/크기 */}
+          {appliedItems["벽장식"] && getImage(appliedItems["벽장식"]) && (
+            <Image
+              source={getImage(appliedItems["벽장식"])}
+              style={styles.wall}
+              resizeMode="contain"
+            />
+          )}
 
-      {/* 캐릭터 */}
-      <View style={styles.characterContainer}>
-        <Image source={characterImage} style={styles.character} />
+          {/* 바닥장식 */}
+          {appliedItems["바닥장식"] && getImage(appliedItems["바닥장식"]) && (
+            <Image
+              source={getImage(appliedItems["바닥장식"])}
+              style={styles.floor}
+              resizeMode="contain"
+            />
+          )}
+
+          {/* 소파/의자 (캐릭터 뒤 레이어) */}
+          {appliedItems["소파"] && getImage(appliedItems["소파"]) && (
+            <Image
+              source={getImage(appliedItems["소파"])}
+              style={seatType === "chair" ? styles.chair : styles.sofa}
+              resizeMode="contain"
+            />
+          )}
+
+          {/* 캐릭터 (최상단) */}
+          <Image source={handaliImage} style={styles.character} resizeMode="contain" />
+        </View>
       </View>
-
-      {/* 소파 또는 의자 */}
-      {appliedItems["소파"] && getImage(appliedItems["소파"]) && (
-        <Image
-          source={getImage(appliedItems["소파"])}
-          style={
-            appliedItems["소파"].includes("의자")
-              ? styles.chair
-              : styles.sofa
-          }
-        />
-      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   previewContainer: {
-    width: SCREEN_WIDTH * 1.2 * scaleRatio,
-    height: SCREEN_HEIGHT * 0.7 * scaleRatio,
-    borderRadius: 20,
-    overflow: "visible",
-    position: "relative",
+    width: wp("78%"),
+    height: hp("70%"),
     alignSelf: "center",
   },
-  backgroundImage: {
-    position: "absolute",
+
+  stageWrapper: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  stage: {
     width: "100%",
-    height: "100%",
-    resizeMode: "cover",
-    zIndex: -3,
+    aspectRatio: STAGE_RATIO, 
+    backgroundColor: "transparent",
+    overflow: "hidden",
+    position: "relative",
   },
-  characterContainer: {
+
+  bg: {
     position: "absolute",
-    top: SCREEN_HEIGHT * 0.17,   // 🔧 TODO: 캐릭터 위치 조정
-    left: SCREEN_WIDTH * 0.14,   // 🔧 TODO: 캐릭터 좌우 위치 조정
-    zIndex: -1,
+    left: 0,
+    top: 0,
+    width: "100%",
+    height: "70%"
   },
-  character: {
-    width: SCREEN_WIDTH * 0.6 * scaleRatio,
-    height: SCREEN_HEIGHT * 0.25 * scaleRatio,
-    resizeMode: "contain",
-  },
-  sofa: {
-    width: SCREEN_WIDTH * 1 * scaleRatio,
-    height: SCREEN_WIDTH * 0.6 * scaleRatio,
+
+  wall: {
     position: "absolute",
-    top: SCREEN_HEIGHT * 0.13,    // 🔧 TODO: 소파 높이 조정
-    left: SCREEN_WIDTH * 0.15,     // 🔧 TODO: 소파 좌우 위치 조정
-    zIndex: -2,
-    resizeMode: "contain",
+    width: "30%",
+    height: "30%",
+    left: "12%",
+    top: "3%",
+    zIndex: 1,
   },
-  chair: {
-    width: SCREEN_WIDTH * 0.4 * scaleRatio,
-    height: SCREEN_WIDTH * 0.35 * scaleRatio,
-    position: "absolute",
-    top: SCREEN_HEIGHT * 0.173,     // 🔧 TODO: 의자 높이 조정
-    left: SCREEN_WIDTH * 0.35,    // 🔧 TODO: 의자 좌우 위치 조정
-    zIndex: -2,
-    resizeMode: "contain",
-  },
-  window: {
-    width: SCREEN_WIDTH * 0.4 * scaleRatio,
-    height: SCREEN_WIDTH * 0.3 * scaleRatio,
-    position: "absolute",
-    top: SCREEN_HEIGHT * 0.05,    // 🔧 TODO: 창문 높이 조정
-    left: SCREEN_WIDTH * 0.05,    // 🔧 TODO: 창문 좌우 위치 조정
-    zIndex: -2,
-    resizeMode: "contain",
-  },
+
   floor: {
-    width: SCREEN_WIDTH * 0.4 * scaleRatio,
-    height: SCREEN_WIDTH * 0.4 * scaleRatio,
     position: "absolute",
-    top: SCREEN_HEIGHT * 0.15,    // 🔧 TODO: 바닥 위치 조정
-    left: SCREEN_WIDTH * 0.01,   // 🔧 TODO: 바닥 좌우 위치 조정
-    zIndex: -2,
-    resizeMode: "contain",
+    width: "40%",
+    height: "40%",
+    left: "1%",
+    top: "20%",
+    zIndex: 1,
+  },
+
+  sofa: {
+    position: "absolute",
+    width: "70%",
+    height: "34%",
+    left: "35%",
+    top: "23%",
+    zIndex: 2,
+  },
+
+  chair: {
+    position: "absolute",
+    width: "40%",
+    height: "35%",
+    left: "58%",
+    top: "23%",
+    zIndex: 2,
+  },
+
+  character: {
+    position: "absolute",
+    width: "60%",
+    height: "30%",
+    left: "17%",
+    top: "28%",
+    zIndex: 3,
   },
 });
