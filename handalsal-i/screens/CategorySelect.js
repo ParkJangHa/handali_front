@@ -34,80 +34,43 @@ const CategorySelect = ({ navigation, route }) => {
 
 
     try {
-      // 프로젝트에서 쓰는 토큰 키에 맞춰 하나라도 있으면 사용
       const res = await authFetch(`${API_BASE_URL}/habits/refresh-last-month`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
       }, navigation);
 
-      if (res.status === 401) { setIsKeeping(false); return; }
+      if (res.status === 401) return;
 
-      // 서버 메시지(있으면 표시)
       let msg = "";
-
       try {
-        // 프로젝트에서 쓰는 토큰 키에 맞춰 하나라도 있으면 사용
-        const token =
-          (await AsyncStorage.getItem("accessToken")) ||
-          (await AsyncStorage.getItem("token")) ||
-          (await AsyncStorage.getItem("authToken"));
+        const data = await res.json();
+        msg = typeof data === "string" ? data : (data.message || "");
+      } catch (_) {}
 
-        if (!token) {
-          alert("로그인이 필요합니다.");
-          setIsKeeping(false);
-          return;
-        }
-
-        const res = await fetch(`${API_BASE_URL}/habits/refresh-last-month`, {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-
-        // 서버 메시지(있으면 표시)
-        let msg = "";
-        try {
-          const data = await res.json();
-          msg = typeof data === "string" ? data : (data.message || "");
-        } catch (_) { }
-
-        if (res.ok) {
-
-          Alert.alert(
-            "습관 설정 완료",
-            "이번달 습관이 지난달 습관으로 갱신되었습니다.",
-            [
-              {
-                text: "확인",
-                onPress: () => navigation.navigate("HandalStart")
-              }
-            ],
-            { cancelable: false }
-          );
-
-        } else if (res.status === 404) {
-          Alert.alert(
-            "습관 설정 불가",
-            "지난달 습관이 존재하지 않습니다. 새로 습관을 선택해주세요.",
-            [
-              {
-                text: "확인",
-              }
-            ],
-            { cancelable: false }
-          );
-        } else {
-          alert(msg || `갱신 실패(code: ${res.status})`);
-        }
-      } catch (e) {
-        console.log(e);
-        alert("네트워크 오류가 발생했습니다.");
-      } finally {
-        setIsKeeping(false);
+      if (res.ok) {
+        Alert.alert(
+          "습관 설정 완료",
+          "이번달 습관이 지난달 습관으로 갱신되었습니다.",
+          [{ text: "확인", onPress: () => navigation.navigate("HandalStart") }],
+          { cancelable: false }
+        );
+      } else if (res.status === 404) {
+        Alert.alert(
+          "습관 설정 불가",
+          "지난달 습관이 존재하지 않습니다. 새로 습관을 선택해주세요.",
+          [{ text: "확인" }],
+          { cancelable: false }
+        );
+      } else {
+        alert(msg || `갱신 실패(code: ${res.status})`);
       }
-    };
+    } catch (e) {
+      console.log(e);
+      alert("네트워크 오류가 발생했습니다.");
+    } finally {
+      setIsKeeping(false);
+    }
+  };
 
 
     return (

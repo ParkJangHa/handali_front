@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, TouchableOpacity, Image, StyleSheet, Platform } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const icons = {
   store: require("../assets/icons/store.png"),
@@ -17,6 +18,7 @@ export default function BottomNav({
   active = "Main",            // "Main" | "Store" | "Apart" | "Summary" 등
   mode = "default",            // "default" | "apart" | "record"
 }) {
+  const insets = useSafeAreaInsets();
   const isRecordMode = mode === "record";
   const isRightHome = mode === "apart";
 
@@ -38,7 +40,7 @@ export default function BottomNav({
   const isRightActive = active === "Apart" || (isRightHome && active === "Main");
 
   return (
-    <View style={styles.wrapper}>
+    <View style={[styles.wrapper, { bottom: insets.bottom + hp("2%") }]}>
       <View style={styles.navContainer}>
         {/* ⬆️ 상단 그림자 */}
         <LinearGradient
@@ -75,7 +77,6 @@ export default function BottomNav({
 const styles = StyleSheet.create({
   wrapper: {
     position: "absolute",
-    bottom: hp("6%"),
     width: "100%",
     alignItems: "center",
   },

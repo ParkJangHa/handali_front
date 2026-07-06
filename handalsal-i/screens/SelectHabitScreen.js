@@ -4,6 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from '@env';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 import BottomNav from "../components/BottomNav";
+import { authFetch } from "../utils/authFetch";
 
 const categoryThemes = {
     '활동': {
@@ -41,15 +42,12 @@ export default function SelectHabitScreen({ route, navigation }) {
     useEffect(() => {
         const fetchHabits = async () => {
             try {
-                const token = await AsyncStorage.getItem("authToken");
                 const currentMonth = new Date().getMonth() + 1;
 
-                const response = await fetch(
+                const response = await authFetch(
                     `${API_BASE_URL}/habits/category-month?category=${convertedCategoryType}&month=${currentMonth}`,
-                    {
-                        method: "GET",
-                        headers: { Authorization: `Bearer ${token}` },
-                    }
+                    { method: "GET" },
+                    navigation
                 );
                 
                 if (response.ok) {

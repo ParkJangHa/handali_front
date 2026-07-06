@@ -54,7 +54,7 @@ export default function HabitCategoryScreen({ navigation }) {
   /** 인증 실패 처리 공통 */
   const handleAuthFail = useCallback(async () => {
     try {
-      await AsyncStorage.removeItem("authToken");
+      await AsyncStorage.multiRemove(["authToken", "refreshToken"]);
     } catch { }
     Alert.alert("인증에 실패했습니다", "다시 로그인해 주세요.", [
       { text: "확인", onPress: () => navigation.navigate("Login") },
@@ -67,16 +67,10 @@ export default function HabitCategoryScreen({ navigation }) {
       const token = await AsyncStorage.getItem("authToken");
       if (!token) return handleAuthFail();
 
-      const url = `${API_BASE_URL}/handalis/view`;
-      const response = await fetch(url, {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` },
-      });
       const response = await authFetch(`${API_BASE_URL}/handalis/view`, { method: "GET" }, navigation);
 
       if (response.status === 401) return;
 
-      if (response.status === 401 || response.status === 412) return handleAuthFail();
       if (response.status === 412) {
         Alert.alert("세션 만료", "로그인이 만료되었습니다. 다시 로그인해주세요.", [
           { text: "확인", onPress: () => clearTokens(navigation) }
@@ -107,25 +101,10 @@ export default function HabitCategoryScreen({ navigation }) {
   const fetchMonthCount = useCallback(
     async (catKo, m) => {
       try {
-        const token = await AsyncStorage.getItem("authToken");
-        if (!token) {
-          await handleAuthFail();
-          return { count: 0, unauthorized: true };
-        }
-
         const code = CAT_TO_CODE[catKo];
-        const base = API_BASE_URL;
-        const url = `${base?.replace(/\/$/, "")}/habits/category-month?category=${code}&month=${m}`;
+        const url = `${API_BASE_URL?.replace(/\/$/, "")}/habits/category-month?category=${code}&month=${m}`;
 
-        console.log("[fetchMonthCount] URL:", url, "cat:", catKo, "code:", code, "month:", m);
-        console.log("[fetchMonthCount] token exists:", !!token, "API_BASE_URL:", API_BASE_URL);
-
-        const res = await fetch(url, {
-          method: "GET",
-          headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
-        });
-
-        console.log("[fetchMonthCount] status:", res.status);
+        const res = await authFetch(url, { method: "GET", headers: { Accept: "application/json" } }, navigation);
 
         if (res.status === 401 || res.status === 412) {
           await handleAuthFail();
@@ -208,40 +187,33 @@ export default function HabitCategoryScreen({ navigation }) {
     if (loading) return;
     try {
       setLoading(true);
-      const token = await AsyncStorage.getItem("authToken");
-      if (!token) return handleAuthFail();
+      const res = await authFetch(`${API_BASE_URL}/habits/record-delete`, {
+        method: "DELETE",
+        headers: { Accept: "application/json" },
+      }, navigation);
 
-      const url = `${API_BASE_URL}/habits/record-delete`;
-      const res = await fetch(url, {
-        const res = await authFetch(`${API_BASE_URL}/habits/record-delete`, {
-          method: "DELETE",
-          headers: { Accept: "application/json" },
-        }, navigation);
+      if (res.status === 401) return;
 
-        if(res.status === 401) { setLoading(false); return;
+      if (res.status === 412) {
+        Alert.alert("세션 만료", "다시 로그인해 주세요.", [
+          { text: "확인", onPress: () => clearTokens(navigation) }
+        ]);
+        return;
+      }
+
+      if (res.ok) {
+        Alert.alert("완료", "오늘 기록이 초기화되었습니다.\n(스탯 값은 유지됩니다.)");
+        await fetchImage();
+      } else {
+        const text = await res.text().catch(() => "");
+        Alert.alert("실패", `초기화 중 오류가 발생했어요.\n${res.status} ${text}`);
+      }
+    } catch (e) {
+      Alert.alert("네트워크 오류", e?.message ?? "다시 시도해 주세요.");
+    } finally {
+      setLoading(false);
     }
-
-      if (res.status === 401 || res.status === 412) return handleAuthFail();
-    if (res.status === 412) {
-      Alert.alert("세션 만료", "다시 로그인해 주세요.", [
-        { text: "확인", onPress: () => clearTokens(navigation) }
-      ]);
-      return;
-    }
-
-    if (res.ok) {
-      Alert.alert("완료", "오늘 기록이 초기화되었습니다.\n(스탯 값은 유지됩니다.)");
-      await fetchImage();
-    } else {
-      const text = await res.text().catch(() => "");
-      Alert.alert("실패", `초기화 중 오류가 발생했어요.\n${res.status} ${text}`);
-    }
-  } catch (e) {
-    Alert.alert("네트워크 오류", e?.message ?? "다시 시도해 주세요.");
-  } finally {
-    setLoading(false);
-  }
-}, [loading, navigation, fetchImage, handleAuthFail]);
+  }, [loading, navigation, fetchImage, handleAuthFail]);
 
 /** 카테고리 이미지 탭(한번 눌러 선택, 같은 걸 다시 누르면 이동) */
 const onPressCategory = useCallback(

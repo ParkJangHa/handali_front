@@ -345,11 +345,7 @@ export default function MainScreen({ navigation }) {
   const fetchWeeklySalary = async () => {
     try {
       setWeeklyLoading(true);
-      const token = await AsyncStorage.getItem("authToken");
-      const res = await fetch(`${API_BASE_URL}/handalis/week-salary`, {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await authFetch(`${API_BASE_URL}/handalis/week-salary`, { method: "GET" }, navigation);
       if (!res.ok) throw new Error(`status ${res.status}`);
 
       const json = await res.json();
